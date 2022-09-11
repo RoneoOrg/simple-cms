@@ -16,7 +16,7 @@
     "develop": "yarn build:esm --watch",
     "webpack": "node --max_old_space_size=4096 ../../node_modules/webpack/bin/webpack.js",
     "build": "cross-env NODE_ENV=production run-s webpack",
-    "build:esm": "cross-env NODE_ENV=esm babel src --out-dir dist/esm --ignore \"**/__tests__\" --root-mode upward"
+    "build:esm": "cross-env NODE_ENV=esm babel src --out-dir dist/esm --ignore \"**/__tests__\" --root-mode upward --extensions \".js,.jsx,.ts,.tsx\""
   },
   "keywords": [
     "netlify",
@@ -27,8 +27,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@emotion/core": "^10.0.35",
-    "@emotion/styled": "^10.0.27",
+    "@emotion/core": "11.0.0",
+    "@emotion/styled": "11.10.4",
     "codemirror": "^5.46.0",
     "immutable": "^3.7.6",
     "lodash": "^4.17.11",

@@ -40,12 +40,7 @@ function presets() {
   return [
     '@babel/preset-react',
     '@babel/preset-env',
-    [
-      '@emotion/babel-preset-css-prop',
-      {
-        autoLabel: true,
-      },
-    ],
+    ['@emotion/babel-preset-css-prop'],
     '@babel/typescript',
   ];
 }

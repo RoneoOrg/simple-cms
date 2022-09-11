@@ -1,25 +1,21 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import TextField from '@mui/material/TextField';
 
-export default class StringControl extends React.Component {
-  static propTypes = {
-    onChange: PropTypes.func.isRequired,
-    forID: PropTypes.string,
-    value: PropTypes.node,
-    classNameWrapper: PropTypes.string.isRequired,
-    setActiveStyle: PropTypes.func.isRequired,
-    setInactiveStyle: PropTypes.func.isRequired,
-  };
+interface StringControlProps {
+  onChange: (value: string) => void;
+  forID?: string;
+  value?: string;
+  classNameWrapper: string;
+  setActiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  setInactiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+}
 
-  static defaultProps = {
-    value: '',
-  };
-
+export default class StringControl extends React.Component<StringControlProps> {
   // The selection to maintain for the input element
-  _sel = 0;
+  _sel: number | null = 0;
 
   // The input element ref
-  _el = null;
+  _el: HTMLInputElement | HTMLTextAreaElement | null = null;
 
   // NOTE: This prevents the cursor from jumping to the end of the text for
   // nested inputs. In other words, this is not an issue on top-level text
@@ -30,27 +26,26 @@ export default class StringControl extends React.Component {
   // SEE: https://github.com/netlify/netlify-cms/issues/4539
   // SEE: https://github.com/netlify/netlify-cms/issues/3578
   componentDidUpdate() {
-    if (this._el && this._el.selectionStart !== this._sel) {
+    if (this._el && this._el?.selectionStart !== this._sel) {
       this._el.setSelectionRange(this._sel, this._sel);
     }
   }
 
-  handleChange = e => {
+  handleChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = e => {
     this._sel = e.target.selectionStart;
     this.props.onChange(e.target.value);
   };
 
   render() {
-    const { forID, value, classNameWrapper, setActiveStyle, setInactiveStyle } = this.props;
+    const { forID, value = '', setActiveStyle, setInactiveStyle } = this.props;
 
     return (
-      <input
-        ref={el => {
+      <TextField
+        inputRef={el => {
           this._el = el;
         }}
-        type="text"
         id={forID}
-        className={classNameWrapper}
+        variant="outlined"
         value={value || ''}
         onChange={this.handleChange}
         onFocus={setActiveStyle}
