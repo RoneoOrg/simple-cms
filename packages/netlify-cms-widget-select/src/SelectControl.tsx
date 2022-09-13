@@ -7,6 +7,8 @@ import Select from 'react-select';
 import { reactSelectStyles } from 'netlify-cms-ui-default';
 import { validations } from 'netlify-cms-lib-widgets';
 
+import type { t } from 'react-polyglot';
+
 function optionToString(option) {
   return option && option.value ? option.value : null;
 }
@@ -35,26 +37,36 @@ function getSelectedValue({ value, options, isMultiple }) {
   }
 }
 
-export default class SelectControl extends React.Component {
-  static propTypes = {
-    onChange: PropTypes.func.isRequired,
-    value: PropTypes.node,
-    forID: PropTypes.string.isRequired,
-    classNameWrapper: PropTypes.string.isRequired,
-    setActiveStyle: PropTypes.func.isRequired,
-    setInactiveStyle: PropTypes.func.isRequired,
-    field: ImmutablePropTypes.contains({
-      options: ImmutablePropTypes.listOf(
-        PropTypes.oneOfType([
-          PropTypes.string,
-          ImmutablePropTypes.contains({
-            label: PropTypes.string.isRequired,
-            value: PropTypes.string.isRequired,
-          }),
-        ]),
-      ).isRequired,
-    }),
-  };
+interface SelectControlProps {
+  onChange(value: string): void;
+  value?: string;
+  forId: string;
+  setActiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  setInactiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  t: t;
+  field: Map<string, any>;
+}
+
+export default class SelectControl extends React.Component<SelectControlProps> {
+  // static propTypes = {
+  //   onChange: PropTypes.func.isRequired,
+  //   value: PropTypes.node,
+  //   forID: PropTypes.string.isRequired,
+  //   classNameWrapper: PropTypes.string.isRequired,
+  //   setActiveStyle: PropTypes.func.isRequired,
+  //   setInactiveStyle: PropTypes.func.isRequired,
+  //   field: ImmutablePropTypes.contains({
+  //     options: ImmutablePropTypes.listOf(
+  //       PropTypes.oneOfType([
+  //         PropTypes.string,
+  //         ImmutablePropTypes.contains({
+  //           label: PropTypes.string.isRequired,
+  //           value: PropTypes.string.isRequired,
+  //         }),
+  //       ]),
+  //     ).isRequired,
+  //   }),
+  // };
 
   isValid = () => {
     const { field, value, t } = this.props;
@@ -78,7 +90,7 @@ export default class SelectControl extends React.Component {
 
   handleChange = selectedOption => {
     const { onChange, field } = this.props;
-    const isMultiple = field.get('multiple', false);
+    const isMultiple = field.get<boolean>('multiple', false);
     const isEmpty = isMultiple ? !selectedOption?.length : !selectedOption;
 
     if (field.get('required') && isEmpty && isMultiple) {

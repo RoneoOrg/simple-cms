@@ -36,17 +36,19 @@ export default class TextControl extends React.Component<TextControlProps> {
         onBlur={setInactiveStyle}
         multiline
         minRows={4}
+        fullWidth
+        sx={{
+          '.MuiInputBase-root': {
+            borderTopLeftRadius: 0,
+            '.MuiOutlinedInput-notchedOutline': {
+              borderColor: '#dfdfe3',
+            },
+            '&:not(.Mui-focused):hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#dfdfe3',
+            },
+          },
+        }}
       />
-      // <Textarea
-      //   id={forID}
-      //   value={value || ''}
-      //   className={classNameWrapper}
-      //   onFocus={setActiveStyle}
-      //   onBlur={setInactiveStyle}
-      //   minRows={5}
-      //   css={{ fontFamily: 'inherit' }}
-      //   onChange={e => onChange(e.target.value)}
-      // />
     );
   }
 }

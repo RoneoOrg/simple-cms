@@ -18,14 +18,16 @@
   },
   "dependencies": {
     "react-aria-menubutton": "^7.0.0",
-    "react-toggled": "^1.1.2",
-    "react-transition-group": "^4.0.0"
+    "react-transition-group": "^4.0.0",
+    "@mui/material": "5.10.4",
+    "@emotion/react": "11.10.4",
+    "@emotion/styled": "11.10.4"
   },
   "peerDependencies": {
     "@emotion/core": "11.0.0",
     "@emotion/styled": "11.10.4",
     "lodash": "^4.17.11",
     "prop-types": "^15.7.2",
-    "react": "^16.8.4 || ^17.0.0"
+    "react": "^16.8.4 || ^17.0.0 || ^18.0.0"
   }
 }

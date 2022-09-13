@@ -1,34 +1,34 @@
+import AuthenticationPage from './AuthenticationPage';
 import Dropdown, {
-  DropdownItem,
-  DropdownCheckedItem,
   DropdownButton,
+  DropdownCheckedItem,
+  DropdownItem,
   StyledDropdownButton,
 } from './Dropdown';
+import FieldLabel from './FieldLabel';
+import GoBackButton from './GoBackButton';
 import Icon from './Icon';
+import IconButton from './IconButton';
 import ListItemTopBar from './ListItemTopBar';
 import Loader from './Loader';
-import FieldLabel from './FieldLabel';
-import IconButton from './IconButton';
-import Toggle, { ToggleContainer, ToggleBackground, ToggleHandle } from './Toggle';
-import AuthenticationPage from './AuthenticationPage';
-import WidgetPreviewContainer from './WidgetPreviewContainer';
 import ObjectWidgetTopBar from './ObjectWidgetTopBar';
-import GoBackButton from './GoBackButton';
 import {
-  fonts,
-  colorsRaw,
-  colors,
-  lengths,
-  components,
-  buttons,
-  text,
-  shadows,
   borders,
-  transitions,
+  buttons,
+  colors,
+  colorsRaw,
+  components,
   effects,
-  zIndex,
+  fonts,
+  lengths,
   reactSelectStyles,
+  shadows,
+  text,
+  transitions,
+  zIndex,
 } from './styles';
+import Toggle from './Toggle';
+import WidgetPreviewContainer from './WidgetPreviewContainer';
 
 export const NetlifyCmsUiDefault = {
   Dropdown,
@@ -42,9 +42,6 @@ export const NetlifyCmsUiDefault = {
   IconButton,
   Loader,
   Toggle,
-  ToggleContainer,
-  ToggleBackground,
-  ToggleHandle,
   AuthenticationPage,
   WidgetPreviewContainer,
   ObjectWidgetTopBar,
@@ -74,9 +71,6 @@ export {
   IconButton,
   Loader,
   Toggle,
-  ToggleContainer,
-  ToggleBackground,
-  ToggleHandle,
   AuthenticationPage,
   WidgetPreviewContainer,
   ObjectWidgetTopBar,

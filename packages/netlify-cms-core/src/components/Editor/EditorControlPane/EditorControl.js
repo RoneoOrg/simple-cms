@@ -47,6 +47,7 @@ const styleStrings = {
     position: relative;
     font-size: 15px;
     line-height: 1.5;
+    box-sizing: border-box;
 
     select& {
       text-indent: 14px;

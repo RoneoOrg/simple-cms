@@ -84,10 +84,10 @@ const colors = {
 
 const lengths = {
   topBarHeight: '56px',
-  inputPadding: '16px 20px',
+  inputPadding: '8px',
   borderRadius: '5px',
   richTextEditorMinHeight: '300px',
-  borderWidth: '2px',
+  borderWidth: '1px',
   topCardWidth: '722px',
   pageMargin: '28px 18px',
   objectWidgetTopBarContainerPadding: '0 14px 14px',

@@ -50,6 +50,18 @@ export default class StringControl extends React.Component<StringControlProps> {
         onChange={this.handleChange}
         onFocus={setActiveStyle}
         onBlur={setInactiveStyle}
+        fullWidth
+        sx={{
+          '.MuiInputBase-root': {
+            borderTopLeftRadius: 0,
+            '.MuiOutlinedInput-notchedOutline': {
+              borderColor: '#dfdfe3',
+            },
+            '&:not(.Mui-focused):hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#dfdfe3',
+            },
+          },
+        }}
       />
     );
   }

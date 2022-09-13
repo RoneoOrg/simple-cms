@@ -1,6 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import TextField from '@mui/material/TextField';
 import React from 'react';
-import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
+
+import type { Map } from 'immutable';
+import type { t } from 'react-polyglot';
+
 const ValidationErrorTypes = {
   PRESENCE: 'PRESENCE',
   PATTERN: 'PATTERN',
@@ -8,7 +12,13 @@ const ValidationErrorTypes = {
   CUSTOM: 'CUSTOM',
 };
 
-export function validateMinMax(value, min, max, field, t) {
+export function validateMinMax(
+  value: string | number,
+  min: number | false,
+  max: number | false,
+  field: Map<string, any>,
+  t: t,
+) {
   let error;
 
   switch (true) {
@@ -48,27 +58,27 @@ export function validateMinMax(value, min, max, field, t) {
   return error;
 }
 
-export default class NumberControl extends React.Component {
-  static propTypes = {
-    field: ImmutablePropTypes.map.isRequired,
-    onChange: PropTypes.func.isRequired,
-    classNameWrapper: PropTypes.string.isRequired,
-    setActiveStyle: PropTypes.func.isRequired,
-    setInactiveStyle: PropTypes.func.isRequired,
-    value: PropTypes.node,
-    forID: PropTypes.string,
-    valueType: PropTypes.string,
-    step: PropTypes.number,
-    min: PropTypes.number,
-    max: PropTypes.number,
-    t: PropTypes.func.isRequired,
-  };
+interface NumberControlProps {
+  field: Map<string, any>;
+  onChange: (value: number | string) => void;
+  classNameWrapper: string;
+  setActiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  setInactiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  forID?: string;
+  value?: number | string;
+  valueType?: string;
+  step: number;
+  min: number;
+  max: number;
+  t: t;
+}
 
+export default class NumberControl extends React.Component<NumberControlProps> {
   static defaultProps = {
     value: '',
   };
 
-  handleChange = e => {
+  handleChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = e => {
     const valueType = this.props.field.get('value_type');
     const { onChange } = this.props;
     const value = valueType === 'float' ? parseFloat(e.target.value) : parseInt(e.target.value, 10);
@@ -81,7 +91,7 @@ export default class NumberControl extends React.Component {
   };
 
   isValid = () => {
-    const { field, value, t } = this.props;
+    const { field, value = '', t } = this.props;
     const hasPattern = !!field.get('pattern', false);
     const min = field.get('min', false);
     const max = field.get('max', false);
@@ -96,22 +106,39 @@ export default class NumberControl extends React.Component {
   };
 
   render() {
-    const { field, value, classNameWrapper, forID, setActiveStyle, setInactiveStyle } = this.props;
-    const min = field.get('min', '');
-    const max = field.get('max', '');
-    const step = field.get('step', field.get('value_type') === 'int' ? 1 : '');
+    const { field, value = '', forID, setActiveStyle, setInactiveStyle } = this.props;
+    const min: string | number = field.get('min', '');
+    const max: string | number = field.get('max', '');
+    const step: string | number = field.get('step', field.get('value_type') === 'int' ? 1 : '');
     return (
-      <input
-        type="number"
+      <TextField
         id={forID}
-        className={classNameWrapper}
+        variant="outlined"
+        type="number"
+        value={value || (value === 0 ? value : '')}
+        onChange={this.handleChange}
         onFocus={setActiveStyle}
         onBlur={setInactiveStyle}
-        value={value || (value === 0 ? value : '')}
-        step={step}
-        min={min}
-        max={max}
-        onChange={this.handleChange}
+        inputProps={{
+          step,
+          min,
+          max,
+        }}
+        fullWidth
+        sx={{
+          '.MuiInputBase-root': {
+            borderTopLeftRadius: 0,
+            '.MuiOutlinedInput-notchedOutline': {
+              borderColor: '#dfdfe3',
+            },
+            '&:not(.Mui-focused):hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#dfdfe3',
+            },
+          },
+        }}
+        InputLabelProps={{
+          shrink: true,
+        }}
       />
     );
   }
