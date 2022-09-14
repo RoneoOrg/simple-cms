@@ -18,23 +18,9 @@ function toGlobalName(name) {
     .replace(new RegExp(/\w/), s => s.toUpperCase());
 }
 
-const packages = fs.readdirSync(path.resolve(__dirname, '../packages'));
-
-const packageExports = {};
-packages.map(name => {
-  packageExports[name] = {
-    root: `${toGlobalName(name)}`.split('.'),
-    commonjs2: name,
-    commonjs: name,
-    amd: name,
-    umd: name,
-  };
-});
-
 module.exports = {
   toGlobalName,
   externals: {
-    ...packageExports,
     lodash: {
       root: ['NetlifyCmsDefaultExports', 'Lodash'],
       commonjs2: 'lodash',

@@ -1,10 +1,5 @@
 const fs = require('fs');
 
-const packages = fs
-  .readdirSync(`${__dirname}/packages`, { withFileTypes: true })
-  .filter(dirent => dirent.isDirectory())
-  .map(dirent => dirent.name);
-
 module.exports = {
   parser: 'babel-eslint',
   extends: [
@@ -60,7 +55,6 @@ module.exports = {
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
       },
     },
-    'import/core-modules': [...packages, 'netlify-cms-app/dist/esm'],
   },
   overrides: [
     {

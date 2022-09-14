@@ -1,8 +1,8 @@
 const path = require('path');
 const { extendDefaultPlugins } = require('svgo');
 
-const appVersion = require('./packages/netlify-cms-app/package.json').version;
-const coreVersion = require('./packages/netlify-cms-core/package.json').version;
+const appVersion = require('./package.json').version;
+const coreVersion = require('./package.json').version;
 const isProduction = process.env.NODE_ENV === 'production';
 const isTest = process.env.NODE_ENV === 'test';
 const isESM = process.env.NODE_ENV === 'esm';
