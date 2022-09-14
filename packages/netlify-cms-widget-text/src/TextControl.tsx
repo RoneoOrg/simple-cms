@@ -1,16 +1,9 @@
 import React from 'react';
 import TextField from '@mui/material/TextField';
 
-interface TextControlProps {
-  onChange: (value: string) => void;
-  forID?: string;
-  value?: string;
-  classNameWrapper: string;
-  setActiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-  setInactiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-}
+import type { CmsWidgetControlProps } from 'netlify-cms-core';
 
-export default class TextControl extends React.Component<TextControlProps> {
+export default class TextControl extends React.Component<CmsWidgetControlProps<string>> {
   /**
    * Always update to ensure `react-textarea-autosize` properly calculates
    * height. Certain situations, such as this widget being nested in a list

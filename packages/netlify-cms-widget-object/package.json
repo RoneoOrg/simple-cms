@@ -23,13 +23,13 @@
     "build:esm": "cross-env NODE_ENV=esm babel src --out-dir dist/esm --ignore \"**/__tests__\" --root-mode upward"
   },
   "peerDependencies": {
-    "@emotion/core": "^10.0.35",
+    "@emotion/core": "^11.0.0",
     "@emotion/styled": "^10.0.27",
     "immutable": "^3.7.6",
     "lodash": "^4.17.11",
     "netlify-cms-ui-default": "^2.12.1",
     "prop-types": "^15.7.2",
-    "react": "^16.8.4 || ^17.0.0",
+    "react": "^16.8.4 || ^17.0.0 || ^18.0.0",
     "react-immutable-proptypes": "^2.1.0"
   }
 }

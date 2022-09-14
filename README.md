@@ -48,21 +48,3 @@ Every release is documented on the Github [Releases](https://github.com/netlify/
 
 Netlify CMS is released under the [MIT License](LICENSE).
 Please make sure you understand its [implications and guarantees](https://writing.kemitchell.com/2016/09/21/MIT-License-Line-by-Line.html).
-
-# Thanks
-
-## Services
-These services support Netlify CMS development by providing free infrastructure.
-<p>
-  <a href="https://www.travis-ci.org">
-    <img src="https://raw.githubusercontent.com/netlify/netlify-cms/master/img/travis.png" height="38" alt="travis-ci" />
-  </a>
-  <img src="https://spacergif.org/spacer.gif" width="20"/>
-  <a href="https://www.browserstack.com">
-    <img src="https://raw.githubusercontent.com/netlify/netlify-cms/master/img/browserstack.png" height="38" alt="browserstack" />
-  </a>
-  <img src="https://spacergif.org/spacer.gif" width="20"/>
-  <a href="https://www.cypress.io">
-    <img src="https://raw.githubusercontent.com/netlify/netlify-cms/master/img/cypressio.png" height="38" alt="Cypress.io" />
-  </a>
-</p>

@@ -23,7 +23,6 @@ below. The legacy pre-2.0 changelog is below as well.
 
 ## Widgets
 - [netlify-cms-widget-boolean](https://github.com/netlify/netlify-cms/blob/master/packages/netlify-cms-widget-boolean/CHANGELOG.md)
-- [netlify-cms-widget-date](https://github.com/netlify/netlify-cms/blob/master/packages/netlify-cms-widget-date/CHANGELOG.md)
 - [netlify-cms-widget-datetime](https://github.com/netlify/netlify-cms/blob/master/packages/netlify-cms-widget-datetime/CHANGELOG.md)
 - [netlify-cms-widget-file](https://github.com/netlify/netlify-cms/blob/master/packages/netlify-cms-widget-file/CHANGELOG.md)
 - [netlify-cms-widget-image](https://github.com/netlify/netlify-cms/blob/master/packages/netlify-cms-widget-image/CHANGELOG.md)

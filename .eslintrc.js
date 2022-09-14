@@ -10,7 +10,6 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:react/recommended',
-    'plugin:cypress/recommended',
     'prettier',
     'plugin:import/recommended',
   ],
@@ -18,8 +17,6 @@ module.exports = {
     es6: true,
     browser: true,
     node: true,
-    jest: true,
-    'cypress/globals': true,
   },
   globals: {
     NETLIFY_CMS_VERSION: false,
@@ -53,7 +50,7 @@ module.exports = {
     ],
     'unicorn/prefer-string-slice': 'error',
   },
-  plugins: ['babel', '@emotion', 'cypress', 'unicorn'],
+  plugins: ['babel', '@emotion', 'unicorn'],
   settings: {
     react: {
       version: 'detect',
@@ -72,7 +69,6 @@ module.exports = {
       extends: [
         'eslint:recommended',
         'plugin:react/recommended',
-        'plugin:cypress/recommended',
         'plugin:@typescript-eslint/recommended',
         'prettier',
         'plugin:import/recommended',
@@ -97,12 +93,6 @@ module.exports = {
           'error',
           { functions: false, classes: true, variables: true },
         ],
-      },
-    },
-    {
-      files: ['website/**/*'],
-      rules: {
-        'import/no-unresolved': [0],
       },
     },
   ],

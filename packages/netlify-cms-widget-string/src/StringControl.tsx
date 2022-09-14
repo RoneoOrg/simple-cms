@@ -1,16 +1,9 @@
 import React from 'react';
 import TextField from '@mui/material/TextField';
 
-interface StringControlProps {
-  onChange: (value: string) => void;
-  forID?: string;
-  value?: string;
-  classNameWrapper: string;
-  setActiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-  setInactiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-}
+import type { CmsWidgetControlProps } from 'netlify-cms-core';
 
-export default class StringControl extends React.Component<StringControlProps> {
+export default class StringControl extends React.Component<CmsWidgetControlProps<string>> {
   // The selection to maintain for the input element
   _sel: number | null = 0;
 

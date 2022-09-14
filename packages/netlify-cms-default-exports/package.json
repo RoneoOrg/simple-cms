@@ -20,7 +20,7 @@
     "build:esm": "cross-env NODE_ENV=esm babel src --out-dir dist/esm --ignore \"**/__tests__\" --root-mode upward"
   },
   "dependencies": {
-    "@emotion/core": "^10.0.35",
+    "@emotion/core": "^11.0.0",
     "@emotion/styled": "^10.0.27",
     "immutable": "^3.7.6",
     "lodash": "^4.17.11",
@@ -30,7 +30,7 @@
     "uuid": "^3.3.2"
   },
   "peerDependencies": {
-    "react": "^16.8.4 || ^17.0.0",
+    "react": "^16.8.4 || ^17.0.0 || ^18.0.0",
     "react-dom": "^16.8.4 || ^17.0.0"
   }
 }

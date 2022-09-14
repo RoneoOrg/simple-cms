@@ -3,6 +3,7 @@ declare module 'netlify-cms-core' {
   import type { ComponentType } from 'react';
   import type { List, Map } from 'immutable';
   import type { Pluggable } from 'unified';
+  import type { t } from 'react-polyglot';
 
   export type CmsBackendType =
     | 'azure'
@@ -418,19 +419,27 @@ declare module 'netlify-cms-core' {
   export interface EditorComponentField {
     name: string;
     label: string;
-    widget: string;
+    widget?: string;
+    media_library?: CmsMediaLibraryOptions;
   }
 
-  export interface EditorComponentOptions {
-    id: string;
-    label: string;
-    fields: EditorComponentField[];
-    pattern: RegExp;
-    allow_add?: boolean;
-    fromBlock: (match: RegExpMatchArray) => any;
-    toBlock: (data: any) => string;
-    toPreview: (data: any) => string;
-  }
+  export type EditorComponentOptions =
+    | {
+        id: string;
+        label: string;
+        fields: EditorComponentField[];
+        pattern: RegExp;
+        allow_add?: boolean;
+        fromBlock: (match: RegExpMatchArray) => any;
+        toBlock: (data: any) => string;
+        toPreview: (data: AnyMap, getAsset: (asset: string, field?: Map<string, any>) => string, field: Map<string, any>) => string | React.ReactNode;
+      }
+    | {
+        id: string;
+        label: string;
+        widget: string;
+        type: string;
+      };
 
   export interface PreviewStyleOptions {
     raw: boolean;
@@ -452,6 +461,10 @@ declare module 'netlify-cms-core' {
     onChange: (value: T) => void;
     forID: string;
     classNameWrapper: string;
+    setActiveStyle: <E = Element>(event?: React.FocusEvent<E, Element>) => void;
+    setInactiveStyle: <E = Element>(event?: React.FocusEvent<E, Element>) => void;
+    isDisabled: boolean;
+    t: t;
   }
 
   export interface CmsWidgetPreviewProps<T = any> {
@@ -463,16 +476,23 @@ declare module 'netlify-cms-core' {
     fieldsMetaData: Map<string, any>;
   }
 
+  export interface Schema {
+    properties: Record<string, any> | undefined;
+    required?: string[];
+  }
+
   export interface CmsWidgetParam<T = any> {
     name: string;
-    controlComponent: CmsWidgetControlProps<T>;
-    previewComponent?: CmsWidgetPreviewProps<T>;
+    controlComponent: React.ComponentType<CmsWidgetControlProps<T>>;
+    previewComponent?: React.ComponentType<CmsWidgetPreviewProps<T>>;
+    schema?: Schema;
     globalStyles?: any;
   }
 
   export interface CmsWidget<T = any> {
-    control: CmsWidgetControlProps<T>;
-    preview?: CmsWidgetPreviewProps<T>;
+    control: React.Component<CmsWidgetControlProps<T>>;
+    preview?: React.ComponentType<CmsWidgetPreviewProps<T>>;
+    schema?: Schema;
     globalStyles?: any;
   }
 
@@ -570,7 +590,7 @@ declare module 'netlify-cms-core' {
       component: ComponentType<PreviewTemplateComponentProps>,
     ) => void;
     registerWidget: (
-      widget: string | CmsWidgetParam,
+      widget: string | CmsWidgetParam | CmsWidgetParam[],
       control?: ComponentType<CmsWidgetControlProps> | string,
       preview?: ComponentType<CmsWidgetPreviewProps>,
     ) => void;

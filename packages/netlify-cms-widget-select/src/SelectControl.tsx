@@ -1,75 +1,30 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
-import { Map, List, fromJS } from 'immutable';
-import { find } from 'lodash';
-import Select from 'react-select';
-import { reactSelectStyles } from 'netlify-cms-ui-default';
+import FormControl from '@mui/material/FormControl';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import { fromJS, List, Map } from 'immutable';
 import { validations } from 'netlify-cms-lib-widgets';
+import React from 'react';
 
-import type { t } from 'react-polyglot';
+import type { SelectChangeEvent } from '@mui/material/Select';
+import type { CmsWidgetControlProps } from 'netlify-cms-core';
 
-function optionToString(option) {
-  return option && option.value ? option.value : null;
+interface Option {
+  label: string;
+  value: string;
 }
 
-function convertToOption(raw) {
+function convertToOption(raw: string | Map<string, string> | undefined): Option | undefined {
   if (typeof raw === 'string') {
     return { label: raw, value: raw };
   }
-  return Map.isMap(raw) ? raw.toJS() : raw;
+  return Map.isMap(raw) ? (raw as Map<string, string>).toJS() : raw;
 }
 
-function getSelectedValue({ value, options, isMultiple }) {
-  if (isMultiple) {
-    const selectedOptions = List.isList(value) ? value.toJS() : value;
-
-    if (!selectedOptions || !Array.isArray(selectedOptions)) {
-      return null;
-    }
-
-    return selectedOptions
-      .map(i => options.find(o => o.value === (i.value || i)))
-      .filter(Boolean)
-      .map(convertToOption);
-  } else {
-    return find(options, ['value', value]) || null;
-  }
-}
-
-interface SelectControlProps {
-  onChange(value: string): void;
-  value?: string;
-  forId: string;
-  setActiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-  setInactiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-  t: t;
-  field: Map<string, any>;
-}
-
-export default class SelectControl extends React.Component<SelectControlProps> {
-  // static propTypes = {
-  //   onChange: PropTypes.func.isRequired,
-  //   value: PropTypes.node,
-  //   forID: PropTypes.string.isRequired,
-  //   classNameWrapper: PropTypes.string.isRequired,
-  //   setActiveStyle: PropTypes.func.isRequired,
-  //   setInactiveStyle: PropTypes.func.isRequired,
-  //   field: ImmutablePropTypes.contains({
-  //     options: ImmutablePropTypes.listOf(
-  //       PropTypes.oneOfType([
-  //         PropTypes.string,
-  //         ImmutablePropTypes.contains({
-  //           label: PropTypes.string.isRequired,
-  //           value: PropTypes.string.isRequired,
-  //         }),
-  //       ]),
-  //     ).isRequired,
-  //   }),
-  // };
-
+export default class SelectControl extends React.Component<
+  CmsWidgetControlProps<string | List<string> | null>
+> {
   isValid = () => {
-    const { field, value, t } = this.props;
+    const { field, value = '', t } = this.props;
     const min = field.get('min');
     const max = field.get('max');
 
@@ -80,7 +35,7 @@ export default class SelectControl extends React.Component<SelectControlProps> {
     const error = validations.validateMinMax(
       t,
       field.get('label', field.get('name')),
-      value,
+      value as List<string>,
       min,
       max,
     );
@@ -88,20 +43,20 @@ export default class SelectControl extends React.Component<SelectControlProps> {
     return error ? { error } : { error: false };
   };
 
-  handleChange = selectedOption => {
+  handleChange = (event: SelectChangeEvent<string | string[]>) => {
+    const selectedOption = event.target.value as string | string[];
     const { onChange, field } = this.props;
-    const isMultiple = field.get<boolean>('multiple', false);
+    const isMultiple: boolean = field.get('multiple', false);
     const isEmpty = isMultiple ? !selectedOption?.length : !selectedOption;
 
     if (field.get('required') && isEmpty && isMultiple) {
-      onChange(List());
+      onChange(List<string>());
     } else if (isEmpty) {
       onChange(null);
     } else if (isMultiple) {
-      const options = selectedOption.map(optionToString);
-      onChange(fromJS(options));
-    } else {
-      onChange(optionToString(selectedOption));
+      onChange(fromJS(selectedOption));
+    } else if (typeof selectedOption === 'string') {
+      onChange(selectedOption);
     }
   };
 
@@ -117,32 +72,45 @@ export default class SelectControl extends React.Component<SelectControlProps> {
   }
 
   render() {
-    const { field, value, forID, classNameWrapper, setActiveStyle, setInactiveStyle } = this.props;
-    const fieldOptions = field.get('options');
+    const { field, value, forID, setActiveStyle, setInactiveStyle } = this.props;
+    const fieldOptions: List<string | Map<string, string>> = field.get('options');
     const isMultiple = field.get('multiple', false);
-    const isClearable = !field.get('required', true) || isMultiple;
 
-    const options = [...fieldOptions.map(convertToOption)];
-    const selectedValue = getSelectedValue({
-      options,
-      value,
-      isMultiple,
-    });
+    const options = [...(fieldOptions.map(convertToOption).toJS() as Option[])].filter(Boolean);
 
     return (
-      <Select
-        inputId={forID}
-        value={selectedValue}
-        onChange={this.handleChange}
-        className={classNameWrapper}
-        onFocus={setActiveStyle}
-        onBlur={setInactiveStyle}
-        options={options}
-        styles={reactSelectStyles}
-        isMulti={isMultiple}
-        isClearable={isClearable}
-        placeholder=""
-      />
+      <FormControl
+        fullWidth
+        sx={{
+          '.MuiInputBase-root': {
+            borderTopLeftRadius: 0,
+            '.MuiOutlinedInput-notchedOutline': {
+              borderColor: '#dfdfe3',
+            },
+            '&:not(.Mui-focused):hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#dfdfe3',
+            },
+          },
+        }}
+      >
+        <Select
+          id={forID}
+          value={
+            (List.isList(value) ? (value as List<string>).toJS() : (value as string | undefined)) ??
+            (isMultiple ? [] : '')
+          }
+          onChange={event => this.handleChange(event)}
+          multiple={isMultiple}
+          onFocus={setActiveStyle}
+          onBlur={setInactiveStyle}
+        >
+          {options.map(option => (
+            <MenuItem key={`option-${option.value}`} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
     );
   }
 }

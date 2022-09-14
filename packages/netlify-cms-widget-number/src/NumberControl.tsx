@@ -4,6 +4,7 @@ import React from 'react';
 
 import type { Map } from 'immutable';
 import type { t } from 'react-polyglot';
+import type { CmsWidgetControlProps } from 'netlify-cms-core';
 
 const ValidationErrorTypes = {
   PRESENCE: 'PRESENCE',
@@ -58,22 +59,7 @@ export function validateMinMax(
   return error;
 }
 
-interface NumberControlProps {
-  field: Map<string, any>;
-  onChange: (value: number | string) => void;
-  classNameWrapper: string;
-  setActiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-  setInactiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-  forID?: string;
-  value?: number | string;
-  valueType?: string;
-  step: number;
-  min: number;
-  max: number;
-  t: t;
-}
-
-export default class NumberControl extends React.Component<NumberControlProps> {
+export default class NumberControl extends React.Component<CmsWidgetControlProps<string | number>> {
   static defaultProps = {
     value: '',
   };

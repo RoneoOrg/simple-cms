@@ -5,7 +5,8 @@ import type { List } from 'immutable';
 export function validateMinMax(
   t: (key: string, options: unknown) => string,
   fieldLabel: string,
-  value?: List<unknown>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value?: List<any>,
   min?: number,
   max?: number,
 ) {
