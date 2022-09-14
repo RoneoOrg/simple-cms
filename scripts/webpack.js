@@ -2,11 +2,13 @@ const path = require('path');
 const webpack = require('webpack');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const { flatMap } = require('lodash');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
 const { toGlobalName, externals } = require('./externals');
 const pkg = require(path.join(process.cwd(), 'package.json'));
 
 const isProduction = process.env.NODE_ENV === 'production';
+const isDevelopment = !isProduction;
 const isTest = process.env.NODE_ENV === 'test';
 
 function moduleNameToPath(libName) {
@@ -16,19 +18,17 @@ function moduleNameToPath(libName) {
 function rules() {
   return {
     js: () => ({
-      test: /\.(ts|js)x?$/,
+      test: /\.[jt]sx?$/,
       exclude: /node_modules/,
-      use: {
-        loader: 'babel-loader',
-        options: {
-          rootMode: 'upward',
+      use: [
+        {
+          loader: 'babel-loader',
+          options: {
+            plugins: [isDevelopment && require.resolve('react-refresh/babel')].filter(Boolean),
+            rootMode: 'upward',
+          },
         },
-      },
-    }),
-    ts: () => ({
-      test: /\.(ts|tsx)?$/,
-      loader: "ts-loader",
-      exclude: /node_modules/
+      ],
     }),
     css: () => [
       {
@@ -54,17 +54,17 @@ function rules() {
             imports: ['single process/browser process'],
           },
         },
-      ]
-    })
+      ],
+    }),
   };
 }
 
 function plugins() {
   return {
     ignoreEsprima: () => new webpack.IgnorePlugin({ resourceRegExp: /(^esprima$)/ }),
-    ignoreMomentOptionalDeps: () =>
-      new webpack.IgnorePlugin({ resourceRegExp: /^(\.\/locale$)/ }),
+    ignoreMomentOptionalDeps: () => new webpack.IgnorePlugin({ resourceRegExp: /^(\.\/locale$)/ }),
     friendlyErrors: () => new FriendlyErrorsWebpackPlugin(),
+    fastRefresh: () => isDevelopment && new ReactRefreshWebpackPlugin(),
   };
 }
 
@@ -145,7 +145,9 @@ function baseConfig({ target = isProduction ? 'umd' : 'umddir' } = {}) {
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.json'],
     },
-    plugins: Object.values(plugins()).map(plugin => plugin()),
+    plugins: Object.values(plugins())
+      .map(plugin => plugin())
+      .filter(Boolean),
     devtool: isTest ? '' : 'source-map',
     target: 'web',
 

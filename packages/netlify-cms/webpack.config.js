@@ -33,6 +33,7 @@ const baseConfig = {
     }),
   ],
   devServer: {
+    hot: true,
     static: [
       {
         directory: '../../dev-test',
@@ -40,9 +41,9 @@ const baseConfig = {
       {
         directory: 'dist/',
         publicPath: '/dist',
+        watch: true
       },
     ],
-    watchFiles: ['dist/**/*'],
     host: '0.0.0.0',
     port: devServerPort,
   },

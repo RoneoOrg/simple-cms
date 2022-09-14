@@ -3,8 +3,8 @@ import { css, jsx } from '@emotion/react';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { DesktopDatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
+import { MobileDateTimePicker } from '@mui/x-date-pickers/MobileDateTimePicker';
+import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import formatDate from 'date-fns/format';
@@ -115,7 +115,7 @@ export default class DateTimeControl extends React.Component<CmsWidgetControlPro
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         {timeFormat ? (
           dateFormat ? (
-            <DateTimePicker
+            <MobileDateTimePicker
               inputFormat={`${typeof dateFormat === 'string' ? dateFormat : undefined} ${
                 typeof timeFormat === 'string' ? timeFormat : undefined
               }`}
@@ -123,7 +123,24 @@ export default class DateTimeControl extends React.Component<CmsWidgetControlPro
               onChange={this.handleChange}
               onOpen={setActiveStyle}
               onClose={setInactiveStyle}
-              renderInput={params => <TextField id={forID} {...params} />}
+              renderInput={params => (
+                <TextField
+                  id={forID}
+                  {...params}
+                  fullWidth
+                  sx={{
+                    '.MuiInputBase-root': {
+                      borderTopLeftRadius: 0,
+                      '.MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#dfdfe3',
+                      },
+                      '&:not(.Mui-focused):hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#dfdfe3',
+                      },
+                    },
+                  }}
+                />
+              )}
             />
           ) : (
             <TimePicker
@@ -131,17 +148,17 @@ export default class DateTimeControl extends React.Component<CmsWidgetControlPro
               onChange={this.handleChange}
               onOpen={setActiveStyle}
               onClose={setInactiveStyle}
-              renderInput={params => <TextField id={forID} {...params} />}
+              renderInput={params => <TextField id={forID} {...params} fullWidth />}
             />
           )
         ) : (
-          <DesktopDatePicker
+          <MobileDatePicker
             inputFormat={typeof dateFormat === 'string' ? dateFormat : undefined}
             value={value}
             onChange={this.handleChange}
             onOpen={setActiveStyle}
             onClose={setInactiveStyle}
-            renderInput={params => <TextField id={forID} {...params} />}
+            renderInput={params => <TextField id={forID} {...params} fullWidth />}
           />
         )}
         {!isDisabled && <NowButton t={t} handleChange={v => this.handleChange(v)} />}

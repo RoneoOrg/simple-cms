@@ -82,7 +82,7 @@ function plugins() {
   }
 
   if (!isProduction) {
-    return [...defaultPlugins, 'react-hot-loader/babel'];
+    return [...defaultPlugins];
   }
 
   return defaultPlugins;
