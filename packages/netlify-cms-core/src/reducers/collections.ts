@@ -411,9 +411,9 @@ export function selectDefaultSortableFields(
 }
 
 export function selectSortableFields(collection: Collection, t: (key: string) => string) {
-  const fields = collection
-    .get('sortable_fields')
-    .toArray()
+  const sortableFields = collection.get('sortable_fields');
+
+  const fields = (sortableFields ? sortableFields.toArray() : [])
     .map(key => {
       if (key === COMMIT_DATE) {
         return { key, field: { name: key, label: t('collection.defaultFields.updatedOn.label') } };

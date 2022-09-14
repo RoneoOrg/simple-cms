@@ -57,19 +57,6 @@ function traverseFieldsJS<Field extends CmsField>(
   });
 }
 
-function getConfigUrl() {
-  const validTypes: { [type: string]: string } = {
-    'text/yaml': 'yaml',
-    'application/x-yaml': 'yaml',
-  };
-  const configLinkEl = document.querySelector<HTMLLinkElement>('link[rel="cms-config-url"]');
-  if (configLinkEl && validTypes[configLinkEl.type] && configLinkEl.href) {
-    console.log(`Using config file path: "${configLinkEl.href}"`);
-    return configLinkEl.href;
-  }
-  return 'config.yml';
-}
-
 function setDefaultPublicFolderForField<T extends CmsField>(field: T) {
   if ('media_folder' in field && !('public_folder' in field)) {
     return { ...field, public_folder: field.media_folder };
@@ -496,27 +483,13 @@ export async function handleLocalBackend(originalConfig: CmsConfig) {
   });
 }
 
-export function loadConfig(manualConfig: Partial<CmsConfig> = {}, onLoad: () => unknown) {
-  if (window.CMS_CONFIG) {
-    return configLoaded(window.CMS_CONFIG);
-  }
+export function loadConfig(manualConfig: CmsConfig, onLoad: () => unknown) {
   return async (dispatch: ThunkDispatch<State, {}, AnyAction>) => {
     dispatch(configLoading());
 
     try {
-      const configUrl = getConfigUrl();
-      const hasManualConfig = !isEmpty(manualConfig);
-      const configYaml =
-        manualConfig.load_config_file === false
-          ? {}
-          : await getConfigYaml(configUrl, hasManualConfig);
-
-      // Merge manual config into the config.yml one
-      const mergedConfig = deepmerge(configYaml, manualConfig);
-
-      validateConfig(mergedConfig);
-
-      const withLocalBackend = await handleLocalBackend(mergedConfig);
+      console.log('MANUAL CONFIG', manualConfig);
+      const withLocalBackend = await handleLocalBackend(manualConfig);
       const normalizedConfig = normalizeConfig(withLocalBackend);
 
       const config = applyDefaults(normalizedConfig);

@@ -21,7 +21,7 @@ function FilterControl({ viewFilters, t, onFilterClick, filter }) {
       dropdownTopOverlap="30px"
       dropdownPosition="left"
     >
-      {viewFilters.map(viewFilter => {
+      {viewFilters.map((viewFilter) => {
         return (
           <DropdownCheckedItem
             key={viewFilter.id}

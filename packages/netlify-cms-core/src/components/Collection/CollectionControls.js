@@ -38,10 +38,11 @@ function CollectionControls({
     <CollectionControlsContainer>
       <ViewStyleControl viewStyle={viewStyle} onChangeViewStyle={onChangeViewStyle} />
       {viewGroups.length > 0 && (
-        <GroupControl viewGroups={viewGroups} onGroupClick={onGroupClick} t={t} group={group} />
+        <GroupControl key="group-control" viewGroups={viewGroups} onGroupClick={onGroupClick} t={t} group={group} />
       )}
       {viewFilters.length > 0 && (
         <FilterControl
+          key="filter-control"
           viewFilters={viewFilters}
           onFilterClick={onFilterClick}
           t={t}
@@ -49,7 +50,7 @@ function CollectionControls({
         />
       )}
       {sortableFields.length > 0 && (
-        <SortControl fields={sortableFields} sort={sort} onSortClick={onSortClick} />
+        <SortControl key="sort-control" fields={sortableFields} sort={sort} onSortClick={onSortClick} />
       )}
     </CollectionControlsContainer>
   );

@@ -40,9 +40,9 @@ collections: # A list of collections the CMS should be able to edit
           label: 'Publish Date',
           name: 'date',
           widget: 'datetime',
-          date_format: 'YYYY-MM-DD',
+          date_format: 'yyyy-MM-dd',
           time_format: 'HH:mm',
-          format: 'YYYY-MM-DD HH:mm',
+          format: 'yyyy-MM-dd HH:mm',
         }
       - label: 'Cover Image'
         name: 'image'

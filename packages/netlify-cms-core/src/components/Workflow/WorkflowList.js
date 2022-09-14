@@ -1,16 +1,17 @@
+import { css } from '@emotion/react';
+import styled from '@emotion/styled';
+import format from 'date-fns/format';
+import parseISO from 'date-fns/parseISO';
+import { colors, lengths } from 'netlify-cms-ui-default';
 import PropTypes from 'prop-types';
 import React from 'react';
 import ImmutablePropTypes from 'react-immutable-proptypes';
-import { css } from '@emotion/core';
-import styled from '@emotion/styled';
-import moment from 'moment';
 import { translate } from 'react-polyglot';
-import { colors, lengths } from 'netlify-cms-ui-default';
 
 import { status } from '../../constants/publishModes';
+import { selectEntryCollectionTitle } from '../../reducers/collections';
 import { DragSource, DropTarget, HTML5DragDrop } from '../UI';
 import WorkflowCard from './WorkflowCard';
-import { selectEntryCollectionTitle } from '../../reducers/collections';
 
 const WorkflowListContainer = styled.div`
   min-height: 60%;
@@ -205,9 +206,7 @@ class WorkflowList extends React.Component {
     return (
       <div>
         {entries.map(entry => {
-          const timestamp = moment(entry.get('updatedOn')).format(
-            t('workflow.workflow.dateFormat'),
-          );
+          const timestamp = format(parseISO(entry.get('updatedOn')), t('workflow.workflow.dateFormat'));
           const slug = entry.get('slug');
           const collectionName = entry.get('collection');
           const editLink = `collections/${collectionName}/entries/${slug}?ref=workflow`;

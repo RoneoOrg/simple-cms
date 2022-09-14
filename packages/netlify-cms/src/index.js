@@ -4,15 +4,6 @@ import { NetlifyCmsApp as CMS } from 'netlify-cms-app/dist/esm';
 import './extensions';
 
 /**
- * Load Netlify CMS automatically if `window.CMS_MANUAL_INIT` is set.
- */
-if (!window.CMS_MANUAL_INIT) {
-  CMS.init();
-} else {
-  console.log('`window.CMS_MANUAL_INIT` flag set, skipping automatic initialization.');
-}
-
-/**
  * Add extension hooks to global scope.
  */
 if (typeof window !== 'undefined') {

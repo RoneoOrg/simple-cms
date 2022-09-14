@@ -67,11 +67,6 @@ function bootstrap(opts = {}) {
     return newRoot;
   }
 
-  /**
-   * Dispatch config to store if received. This config will be merged into
-   * config.yml if it exists, and any portion that produces a conflict will be
-   * overwritten.
-   */
   store.dispatch(
     loadConfig(config, function onLoad() {
       store.dispatch(authenticateUser());

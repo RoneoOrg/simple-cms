@@ -28,14 +28,30 @@ const baseConfig = {
       },
     }),
     new CopyWebpackPlugin({ patterns: [{ from: './shims/cms.css', to: './' }] }),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
   ],
   devServer: {
-    contentBase: '../../dev-test',
-    watchContentBase: true,
-    publicPath: '/dist/',
-    quiet: true,
+    static: [
+      {
+        directory: '../../dev-test',
+      },
+      {
+        directory: 'dist/',
+        publicPath: '/dist',
+      },
+    ],
+    watchFiles: ['dist/**/*'],
     host: '0.0.0.0',
     port: devServerPort,
+  },
+  resolve: {
+    fallback: {
+      stream: require.resolve('stream-browserify'),
+      path: require.resolve('path-browserify'),
+      buffer: require.resolve('buffer'),
+    },
   },
 };
 

@@ -193,7 +193,7 @@ export class ErrorBoundary extends React.Component {
             .map((item, index) => (
               <>
                 <PrivacyWarning key={index}>{item}</PrivacyWarning>
-                <br />
+                <br key={`break-${index}`} />
               </>
             ))}
         </p>

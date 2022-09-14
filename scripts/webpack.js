@@ -25,6 +25,11 @@ function rules() {
         },
       },
     }),
+    ts: () => ({
+      test: /\.(ts|tsx)?$/,
+      loader: "ts-loader",
+      exclude: /node_modules/
+    }),
     css: () => [
       {
         test: /\.css$/,
@@ -39,13 +44,26 @@ function rules() {
       exclude: [/node_modules/],
       use: 'svg-inline-loader',
     }),
+    corejs: () => ({
+      test: /node_modules\/vfile\/core\.js/,
+      use: [
+        {
+          loader: 'imports-loader',
+          options: {
+            type: 'commonjs',
+            imports: ['single process/browser process'],
+          },
+        },
+      ]
+    })
   };
 }
 
 function plugins() {
   return {
-    ignoreEsprima: () => new webpack.IgnorePlugin(/^esprima$/, /js-yaml/),
-    ignoreMomentOptionalDeps: () => new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+    ignoreEsprima: () => new webpack.IgnorePlugin({ resourceRegExp: /(^esprima$)/ }),
+    ignoreMomentOptionalDeps: () =>
+      new webpack.IgnorePlugin({ resourceRegExp: /^(\.\/locale$)/ }),
     friendlyErrors: () => new FriendlyErrorsWebpackPlugin(),
   };
 }
@@ -126,9 +144,6 @@ function baseConfig({ target = isProduction ? 'umd' : 'umddir' } = {}) {
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.json'],
-      alias: {
-        moment$: 'moment/moment.js',
-      },
     },
     plugins: Object.values(plugins()).map(plugin => plugin()),
     devtool: isTest ? '' : 'source-map',

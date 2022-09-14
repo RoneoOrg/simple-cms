@@ -42,12 +42,12 @@ module.exports = {
       amd: 'lodash',
       umd: 'lodash',
     },
-    '@emotion/core': {
+    '@emotion/react': {
       root: ['NetlifyCmsDefaultExports', 'EmotionCore'],
-      commonjs2: '@emotion/core',
-      commonjs: '@emotion/core',
-      amd: '@emotion/core',
-      umd: '@emotion/core',
+      commonjs2: '@emotion/react',
+      commonjs: '@emotion/react',
+      amd: '@emotion/react',
+      umd: '@emotion/react',
     },
     '@emotion/styled': {
       root: ['NetlifyCmsDefaultExports', 'EmotionStyled'],
@@ -69,13 +69,6 @@ module.exports = {
       commonjs: 'immutable',
       amd: 'immutable',
       umd: 'immutable',
-    },
-    moment: {
-      root: ['NetlifyCmsDefaultExports', 'Moment'],
-      commonjs2: 'moment',
-      commonjs: 'moment',
-      amd: 'moment',
-      umd: 'moment',
     },
     'prop-types': {
       root: ['NetlifyCmsDefaultExports', 'PropTypes'],

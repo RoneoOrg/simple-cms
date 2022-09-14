@@ -15,6 +15,7 @@
     "noUnusedParameters": true,
     "baseUrl": "./",
     "paths": {
+      "netlify-cms-app": ["packages/netlify-cms-app/src"],
       "netlify-cms-lib-util": ["packages/netlify-cms-lib-util/src"],
       "netlify-cms-lib-widgets": ["packages/netlify-cms-lib-widgets/src"],
       "netlify-cms-ui-default": ["packages/netlify-cms-ui-default/src"],
