@@ -1,7 +1,7 @@
 import { Map, List, fromJS } from 'immutable';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { get } from 'lodash';
-import { join } from 'path';
+import { join } from 'path-browserify';
 
 import {
   DRAFT_CREATE_FROM_ENTRY,

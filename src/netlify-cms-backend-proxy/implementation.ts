@@ -4,7 +4,6 @@ import {
   unsentRequest,
   blobToFileObj,
 } from '../netlify-cms-lib-util';
-
 import AuthenticationPage from './AuthenticationPage';
 
 import type {
@@ -155,7 +154,7 @@ export default class ProxyBackend implements Implementation {
       });
 
       return entry;
-    } catch (e) {
+    } catch (e: any) {
       if (e.status === 404) {
         throw new EditorialWorkflowError('content is not under editorial workflow', true);
       }

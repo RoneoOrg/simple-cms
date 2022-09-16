@@ -1,4 +1,6 @@
-import { fromJS, Map, Set } from 'immutable';
+import { Map, Set } from 'immutable';
+
+import { toStaticallyTypedRecord, toMap } from '../util/ImmutableUtil';
 
 type CursorStoreObject = {
   actions: Set<string>;
@@ -31,7 +33,7 @@ function jsToMap(obj: {}) {
   if (obj === undefined) {
     return Map();
   }
-  const immutableObj = fromJS(obj);
+  const immutableObj = toMap(obj);
   if (!Map.isMap(immutableObj)) {
     throw new Error('Object must be equivalent to a Map.');
   }
@@ -67,11 +69,12 @@ function createCursorStore(...args: {}[]) {
       : { actions: args[0], data: args[1], meta: args[2] };
   return Map({
     // actions are a Set, rather than a List, to ensure an efficient .has
-    actions: Set(actions),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    actions: Set(actions as any),
 
     // data and meta are Maps
-    data: jsToMap(data),
-    meta: jsToMap(meta).update(filterUnknownMetaKeys),
+    data: jsToMap(data as any),
+    meta: jsToMap(meta as any).update(filterUnknownMetaKeys as any),
   }) as CursorStore;
 }
 
@@ -140,7 +143,7 @@ export default class Cursor {
   }
 
   setData(data: {}) {
-    return new Cursor(this.store!.set('data', jsToMap(data)));
+    return new Cursor(this.store!.set('data', jsToMap(data) as any));
   }
   mergeData(data: {}) {
     return new Cursor(this.store!.mergeIn(['data'], jsToMap(data)));
@@ -161,7 +164,7 @@ export default class Cursor {
   }
 
   setMeta(meta: {}) {
-    return this.updateStore((store: CursorStore) => store.set('meta', jsToMap(meta)));
+    return this.updateStore((store: CursorStore) => store.set('meta', jsToMap(meta) as any));
   }
   mergeMeta(meta: {}) {
     return this.updateStore((store: CursorStore) =>

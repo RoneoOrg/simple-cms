@@ -1,12 +1,10 @@
-import { actions as notifActions } from 'redux-notifications';
+import { toastr } from 'react-redux-toastr';
 
 import { currentBackend } from '../backend';
 
-import type { ThunkDispatch } from 'redux-thunk';
 import type { AnyAction } from 'redux';
+import type { ThunkDispatch } from 'redux-thunk';
 import type { State } from '../types/redux';
-
-const { notifSend, notifDismiss } = notifActions;
 
 export const STATUS_REQUEST = 'STATUS_REQUEST';
 export const STATUS_SUCCESS = 'STATUS_SUCCESS';
@@ -47,47 +45,33 @@ export function checkBackendStatus() {
       const backend = currentBackend(state.config);
       const status = await backend.status();
 
-      const backendDownKey = 'ui.toast.onBackendDown';
-      const previousBackendDownNotifs = state.notifs.filter(n => n.message?.key === backendDownKey);
+      const message =
+        'The backend service is experiencing an outage. See ${status.api.statusPage} for more information';
+      const previousBackendDownToastrs = state.toastr.toastrs.filter(n => n.message === message);
 
       if (status.api.status === false) {
-        if (previousBackendDownNotifs.length === 0) {
-          dispatch(
-            notifSend({
-              message: {
-                details: status.api.statusPage,
-                key: 'ui.toast.onBackendDown',
-              },
-              kind: 'danger',
-            }),
-          );
+        if (previousBackendDownToastrs.length === 0) {
+          toastr.error(message);
         }
         return dispatch(statusSuccess(status));
-      } else if (status.api.status === true && previousBackendDownNotifs.length > 0) {
+      } else if (status.api.status === true && previousBackendDownToastrs.length > 0) {
         // If backend is up, clear all the danger messages
-        previousBackendDownNotifs.forEach(notif => {
-          dispatch(notifDismiss(notif.id));
+        previousBackendDownToastrs.forEach(aToastr => {
+          toastr.remove(aToastr.id);
         });
       }
 
       const authError = status.auth.status === false;
       if (authError) {
-        const key = 'ui.toast.onLoggedOut';
-        const existingNotification = state.notifs.find(n => n.message?.key === key);
+        const message = 'You have been logged out, please back up any data and login again';
+        const existingNotification = state.toastr.toastrs.filter(n => n.message === message);
         if (!existingNotification) {
-          dispatch(
-            notifSend({
-              message: {
-                key: 'ui.toast.onLoggedOut',
-              },
-              kind: 'danger',
-            }),
-          );
+          toastr.error(message);
         }
       }
 
       dispatch(statusSuccess(status));
-    } catch (error) {
+    } catch (error: any) {
       dispatch(statusFailure(error));
     }
   };

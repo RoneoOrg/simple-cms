@@ -1,16 +1,14 @@
-import yaml from 'yaml';
-import { fromJS } from 'immutable';
 import deepmerge from 'deepmerge';
 import { produce } from 'immer';
-import { trimStart, trim, isEmpty } from 'lodash';
+import { trimStart, trim } from 'lodash';
 
 import { SIMPLE as SIMPLE_PUBLISH_MODE } from '../constants/publishModes';
-import { validateConfig } from '../constants/configSchema';
 import { selectDefaultSortableFields } from '../reducers/collections';
 import { getIntegrations, selectIntegration } from '../reducers/integrations';
 import { resolveBackend } from '../backend';
 import { I18N, I18N_FIELD, I18N_STRUCTURE } from '../lib/i18n';
 import { FILES, FOLDER } from '../constants/collectionTypes';
+import { toStaticallyTypedRecord } from '../../util/ImmutableUtil';
 
 import type { ThunkDispatch } from 'redux-thunk';
 import type { AnyAction } from 'redux';
@@ -25,6 +23,7 @@ import type {
   CmsPublishMode,
   CmsLocalBackend,
   State,
+  CollectionObject,
 } from '../types/redux';
 
 export const CONFIG_REQUEST = 'CONFIG_REQUEST';
@@ -87,7 +86,7 @@ function setSnakeCaseConfig<T extends CmsField>(field: T) {
     console.warn(
       `Field ${field.name} is using a deprecated configuration '${camel}'. Please use '${snake}'`,
     );
-    return { [snake]: (field as Record<string, unknown>)[camel] };
+    return { [snake]: (field as any)[camel] };
   });
 
   return Object.assign({}, field, ...snakeValues) as T;
@@ -151,7 +150,7 @@ function throwOnMissingDefaultLocale(i18n?: CmsI18nConfig) {
 
 function hasIntegration(config: CmsConfig, collection: CmsCollection) {
   // TODO remove fromJS when Immutable is removed from the integrations state slice
-  const integrations = getIntegrations(fromJS(config));
+  const integrations = getIntegrations(config);
   const integration = selectIntegration(integrations, collection.name, 'listEntries');
   return !!integration;
 }
@@ -321,7 +320,7 @@ export function applyDefaults(originalConfig: CmsConfig) {
       if (!collection.sortable_fields) {
         collection.sortable_fields = selectDefaultSortableFields(
           // TODO remove fromJS when Immutable is removed from the collections state slice
-          fromJS(collection),
+          toStaticallyTypedRecord<CollectionObject>(collection as any),
           backend,
           hasIntegration(config, collection),
         );
@@ -346,41 +345,6 @@ export function applyDefaults(originalConfig: CmsConfig) {
       }
     }
   });
-}
-
-export function parseConfig(data: string) {
-  const config = yaml.parse(data, { maxAliasCount: -1, prettyErrors: true, merge: true });
-  if (
-    typeof window !== 'undefined' &&
-    typeof window.CMS_ENV === 'string' &&
-    config[window.CMS_ENV]
-  ) {
-    const configKeys = Object.keys(config[window.CMS_ENV]) as ReadonlyArray<keyof CmsConfig>;
-    for (const key of configKeys) {
-      config[key] = config[window.CMS_ENV][key] as CmsConfig[keyof CmsConfig];
-    }
-  }
-  return config as Partial<CmsConfig>;
-}
-
-async function getConfigYaml(file: string, hasManualConfig: boolean) {
-  const response = await fetch(file, { credentials: 'same-origin' }).catch(error => error as Error);
-  if (response instanceof Error || response.status !== 200) {
-    if (hasManualConfig) {
-      return {};
-    }
-    const message = response instanceof Error ? response.message : response.status;
-    throw new Error(`Failed to load config.yml (${message})`);
-  }
-  const contentType = response.headers.get('Content-Type') || 'Not-Found';
-  const isYaml = contentType.indexOf('yaml') !== -1;
-  if (!isYaml) {
-    console.log(`Response for ${file} was not yaml. (Content-Type: ${contentType})`);
-    if (hasManualConfig) {
-      return {};
-    }
-  }
-  return parseConfig(await response.text());
 }
 
 export function configLoaded(config: CmsConfig) {
@@ -488,7 +452,6 @@ export function loadConfig(manualConfig: CmsConfig, onLoad: () => unknown) {
     dispatch(configLoading());
 
     try {
-      console.log('MANUAL CONFIG', manualConfig);
       const withLocalBackend = await handleLocalBackend(manualConfig);
       const normalizedConfig = normalizeConfig(withLocalBackend);
 
@@ -499,7 +462,7 @@ export function loadConfig(manualConfig: CmsConfig, onLoad: () => unknown) {
       if (typeof onLoad === 'function') {
         onLoad();
       }
-    } catch (err) {
+    } catch (err: any) {
       dispatch(configFailed(err));
       throw err;
     }

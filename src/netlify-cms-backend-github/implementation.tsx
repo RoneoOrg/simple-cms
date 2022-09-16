@@ -2,6 +2,10 @@ import * as React from 'react';
 import semaphore from 'semaphore';
 import trimStart from 'lodash/trimStart';
 import { stripIndent } from 'common-tags';
+
+import AuthenticationPage from './AuthenticationPage';
+import API, { API_NAME } from './API';
+import GraphQLAPI from './GraphQLAPI';
 import {
   CURSOR_COMPATIBILITY_SYMBOL,
   Cursor,
@@ -21,10 +25,6 @@ import {
   unsentRequest,
   branchFromContentKey,
 } from '../netlify-cms-lib-util';
-
-import AuthenticationPage from './AuthenticationPage';
-import API, { API_NAME } from './API';
-import GraphQLAPI from './GraphQLAPI';
 
 import type { Octokit } from '@octokit/rest';
 import type {
@@ -132,7 +132,7 @@ export default class GitHub implements Implementation {
   }
 
   async status() {
-    const api = await fetch(GITHUB_STATUS_ENDPOINT)
+    const api = await fetch(GITHUB_STATUS_ENDPOINT, {})
       .then(res => res.json())
       .then(res => {
         return res['components']
@@ -495,7 +495,7 @@ export default class GitHub implements Implementation {
     try {
       await this.api!.persistFiles([], [mediaFile], options);
       const { sha, path, fileObj } = mediaFile as AssetProxy & { sha: string };
-      const displayURL = URL.createObjectURL(fileObj);
+      const displayURL = URL.createObjectURL(fileObj as any);
       return {
         id: sha,
         name: fileObj!.name,
@@ -503,7 +503,7 @@ export default class GitHub implements Implementation {
         displayURL,
         path: trimStart(path, '/'),
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       throw error;
     }
@@ -639,7 +639,7 @@ export default class GitHub implements Implementation {
       } else {
         return null;
       }
-    } catch (e) {
+    } catch (e: any) {
       return null;
     }
   }

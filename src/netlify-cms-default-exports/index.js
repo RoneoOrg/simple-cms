@@ -1,6 +1,6 @@
 // eslint-disable-next-line @emotion/no-vanilla
-import css from '@emotion/css';
 import {
+  css,
   withEmotionCache,
   CacheProvider,
   ThemeContext,

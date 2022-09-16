@@ -34,6 +34,9 @@ export interface StaticallyTypedRecord<T> {
   map<K extends keyof T, V>(
     mapFunc: (value: T[K]) => V,
   ): StaticallyTypedRecord<{ [key: string]: V }>;
+  mapEntries<K extends keyof T, U, V>(
+    mapFunc: ([key, value]: [K, T[K]]) => [U, V],
+  ): StaticallyTypedRecord<{ [key: string]: V }>;
   keySeq<K extends keyof T>(): { toArray: () => K[] };
   withMutations(mutator: (mutable: StaticallyTypedRecord<T>) => unknown): StaticallyTypedRecord<T>;
 }

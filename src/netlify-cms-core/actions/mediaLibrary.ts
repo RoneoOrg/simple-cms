@@ -1,6 +1,5 @@
 import { Map } from 'immutable';
-import { actions as notifActions } from 'redux-notifications';
-import { basename, getBlobSHA } from '../netlify-cms-lib-util';
+import { toastr } from 'react-redux-toastr';
 
 import { currentBackend } from '../backend';
 import { createAssetProxy } from '../valueObjects/AssetProxy';
@@ -16,6 +15,8 @@ import { addAsset, removeAsset } from './media';
 import { addDraftEntryMediaFile, removeDraftEntryMediaFile } from './entries';
 import { sanitizeSlug } from '../lib/urlHelper';
 import { waitUntilWithTimeout } from './waitUntil';
+import { basename, getBlobSHA } from '../../netlify-cms-lib-util';
+import { toJS } from '../../util/ImmutableUtil';
 
 import type {
   State,
@@ -27,9 +28,7 @@ import type {
 import type { AnyAction } from 'redux';
 import type { ThunkDispatch } from 'redux-thunk';
 import type AssetProxy from '../valueObjects/AssetProxy';
-import type { ImplementationMediaFile } from '../netlify-cms-lib-util';
-
-const { notifSend } = notifActions;
+import type { ImplementationMediaFile } from '../../netlify-cms-lib-util';
 
 export const MEDIA_LIBRARY_OPEN = 'MEDIA_LIBRARY_OPEN';
 export const MEDIA_LIBRARY_CLOSE = 'MEDIA_LIBRARY_CLOSE';
@@ -96,7 +95,7 @@ export function openMediaLibrary(
     const mediaLibrary = state.mediaLibrary.get('externalLibrary');
     if (mediaLibrary) {
       const { controlID: id, value, config = Map(), allowMultiple, forImage } = payload;
-      mediaLibrary.show({ id, value, config: config.toJS(), allowMultiple, imagesOnly: forImage });
+      mediaLibrary.show({ id, value, config: toJS(config), allowMultiple, imagesOnly: forImage });
     }
     dispatch(mediaLibraryOpened(payload));
   };
@@ -156,7 +155,7 @@ export function loadMedia(
           privateUpload,
         };
         return dispatch(mediaLoaded(files, mediaLoadedOpts));
-      } catch (error) {
+      } catch (error: any) {
         return dispatch(mediaLoadFailed({ privateUpload }));
       }
     }
@@ -256,7 +255,7 @@ export function persistMedia(file: File, opts: MediaOptions = {}) {
             url: response.asset.url,
             path: response.asset.url,
           });
-        } catch (error) {
+        } catch (error: any) {
           assetProxy = createAssetProxy({
             file,
             path: fileName,
@@ -296,15 +295,9 @@ export function persistMedia(file: File, opts: MediaOptions = {}) {
       }
 
       return dispatch(mediaPersisted(mediaFile, { privateUpload }));
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      dispatch(
-        notifSend({
-          message: `Failed to persist media: ${error}`,
-          kind: 'danger',
-          dismissAfter: 8000,
-        }),
-      );
+      toastr.error(`Failed to persist media: ${error}`);
       return dispatch(mediaPersistFailed({ privateUpload }));
     }
   };
@@ -323,15 +316,9 @@ export function deleteMedia(file: MediaFile, opts: MediaOptions = {}) {
       try {
         await provider.delete(file.id);
         return dispatch(mediaDeleted(file, { privateUpload }));
-      } catch (error) {
+      } catch (error: any) {
         console.error(error);
-        dispatch(
-          notifSend({
-            message: `Failed to delete media: ${error.message}`,
-            kind: 'danger',
-            dismissAfter: 8000,
-          }),
-        );
+        toastr.error(`Failed to delete media: ${error.message}`);
         return dispatch(mediaDeleteFailed({ privateUpload }));
       }
     }
@@ -353,15 +340,9 @@ export function deleteMedia(file: MediaFile, opts: MediaOptions = {}) {
           dispatch(removeDraftEntryMediaFile({ id: file.id }));
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      dispatch(
-        notifSend({
-          message: `Failed to delete media: ${error.message}`,
-          kind: 'danger',
-          dismissAfter: 8000,
-        }),
-      );
+      toastr.error(`Failed to delete media: ${error.message}`);
       return dispatch(mediaDeleteFailed());
     }
   };
@@ -401,7 +382,7 @@ export function loadMediaDisplayURL(file: MediaFile) {
       } else {
         throw new Error('No display URL was returned!');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       dispatch(mediaDisplayURLFailure(id, err));
     }

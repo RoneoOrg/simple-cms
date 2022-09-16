@@ -1,5 +1,4 @@
 import { flow, partialRight, trimEnd, trimStart } from 'lodash';
-import { stringTemplate } from '../netlify-cms-lib-widgets';
 import { stripIndent } from 'common-tags';
 
 import {
@@ -11,6 +10,7 @@ import {
 import { sanitizeSlug } from './urlHelper';
 import { FILES } from '../constants/collectionTypes';
 import { COMMIT_AUTHOR, COMMIT_DATE } from '../constants/commitProps';
+import { stringTemplate } from '../../netlify-cms-lib-widgets';
 
 import type { Collection, CmsConfig, CmsSlug, EntryMap } from '../types/redux';
 import type { Map } from 'immutable';
@@ -118,7 +118,7 @@ export function slugFormatter(
 ) {
   const slugTemplate = collection.get('slug') || '{{slug}}';
 
-  const identifier = entryData.getIn(keyToPathArray(selectIdentifier(collection) as string));
+  const identifier = entryData.getIn(keyToPathArray(selectIdentifier(collection) as string)) as string;
   if (!identifier) {
     throw new Error(
       'Collection must have a field name that is a valid entry identifier, or must have `identifier_field` set',
@@ -188,12 +188,12 @@ export function previewUrlFormatter(
 
   // Prepare and sanitize slug variables only, leave the rest of the
   // `preview_path` template as is.
-  const processSegment = getProcessSegment(slugConfig, [fields.get('dirname')]);
+  const processSegment = getProcessSegment(slugConfig, [fields.get('dirname') as string]);
   let compiledPath;
 
   try {
     compiledPath = compileStringTemplate(pathTemplate, date, slug, fields, processSegment);
-  } catch (err) {
+  } catch (err: any) {
     // Print an error and ignore `preview_path` if both:
     //   1. Date is invalid (according to Moment), and
     //   2. A date expression (eg. `{{year}}`) is used in `preview_path`
@@ -252,8 +252,8 @@ export function folderFormatter(
       entry as unknown as Map<string, unknown>,
       selectInferedField(collection, 'date'),
     ) || null;
-  const identifier = fields.getIn(keyToPathArray(selectIdentifier(collection) as string));
-  const processSegment = getProcessSegment(slugConfig, [defaultFolder, fields.get('dirname')]);
+  const identifier = fields.getIn(keyToPathArray(selectIdentifier(collection) as string)) as string;
+  const processSegment = getProcessSegment(slugConfig, [defaultFolder, fields.get('dirname') as string]);
 
   const mediaFolder = compileStringTemplate(
     folderTemplate,

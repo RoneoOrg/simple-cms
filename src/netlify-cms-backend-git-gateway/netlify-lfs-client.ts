@@ -1,6 +1,7 @@
 import { flow, fromPairs, map } from 'lodash/fp';
 import { isPlainObject, isEmpty } from 'lodash';
 import minimatch from 'minimatch';
+
 import { unsentRequest } from '../netlify-cms-lib-util';
 
 import type { ApiRequest, PointerFile } from '../netlify-cms-lib-util';
@@ -80,7 +81,7 @@ async function getDownloadURL(
     const transformedBlob = await transformed.blob();
     const url = URL.createObjectURL(transformedBlob);
     return { url, blob: transformation ? await original.blob() : transformedBlob };
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     return { url: '', blob: new Blob() };
   }

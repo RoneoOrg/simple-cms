@@ -1,46 +1,46 @@
-import { fromJS, List, Map } from 'immutable';
+import { List, Map } from 'immutable';
 import { isEqual } from 'lodash';
-import { actions as notifActions } from 'redux-notifications';
-import { Cursor } from '../netlify-cms-lib-util';
+import { toastr } from 'react-redux-toastr';
 
-import { selectCollectionEntriesCursor } from '../reducers/cursors';
-import { selectFields, updateFieldByKey } from '../reducers/collections';
-import { selectIntegration, selectPublishedSlugs } from '../reducers';
-import { getIntegrationProvider } from '../integrations';
+import { Cursor } from '../../netlify-cms-lib-util';
+import { toMap, toStaticallyTypedRecord } from '../../util/ImmutableUtil';
 import { currentBackend } from '../backend';
-import { serializeValues } from '../lib/serializeEntryValues';
-import { createEntry } from '../valueObjects/Entry';
-import { createAssetProxy } from '../valueObjects/AssetProxy';
 import ValidationErrorTypes from '../constants/validationErrorTypes';
-import { addAssets, getAsset } from './media';
-import { SortDirection } from '../types/redux';
-import { waitForMediaLibraryToLoad, loadMedia } from './mediaLibrary';
-import { waitUntil } from './waitUntil';
-import { selectIsFetching, selectEntriesSortFields, selectEntryByPath } from '../reducers/entries';
+import { getIntegrationProvider } from '../integrations';
+import { getProcessSegment } from '../lib/formatters';
+import { duplicateDefaultI18nFields, hasI18n, I18N, I18N_FIELD, serializeI18n } from '../lib/i18n';
+import { serializeValues } from '../lib/serializeEntryValues';
+import { selectIntegration, selectPublishedSlugs } from '../reducers';
+import { selectFields, updateFieldByKey } from '../reducers/collections';
+import { selectCollectionEntriesCursor } from '../reducers/cursors';
+import { selectEntriesSortFields, selectEntryByPath, selectIsFetching } from '../reducers/entries';
 import { selectCustomPath } from '../reducers/entryDraft';
 import { navigateToEntry } from '../routing/history';
-import { getProcessSegment } from '../lib/formatters';
-import { hasI18n, duplicateDefaultI18nFields, serializeI18n, I18N, I18N_FIELD } from '../lib/i18n';
+import { SortDirection } from '../types/redux';
+import { createAssetProxy } from '../valueObjects/AssetProxy';
+import { createEntry } from '../valueObjects/Entry';
+import { addAssets, getAsset } from './media';
+import { loadMedia, waitForMediaLibraryToLoad } from './mediaLibrary';
+import { waitUntil } from './waitUntil';
 
-import type { ImplementationMediaFile } from '../netlify-cms-lib-util';
+import type { Set } from 'immutable';
 import type { AnyAction } from 'redux';
 import type { ThunkDispatch } from 'redux-thunk';
+import type { ImplementationMediaFile } from '../../netlify-cms-lib-util';
+import type { Backend, MediaFile } from '../backend';
 import type {
   Collection,
-  EntryMap,
-  State,
-  EntryFields,
+  Entry,
   EntryField,
+  EntryFields,
+  EntryMap,
+  EntryObject,
+  State,
   ViewFilter,
   ViewGroup,
-  Entry,
 } from '../types/redux';
-import type { EntryValue } from '../valueObjects/Entry';
-import type { Backend } from '../backend';
 import type AssetProxy from '../valueObjects/AssetProxy';
-import type { Set } from 'immutable';
-
-const { notifSend } = notifActions;
+import type { EntryValue } from '../valueObjects/Entry';
 
 /*
  * Constant Declarations
@@ -202,7 +202,7 @@ export function sortByField(
           entries,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       dispatch({
         type: SORT_ENTRIES_FAILURE,
         payload: {
@@ -242,7 +242,7 @@ export function filterByField(collection: Collection, filter: ViewFilter) {
           entries,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       dispatch({
         type: FILTER_ENTRIES_FAILURE,
         payload: {
@@ -280,7 +280,7 @@ export function groupByField(collection: Collection, group: ViewGroup) {
           entries,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       dispatch({
         type: GROUP_ENTRIES_FAILURE,
         payload: {
@@ -391,7 +391,7 @@ export function draftDuplicateEntry(entry: EntryMap) {
     type: DRAFT_CREATE_DUPLICATE_FROM_ENTRY,
     payload: createEntry(entry.get('collection'), '', '', {
       data: entry.get('data'),
-      mediaFiles: entry.get('mediaFiles').toJS(),
+      mediaFiles: entry.get('mediaFiles').toJS() as MediaFile[],
     }),
   };
 }
@@ -499,7 +499,7 @@ export function retrieveLocalBackup(collection: Collection, slug: string) {
           } else {
             return getAsset({
               collection,
-              entry: fromJS(entry),
+              entry: toStaticallyTypedRecord<EntryObject>(entry as unknown as EntryObject),
               path: file.path,
               field: file.field,
             })(dispatch, getState);
@@ -534,18 +534,9 @@ export function loadEntry(collection: Collection, slug: string) {
       const loadedEntry = await tryLoadEntry(getState(), collection, slug);
       dispatch(entryLoaded(collection, loadedEntry));
       dispatch(createDraftFromEntry(loadedEntry));
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      dispatch(
-        notifSend({
-          message: {
-            details: error.message,
-            key: 'ui.toast.onFailToLoadEntries',
-          },
-          kind: 'danger',
-          dismissAfter: 8000,
-        }),
-      );
+      toastr.error(`Failed to load entry: ${error.message}`);
       dispatch(entryLoadError(error, collection, slug));
     }
   };
@@ -557,7 +548,7 @@ export async function tryLoadEntry(state: State, collection: Collection, slug: s
   return loadedEntry;
 }
 
-const appendActions = fromJS({
+const appendActions = toMap({
   ['append_next']: { action: 'next', append: true },
 });
 
@@ -630,17 +621,8 @@ export function loadEntries(collection: Collection, page = 0) {
           append,
         ),
       );
-    } catch (err) {
-      dispatch(
-        notifSend({
-          message: {
-            details: err,
-            key: 'ui.toast.onFailToLoadEntries',
-          },
-          kind: 'danger',
-          dismissAfter: 8000,
-        }),
-      );
+    } catch (err: any) {
+      toastr.error(`Failed to load entry: ${err.message}`);
       return Promise.reject(dispatch(entriesFailed(collection, err)));
     }
   };
@@ -681,18 +663,9 @@ export function traverseCollectionCursor(collection: Collection, action: string)
       return dispatch(
         entriesLoaded(collection, entries, pagination, addAppendActionsToCursor(newCursor), append),
       );
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      dispatch(
-        notifSend({
-          message: {
-            details: err,
-            key: 'ui.toast.onFailToLoadEntries',
-          },
-          kind: 'danger',
-          dismissAfter: 8000,
-        }),
-      );
+      toastr.error(`Failed to load entry: ${err.message}`);
       return Promise.reject(dispatch(entriesFailed(collection, err)));
     }
   };
@@ -893,15 +866,7 @@ export function persistEntry(collection: Collection) {
       );
 
       if (hasPresenceErrors) {
-        dispatch(
-          notifSend({
-            message: {
-              key: 'ui.toast.missingRequiredField',
-            },
-            kind: 'danger',
-            dismissAfter: 8000,
-          }),
-        );
+        toastr.error("Oops, you've missed a required field. Please complete before saving.");
       }
 
       return Promise.reject();
@@ -925,15 +890,7 @@ export function persistEntry(collection: Collection) {
         usedSlugs,
       })
       .then(async (newSlug: string) => {
-        dispatch(
-          notifSend({
-            message: {
-              key: 'ui.toast.entrySaved',
-            },
-            kind: 'success',
-            dismissAfter: 4000,
-          }),
-        );
+        toastr.error('Entry saved.');
 
         // re-load media library if entry had media files
         if (assetProxies.length > 0) {
@@ -950,16 +907,7 @@ export function persistEntry(collection: Collection) {
       })
       .catch((error: Error) => {
         console.error(error);
-        dispatch(
-          notifSend({
-            message: {
-              details: error,
-              key: 'ui.toast.onFailToPersist',
-            },
-            kind: 'danger',
-            dismissAfter: 8000,
-          }),
-        );
+        toastr.error(`Failed to persist entry: ${error}`);
         return Promise.reject(dispatch(entryPersistFail(collection, serializedEntry, error)));
       });
   };
@@ -977,16 +925,7 @@ export function deleteEntry(collection: Collection, slug: string) {
         return dispatch(entryDeleted(collection, slug));
       })
       .catch((error: Error) => {
-        dispatch(
-          notifSend({
-            message: {
-              details: error,
-              key: 'ui.toast.onFailToDelete',
-            },
-            kind: 'danger',
-            dismissAfter: 8000,
-          }),
-        );
+        toastr.error(`Failed to delete entry: ${error}`);
         console.error(error);
         return Promise.reject(dispatch(entryDeleteFail(collection, slug, error)));
       });
@@ -1028,7 +967,7 @@ export function validateMetaField(
       return getPathError(value, 'invalidPath', t);
     }
 
-    const customPath = selectCustomPath(collection, fromJS({ entry: { meta: { path: value } } }));
+    const customPath = selectCustomPath(collection, toMap({ entry: { meta: { path: value } } }));
     const existingEntry = customPath
       ? selectEntryByPath(state.entries, collection.get('name'), customPath)
       : undefined;

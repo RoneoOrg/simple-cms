@@ -2,6 +2,7 @@ import GoTrue from 'gotrue-js';
 import jwtDecode from 'jwt-decode';
 import { get, pick, intersection } from 'lodash';
 import ini from 'ini';
+
 import {
   APIError,
   unsentRequest,
@@ -15,11 +16,7 @@ import {
   PreviewState,
 } from '../netlify-cms-lib-util';
 import { GitHubBackend } from '../netlify-cms-backend-github';
-import { GitLabBackend } from '../netlify-cms-backend-gitlab';
-import { BitbucketBackend, API as BitBucketAPI } from '../netlify-cms-backend-bitbucket';
-
 import GitHubAPI from './GitHubAPI';
-import GitLabAPI from './GitLabAPI';
 import AuthenticationPage from './AuthenticationPage';
 import { getClient } from './netlify-lfs-client';
 
@@ -105,7 +102,7 @@ let initPromise = Promise.resolve() as Promise<unknown>;
 if (window.netlifyIdentity) {
   let initialized = false;
   initPromise = Promise.race([
-    new Promise(resolve => {
+    new Promise<void>(resolve => {
       window.netlifyIdentity?.on('init', () => {
         initialized = true;
         resolve();
@@ -134,7 +131,7 @@ async function apiGet(path: string) {
 
 export default class GitGateway implements Implementation {
   config: Config;
-  api?: GitHubAPI | GitLabAPI | BitBucketAPI;
+  api?: GitHubAPI;
   branch: string;
   squashMerges: boolean;
   cmsLabelPrefix: string;
@@ -145,14 +142,14 @@ export default class GitGateway implements Implementation {
   backendType: string | null;
   apiUrl: string;
   authClient?: AuthClient;
-  backend: GitHubBackend | GitLabBackend | BitbucketBackend | null;
+  backend: GitHubBackend | null;
   acceptRoles?: string[];
   tokenPromise?: () => Promise<string>;
   _largeMediaClientPromise?: Promise<Client>;
 
   options: {
     proxied: boolean;
-    API: GitHubAPI | GitLabAPI | BitBucketAPI | null;
+    API: GitHubAPI | null;
     initialWorkflowStatus: string;
   };
   constructor(config: Config, options = {}) {
@@ -177,7 +174,7 @@ export default class GitGateway implements Implementation {
       config.backend.large_media_url || defaults.largeMedia,
       netlifySiteURL,
     );
-    const backendTypeRegex = /\/(github|gitlab|bitbucket)\/?$/;
+    const backendTypeRegex = /\/(github)\/?$/;
     const backendTypeMatches = this.gatewayUrl.match(backendTypeRegex);
     if (backendTypeMatches) {
       this.backendType = backendTypeMatches[1];
@@ -273,7 +270,7 @@ export default class GitGateway implements Implementation {
         const func = user.jwt.bind(user);
         const token = await func();
         return token;
-      } catch (error) {
+      } catch (error: any) {
         throw new AccessTokenError(`Failed getting access token: ${error.message}`);
       }
     };
@@ -281,8 +278,6 @@ export default class GitGateway implements Implementation {
       if (!this.backendType) {
         const {
           github_enabled: githubEnabled,
-          gitlab_enabled: gitlabEnabled,
-          bitbucket_enabled: bitbucketEnabled,
           roles,
         } = await unsentRequest
           .fetchWithTimeout(`${this.gatewayUrl}/settings`, {
@@ -312,10 +307,6 @@ export default class GitGateway implements Implementation {
         this.acceptRoles = roles;
         if (githubEnabled) {
           this.backendType = 'github';
-        } else if (gitlabEnabled) {
-          this.backendType = 'gitlab';
-        } else if (bitbucketEnabled) {
-          this.backendType = 'bitbucket';
         }
       }
 
@@ -347,16 +338,6 @@ export default class GitGateway implements Implementation {
       if (this.backendType === 'github') {
         this.api = new GitHubAPI(apiConfig);
         this.backend = new GitHubBackend(this.config, { ...this.options, API: this.api });
-      } else if (this.backendType === 'gitlab') {
-        this.api = new GitLabAPI(apiConfig);
-        this.backend = new GitLabBackend(this.config, { ...this.options, API: this.api });
-      } else if (this.backendType === 'bitbucket') {
-        this.api = new BitBucketAPI({
-          ...apiConfig,
-          requestFunction: this.requestFunction,
-          hasWriteAccess: async () => true,
-        });
-        this.backend = new BitbucketBackend(this.config, { ...this.options, API: this.api });
       }
 
       if (!(await this.api!.hasWriteAccess())) {
@@ -379,7 +360,7 @@ export default class GitGateway implements Implementation {
     const client = await this.getAuthClient();
     try {
       client.logout();
-    } catch (e) {
+    } catch (e: any) {
       // due to a bug in the identity widget (gotrue-js actually) the store is not reset if logout fails
       // TODO: remove after https://github.com/netlify/gotrue-js/pull/83 is merged
       client.clearStore();
@@ -422,7 +403,7 @@ export default class GitGateway implements Implementation {
         path,
         url,
         displayURL: url,
-        file: new File([blob], name),
+        file: new File([blob], basename(path)),
         size: blob.size,
       };
     } else {
@@ -537,7 +518,7 @@ export default class GitGateway implements Implementation {
         path,
         url,
         displayURL: url,
-        file: new File([blob], name),
+        file: new File([blob], basename(path)),
         size: blob.size,
       };
     }
@@ -556,7 +537,7 @@ export default class GitGateway implements Implementation {
 
   async persistMedia(mediaFile: AssetProxy, options: PersistOptions) {
     const { fileObj, path } = mediaFile;
-    const displayURL = URL.createObjectURL(fileObj);
+    const displayURL = URL.createObjectURL(fileObj as any);
     const client = await this.getLargeMediaClient();
     const fixedPath = path.startsWith('/') ? path.slice(1) : path;
     const isLargeMedia = await this.isLargeMediaFile(fixedPath);
@@ -600,7 +581,7 @@ export default class GitGateway implements Implementation {
           }
         }
         // eslint-disable-next-line no-empty
-      } catch (e) {}
+      } catch (e: any) {}
     }
     return preview;
   }

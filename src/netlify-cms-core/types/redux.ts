@@ -10,6 +10,7 @@ import type { Deploys } from '../reducers/deploys';
 import type { Search } from '../reducers/search';
 import type { GlobalUI } from '../reducers/globalUI';
 import type { formatExtensions } from '../formats/formats';
+import { ToastrState } from 'react-redux-toastr';
 
 export type CmsBackendType =
   | 'azure'
@@ -166,21 +167,6 @@ export interface CmsFieldMap {
   type?: CmsMapWidgetType;
 }
 
-export interface CmsFieldMarkdown {
-  widget: 'markdown';
-  default?: string;
-
-  minimal?: boolean;
-  buttons?: CmsMarkdownWidgetButton[];
-  editor_components?: string[];
-  modes?: ('raw' | 'rich_text')[];
-
-  /**
-   * @deprecated Use editor_components instead
-   */
-  editorComponents?: string[];
-}
-
 export interface CmsFieldNumber {
   widget: 'number';
   default?: string | number;
@@ -266,7 +252,6 @@ export type CmsField = CmsFieldBase &
     | CmsFieldFileOrImage
     | CmsFieldList
     | CmsFieldMap
-    | CmsFieldMarkdown
     | CmsFieldNumber
     | CmsFieldObject
     | CmsFieldRelation
@@ -600,7 +585,7 @@ type i18n = StaticallyTypedRecord<{
 
 export type Format = keyof typeof formatExtensions;
 
-type CollectionObject = {
+export type CollectionObject = {
   name: string;
   folder?: string;
   files?: CollectionFiles;
@@ -633,7 +618,7 @@ type CollectionObject = {
 
 export type Collection = StaticallyTypedRecord<CollectionObject>;
 
-export type Collections = StaticallyTypedRecord<{ [path: string]: Collection & CollectionObject }>;
+export type Collections = StaticallyTypedRecord<Record<string, Collection>>;
 
 export interface MediaLibraryInstance {
   show: (args: {
@@ -697,7 +682,7 @@ export interface State {
   medias: Medias;
   mediaLibrary: MediaLibrary;
   search: Search;
-  notifs: { message: { key: string }; kind: string; id: number }[];
+  toastr: ToastrState;
   status: Status;
 }
 

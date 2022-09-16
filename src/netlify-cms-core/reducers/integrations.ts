@@ -1,6 +1,5 @@
-import { fromJS } from 'immutable';
-
 import { CONFIG_SUCCESS } from '../actions/config';
+import { toStaticallyTypedRecord } from '../../util/ImmutableUtil';
 
 import type { ConfigAction } from '../actions/config';
 import type { Integrations, CmsConfig } from '../types/redux';
@@ -35,12 +34,12 @@ export function getIntegrations(config: CmsConfig) {
     },
     { providers: {}, hooks: {} } as Acc,
   );
-  return fromJS(newState);
+  return toStaticallyTypedRecord(newState);
 }
 
-const defaultState = fromJS({ providers: {}, hooks: {} });
+const defaultState = toStaticallyTypedRecord({ providers: {}, hooks: {} });
 
-function integrations(state = defaultState, action: ConfigAction): Integrations | null {
+function integrations(state = defaultState, action: ConfigAction) {
   switch (action.type) {
     case CONFIG_SUCCESS: {
       return getIntegrations(action.payload);

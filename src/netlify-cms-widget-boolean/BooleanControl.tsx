@@ -1,16 +1,10 @@
-import { Toggle } from '../netlify-cms-ui-default';
 import React from 'react';
 
-interface BooleanControlProps {
-  onChange: (value: boolean) => void;
-  forID?: string;
-  value?: boolean;
-  classNameWrapper: string;
-  setActiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-  setInactiveStyle: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-}
+import { Toggle } from '../netlify-cms-ui-default';
 
-export default class BooleanControl extends React.Component<BooleanControlProps> {
+import type { CmsWidgetControlProps } from '../netlify-cms-core';
+
+export default class BooleanControl extends React.Component<CmsWidgetControlProps<boolean>> {
   render() {
     const {
       value = false,

@@ -3,7 +3,7 @@ import isValid from 'date-fns/isValid';
 import parseISO from 'date-fns/parseISO';
 import { Map } from 'immutable';
 import { get, trimEnd, truncate } from 'lodash';
-import { basename, dirname, extname } from 'path';
+import { basename, dirname, extname } from 'path-browserify';
 
 const filters = [
   { pattern: /^upper$/, transform: (str: string) => str.toUpperCase() },
@@ -61,7 +61,7 @@ export function parseDateFromEntry(entry: Map<string, unknown>, dateFieldName?: 
     return;
   }
 
-  const dateValue = entry.getIn(['data', dateFieldName]);
+  const dateValue = entry.getIn(['data', dateFieldName]) as string | Date;
   const dateMoment = dateValue instanceof Date ? dateValue : parseISO(dateValue);
   if (dateMoment && isValid(dateMoment)) {
     return dateMoment;
@@ -133,12 +133,12 @@ export function expandPath({
 
 // Allow `fields.` prefix in placeholder to override built in replacements
 // like "slug" and "year" with values from fields of the same name.
-function getExplicitFieldReplacement(key: string, data: Map<string, unknown>) {
+function getExplicitFieldReplacement(key: string, data: Map<string, unknown>): string {
   if (!key.startsWith(FIELD_PREFIX)) {
-    return;
+    return '';
   }
   const fieldName = key.slice(FIELD_PREFIX.length);
-  const value = data.getIn(keyToPathArray(fieldName));
+  const value = data.getIn(keyToPathArray(fieldName)) as string | object;
   if (typeof value === 'object' && value !== null) {
     return JSON.stringify(value);
   }
@@ -176,7 +176,7 @@ export function compileStringTemplate(
   const compiledString = template.replace(
     RegExp(templateVariablePattern, 'g'),
     (_full, key: string, _part, filter: string) => {
-      let replacement;
+      let replacement: string;
       const explicitFieldReplacement = getExplicitFieldReplacement(key, data);
 
       if (explicitFieldReplacement) {

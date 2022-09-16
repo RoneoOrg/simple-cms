@@ -1,12 +1,10 @@
 import matter from 'gray-matter';
 
-import tomlFormatter from './toml';
 import yamlFormatter from './yaml';
 import jsonFormatter from './json';
 
 const Languages = {
   YAML: 'yaml',
-  TOML: 'toml',
   JSON: 'json',
 } as const;
 
@@ -16,13 +14,6 @@ export type Delimiter = string | [string, string];
 type Format = { language: Language; delimiters: Delimiter };
 
 const parsers = {
-  toml: {
-    parse: (input: string) => tomlFormatter.fromFile(input),
-    stringify: (metadata: object, opts?: { sortedKeys?: string[] }) => {
-      const { sortedKeys } = opts || {};
-      return tomlFormatter.toFile(metadata, sortedKeys);
-    },
-  },
   json: {
     parse: (input: string) => {
       let JSONinput = input.trim();
@@ -63,8 +54,6 @@ function inferFrontmatterFormat(str: string) {
   switch (firstLine) {
     case '---':
       return getFormatOpts(Languages.YAML);
-    case '+++':
-      return getFormatOpts(Languages.TOML);
     case '{':
       return getFormatOpts(Languages.JSON);
     default:
@@ -79,7 +68,6 @@ export function getFormatOpts(format?: Language, customDelimiter?: Delimiter) {
 
   const formats: { [key in Language]: Format } = {
     yaml: { language: Languages.YAML, delimiters: '---' },
-    toml: { language: Languages.TOML, delimiters: '+++' },
     json: { language: Languages.JSON, delimiters: ['{', '}'] },
   };
 
@@ -139,10 +127,6 @@ export const FrontmatterInfer = new FrontmatterFormatter();
 
 export function frontmatterYAML(customDelimiter?: Delimiter) {
   return new FrontmatterFormatter(Languages.YAML, customDelimiter);
-}
-
-export function frontmatterTOML(customDelimiter?: Delimiter) {
-  return new FrontmatterFormatter(Languages.TOML, customDelimiter);
 }
 
 export function frontmatterJSON(customDelimiter?: Delimiter) {

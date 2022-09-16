@@ -1,9 +1,9 @@
 import { flow, fromPairs } from 'lodash';
 import { map } from 'lodash/fp';
-import { fromJS } from 'immutable';
 
 import unsentRequest from './unsentRequest';
 import APIError from './APIError';
+import { toStaticallyTypedRecord } from '../util/ImmutableUtil';
 
 type Formatter = (res: Response) => Promise<string | Blob | unknown>;
 
@@ -16,15 +16,15 @@ function catchFormatErrors(format: string, formatter: Formatter) {
   return (res: Response) => {
     try {
       return formatter(res);
-    } catch (err) {
+    } catch (err: any) {
       throw new Error(
-        `Response cannot be parsed into the expected format (${format}): ${err.message}`,
+        `Response cannot be parsed into the expected format (${format}): ${err instanceof Error ? err.message : ''}`,
       );
     }
   };
 }
 
-const responseFormatters = fromJS({
+const responseFormatters = toStaticallyTypedRecord({
   json: async (res: Response) => {
     const contentType = res.headers.get('Content-Type') || '';
     if (!contentType.startsWith('application/json') && !contentType.startsWith('text/json')) {
@@ -43,20 +43,32 @@ export async function parseResponse(
   res: Response,
   { expectingOk = true, format = 'text', apiName = '' },
 ) {
-  let body;
+  let body: string | {
+    msg?: string;
+    message?: string;
+    error?: {
+      message: string;
+    }
+  };
   try {
-    const formatter = responseFormatters.get(format, false);
+    const formatter = responseFormatters.get(format) ?? false;
     if (!formatter) {
       throw new Error(`${format} is not a supported response format.`);
     }
-    body = await formatter(res);
-  } catch (err) {
-    throw new APIError(err.message, res.status, apiName);
+    body = await formatter(res) as string | {
+      msg?: string;
+      message?: string;
+      error?: {
+        message: string;
+      }
+    };
+  } catch (err: any) {
+    throw new APIError(err instanceof Error ? err.message : '', res.status, apiName);
   }
   if (expectingOk && !res.ok) {
     const isJSON = format === 'json';
-    const message = isJSON ? body.message || body.msg || body.error?.message : body;
-    throw new APIError(isJSON && message ? message : body, res.status, apiName);
+    const message: string = (isJSON && typeof body !== 'string' ? body.message || body.msg || body.error?.message : body as string) ?? '';
+    throw new APIError(message, res.status, apiName);
   }
   return body;
 }

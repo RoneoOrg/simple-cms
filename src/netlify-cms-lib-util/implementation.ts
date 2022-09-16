@@ -227,7 +227,7 @@ async function fetchFiles(
             ]);
             resolve({ file: { ...file, ...fileMetadata }, data: data as string });
             sem.leave();
-          } catch (error) {
+          } catch (error: any) {
             sem.leave();
             console.error(`failed to load file from ${apiName}: ${file.path}`);
             resolve({ error: true });
@@ -264,8 +264,8 @@ export async function unpublishedEntries(listEntriesKeys: () => Promise<string[]
   try {
     const keys = await listEntriesKeys();
     return keys;
-  } catch (error) {
-    if (error.message === 'Not Found') {
+  } catch (error: any) {
+    if (error instanceof Error && error.message === 'Not Found') {
       return Promise.resolve([]);
     }
     throw error;

@@ -56,7 +56,7 @@ function unpublishedEntries(state = Map(), action: EditorialWorkflowAction) {
         action.payload!.entries.forEach(entry =>
           map.setIn(
             ['entities', `${entry.collection}.${entry.slug}`],
-            fromJS(entry).set('isFetching', false),
+            fromJS({ ...entry, isFetching: false }),
           ),
         );
         map.set(
@@ -87,9 +87,8 @@ function unpublishedEntries(state = Map(), action: EditorialWorkflowAction) {
           `${action.payload!.collection}.${action.payload!.entry.get('slug')}`,
           'isPersisting',
         ]);
-        map.updateIn(['pages', 'ids'], List(), list =>
-          list.push(action.payload!.entry.get('slug')),
-        );
+        map.updateIn(['pages', 'ids'], List(), ((list: List<string>) =>
+          list.push(action.payload!.entry.get('slug') as string)) as any);
       });
 
     case UNPUBLISHED_ENTRY_PERSIST_FAILURE:

@@ -2,6 +2,8 @@ import { Base64 } from 'js-base64';
 import semaphore from 'semaphore';
 import { initial, last, partial, result, trimStart, trim } from 'lodash';
 import { oneLine } from 'common-tags';
+import { dirname } from 'path-browserify';
+
 import {
   getAllResponses,
   APIError,
@@ -24,7 +26,6 @@ import {
   unsentRequest,
   throwOnConflictingBranches,
 } from '../netlify-cms-lib-util';
-import { dirname } from 'path';
 
 import type {
   AssetProxy,
@@ -234,7 +235,7 @@ export default class API {
       // update config repoOwner to avoid case sensitivity issues with GitHub
       this.repoOwner = result.owner.login;
       return result.permissions.push;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Problem fetching repo data from GitHub');
       throw error;
     }
@@ -322,7 +323,7 @@ export default class API {
       responseStatus = response.status;
       const parsedResponse = await parser(response);
       return parsedResponse;
-    } catch (error) {
+    } catch (error: any) {
       return this.handleRequestError(error, responseStatus);
     }
   }
@@ -395,7 +396,7 @@ export default class API {
     if (!this._metadataSemaphore) {
       this._metadataSemaphore = semaphore(1);
     }
-    return new Promise((resolve, reject) =>
+    return new Promise<void>((resolve, reject) =>
       this._metadataSemaphore?.take(async () => {
         try {
           const branchData = await this.checkMetadataRef();
@@ -411,7 +412,7 @@ export default class API {
           });
           this._metadataSemaphore?.leave();
           resolve();
-        } catch (err) {
+        } catch (err: any) {
           reject(err);
         }
       }),
@@ -422,7 +423,7 @@ export default class API {
     if (!this._metadataSemaphore) {
       this._metadataSemaphore = semaphore(1);
     }
-    return new Promise(resolve =>
+    return new Promise<void>(resolve =>
       this._metadataSemaphore?.take(async () => {
         try {
           const branchData = await this.checkMetadataRef();
@@ -433,7 +434,7 @@ export default class API {
           await this.patchRef('meta', '_netlify_cms', sha);
           this._metadataSemaphore?.leave();
           resolve();
-        } catch (err) {
+        } catch (err: any) {
           this._metadataSemaphore?.leave();
           resolve();
         }
@@ -525,7 +526,7 @@ export default class API {
           labels: [{ name: statusToLabel(this.initialWorkflowStatus, this.cmsLabelPrefix) }],
           state: PullRequestState.Open,
         } as GitHubPull;
-      } catch (e) {
+      } catch (e: any) {
         throw new EditorialWorkflowError('content is not under editorial workflow', true);
       }
     } else {
@@ -564,7 +565,7 @@ export default class API {
         `${this.originRepoURL}/pulls/${number}/commits`,
       );
       return commits;
-    } catch (e) {
+    } catch (e: any) {
       console.log(e);
       return [];
     }
@@ -641,7 +642,7 @@ export default class API {
           author: commit.author.name || commit.author.email,
           updatedOn: commit.author.date,
         };
-      } catch (e) {
+      } catch (e: any) {
         return { author: '', updatedOn: '' };
       }
     };
@@ -696,7 +697,7 @@ export default class API {
             size: file.size!,
           }))
       );
-    } catch (err) {
+    } catch (err: any) {
       if (err && err.status === 404) {
         console.log('This 404 was expected and handled appropriately.');
         return [];
@@ -721,7 +722,7 @@ export default class API {
       } else {
         return { branch, filter: true };
       }
-    } catch (e) {
+    } catch (e: any) {
       return { branch, filter: false };
     }
   };
@@ -786,7 +787,7 @@ export default class API {
       // migrate branch from cms/slug to cms/collection/slug
       try {
         ({ metadata, pullRequest } = await this.migrateToVersion1(pullRequest, metadata));
-      } catch (e) {
+      } catch (e: any) {
         console.log(`Failed to migrate Pull Request '${number}' to version 1. See error below.`);
         console.error(e);
         return;
@@ -1025,7 +1026,7 @@ export default class API {
           `${this.originRepoURL}/compare/${from}...${to}`,
         );
         return result;
-      } catch (e) {
+      } catch (e: any) {
         if (i === attempts) {
           console.warn(`Reached maximum number of attempts '${attempts}' for getDifferences`);
           throw e;
@@ -1099,7 +1100,7 @@ export default class API {
       // Rebase the branch based on the diff
       const rebasedHead = await this.rebaseCommits(baseCommit, commits);
       return rebasedHead;
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       throw error;
     }
@@ -1215,7 +1216,7 @@ export default class API {
         ),
         existingBranch.commit.sha,
       );
-    } catch (e) {
+    } catch (e: any) {
       console.warn(e);
     }
   }
@@ -1224,7 +1225,7 @@ export default class API {
     try {
       const result = await this.createRef('heads', branchName, sha);
       return result;
-    } catch (e) {
+    } catch (e: any) {
       const message = String(e.message || '');
       if (message === 'Reference update failed') {
         await throwOnConflictingBranches(branchName, name => this.getBranch(name), API_NAME);
@@ -1238,7 +1239,7 @@ export default class API {
           await this.backupBranch(branchName);
           const result = await this.patchBranch(branchName, sha, { force: true });
           return result;
-        } catch (e) {
+        } catch (e: any) {
           console.log(e);
         }
       }
@@ -1332,7 +1333,7 @@ export default class API {
         },
       );
       return result;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof APIError && error.status === 405) {
         return this.forceMergePR(pullrequest);
       } else {

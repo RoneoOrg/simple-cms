@@ -1,66 +1,67 @@
-import { Map, List, fromJS, OrderedMap, Set } from 'immutable';
-import { dirname, join } from 'path';
-import { isAbsolutePath, basename } from '../netlify-cms-lib-util';
-import { trim, once, sortBy, set, orderBy, groupBy } from 'lodash';
-import { stringTemplate } from '../netlify-cms-lib-widgets';
+import { List, Map, OrderedMap, Set } from 'immutable';
+import { groupBy, once, orderBy, set, sortBy, trim } from 'lodash';
+import { dirname, join } from 'path-browserify';
 
-import { SortDirection } from '../types/redux';
-import { folderFormatter } from '../lib/formatters';
-import { selectSortDataPath } from './collections';
-import { SEARCH_ENTRIES_SUCCESS } from '../actions/search';
+import { basename, isAbsolutePath } from '../../netlify-cms-lib-util';
+import { stringTemplate } from '../../netlify-cms-lib-widgets';
+import { toList, toStaticallyTypedRecord } from '../../util/ImmutableUtil';
 import {
-  ENTRY_REQUEST,
-  ENTRY_SUCCESS,
-  ENTRY_FAILURE,
+  CHANGE_VIEW_STYLE,
+  ENTRIES_FAILURE,
   ENTRIES_REQUEST,
   ENTRIES_SUCCESS,
-  ENTRIES_FAILURE,
   ENTRY_DELETE_SUCCESS,
-  SORT_ENTRIES_REQUEST,
-  SORT_ENTRIES_SUCCESS,
-  SORT_ENTRIES_FAILURE,
+  ENTRY_FAILURE,
+  ENTRY_REQUEST,
+  ENTRY_SUCCESS,
+  FILTER_ENTRIES_FAILURE,
   FILTER_ENTRIES_REQUEST,
   FILTER_ENTRIES_SUCCESS,
-  FILTER_ENTRIES_FAILURE,
+  GROUP_ENTRIES_FAILURE,
   GROUP_ENTRIES_REQUEST,
   GROUP_ENTRIES_SUCCESS,
-  GROUP_ENTRIES_FAILURE,
-  CHANGE_VIEW_STYLE,
+  SORT_ENTRIES_FAILURE,
+  SORT_ENTRIES_REQUEST,
+  SORT_ENTRIES_SUCCESS,
 } from '../actions/entries';
+import { SEARCH_ENTRIES_SUCCESS } from '../actions/search';
 import { VIEW_STYLE_LIST } from '../constants/collectionViews';
+import { folderFormatter } from '../lib/formatters';
 import { joinUrlPath } from '../lib/urlHelper';
+import { SortDirection } from '../types/redux';
+import { selectSortDataPath } from './collections';
 
 import type {
-  EntriesAction,
-  EntryRequestPayload,
-  EntrySuccessPayload,
-  EntriesSuccessPayload,
-  EntryObject,
-  Entries,
+  ChangeViewStylePayload,
   CmsConfig,
   Collection,
-  EntryFailurePayload,
-  EntryDeletePayload,
-  EntriesRequestPayload,
-  EntryDraft,
-  EntryMap,
-  EntryField,
   CollectionFiles,
-  EntriesSortRequestPayload,
+  Entries,
+  EntriesAction,
+  EntriesFilterFailurePayload,
+  EntriesFilterRequestPayload,
+  EntriesGroupFailurePayload,
+  EntriesGroupRequestPayload,
+  EntriesRequestPayload,
   EntriesSortFailurePayload,
+  EntriesSortRequestPayload,
+  EntriesSuccessPayload,
+  EntryDeletePayload,
+  EntryDraft,
+  EntryFailurePayload,
+  EntryField,
+  EntryMap,
+  EntryObject,
+  EntryRequestPayload,
+  EntrySuccessPayload,
+  Filter,
+  FilterMap,
+  Group,
+  GroupMap,
+  GroupOfEntries,
+  Sort,
   SortMap,
   SortObject,
-  Sort,
-  Filter,
-  Group,
-  FilterMap,
-  GroupMap,
-  EntriesFilterRequestPayload,
-  EntriesFilterFailurePayload,
-  ChangeViewStylePayload,
-  EntriesGroupRequestPayload,
-  EntriesGroupFailurePayload,
-  GroupOfEntries,
 } from '../types/redux';
 
 const { keyToPathArray } = stringTemplate;
@@ -86,12 +87,12 @@ const loadSort = once(() => {
         let orderedMap = OrderedMap() as SortMap;
         sortBy(Object.values(sort), ['index']).forEach(value => {
           const { key, direction } = value;
-          orderedMap = orderedMap.set(key, fromJS({ key, direction }));
+          orderedMap = orderedMap.set(key, toStaticallyTypedRecord({ key, direction }));
         });
         map = map.set(collection, orderedMap);
       });
       return map;
-    } catch (e) {
+    } catch (e: any) {
       return Map() as Sort;
     }
   }
@@ -107,7 +108,7 @@ function persistSort(sort: Sort | undefined) {
     const storageSort: StorageSort = {};
     sort.keySeq().forEach(key => {
       const collection = key as string;
-      const sortObjects = (sort.get(collection).valueSeq().toJS() as SortObject[]).map(
+      const sortObjects = ((sort.get(collection)?.valueSeq().toJS() ?? []) as SortObject[]).map(
         (value, index) => ({ ...value, index }),
       );
 
@@ -158,8 +159,8 @@ function entries(
       collection = payload.collection;
       slug = payload.entry.slug;
       return state.withMutations(map => {
-        map.setIn(['entities', `${collection}.${slug}`], fromJS(payload.entry));
-        const ids = map.getIn(['pages', collection, 'ids'], List());
+        map.setIn(['entities', `${collection}.${slug}`], toStaticallyTypedRecord(payload.entry));
+        const ids = map.getIn(['pages', collection, 'ids'], List()) as string[];
         if (!ids.includes(slug)) {
           map.setIn(['pages', collection, 'ids'], ids.unshift(slug));
         }
@@ -185,7 +186,7 @@ function entries(
         loadedEntries.forEach(entry =>
           map.setIn(
             ['entities', `${collection}.${entry.slug}`],
-            fromJS(entry).set('isFetching', false),
+            toStaticallyTypedRecord({ ...entry, isFetching: false }),
           ),
         );
 
@@ -194,7 +195,9 @@ function entries(
           ['pages', collection],
           Map({
             page,
-            ids: append ? map.getIn(['pages', collection, 'ids'], List()).concat(ids) : ids,
+            ids: append
+              ? (map.getIn(['pages', collection, 'ids'], List()) as List<string>).concat(ids)
+              : ids,
           }),
         );
       });
@@ -220,7 +223,7 @@ function entries(
         loadedEntries.forEach(entry =>
           map.setIn(
             ['entities', `${entry.collection}.${entry.slug}`],
-            fromJS(entry).set('isFetching', false),
+            toStaticallyTypedRecord({ ...entry, isFetching: false }),
           ),
         );
       });
@@ -230,9 +233,8 @@ function entries(
       const payload = action.payload as EntryDeletePayload;
       return state.withMutations(map => {
         map.deleteIn(['entities', `${payload.collectionName}.${payload.entrySlug}`]);
-        map.updateIn(['pages', payload.collectionName, 'ids'], (ids: string[]) =>
-          ids.filter(id => id !== payload.entrySlug),
-        );
+        map.updateIn(['pages', payload.collectionName, 'ids'], ((ids: string[]) =>
+          ids.filter(id => id !== payload.entrySlug)) as any);
       });
     }
 
@@ -259,7 +261,7 @@ function entries(
         loadedEntries.forEach(entry =>
           map.setIn(
             ['entities', `${entry.collection}.${entry.slug}`],
-            fromJS(entry).set('isFetching', false),
+            toStaticallyTypedRecord({ ...entry, isFetching: false }),
           ),
         );
         map.setIn(['pages', collection, 'isFetching'], false);
@@ -290,7 +292,10 @@ function entries(
       const payload = action.payload as EntriesFilterRequestPayload;
       const { collection, filter } = payload;
       const newState = state.withMutations(map => {
-        const current: FilterMap = map.getIn(['filter', collection, filter.id], fromJS(filter));
+        const current = map.getIn(
+          ['filter', collection, filter.id],
+          toStaticallyTypedRecord(filter),
+        ) as FilterMap;
         map.setIn(
           ['filter', collection, current.get('id')],
           current.set('active', !current.get('active')),
@@ -313,7 +318,10 @@ function entries(
       const payload = action.payload as EntriesGroupRequestPayload;
       const { collection, group } = payload;
       const newState = state.withMutations(map => {
-        const current: GroupMap = map.getIn(['group', collection, group.id], fromJS(group));
+        const current = map.getIn(
+          ['group', collection, group.id],
+          toStaticallyTypedRecord(group),
+        ) as GroupMap;
         map.deleteIn(['group', collection]);
         map.setIn(
           ['group', collection, current.get('id')],
@@ -420,7 +428,7 @@ export function selectEntries(state: Entries, collection: Collection) {
     const orders = sortFields.map(v =>
       v.get('direction') === SortDirection.Ascending ? 'asc' : 'desc',
     );
-    entries = fromJS(orderBy(entries.toJS(), keys, orders));
+    entries = toList(orderBy(entries.toJS(), keys, orders) as EntryMap[]);
   }
 
   const filters = selectEntriesFilterFields(state, collectionName);
@@ -467,7 +475,7 @@ function getGroup(entry: EntryMap, selectedGroup: GroupMap) {
       if (matched) {
         value = matched[0];
       }
-    } catch (e) {
+    } catch (e: any) {
       console.warn(`Invalid view group pattern '${pattern}' for field '${field}'`, e);
     }
     return {
@@ -536,7 +544,7 @@ function getFileField(collectionFiles: CollectionFiles, slug: string | undefined
 
 function hasCustomFolder(
   folderKey: 'media_folder' | 'public_folder',
-  collection: Collection | null,
+  collection: Collection | undefined | null,
   slug: string | undefined,
   field: EntryField | undefined,
 ) {
@@ -729,7 +737,7 @@ function evaluateFolder(
 
 export function selectMediaFolder(
   config: CmsConfig,
-  collection: Collection | null,
+  collection: Collection | undefined | null,
   entryMap: EntryMap | undefined,
   field: EntryField | undefined,
 ) {

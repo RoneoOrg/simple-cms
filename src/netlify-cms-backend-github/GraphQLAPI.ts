@@ -6,6 +6,12 @@ import {
 } from 'apollo-cache-inmemory';
 import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
+import { trim, trimStart } from 'lodash';
+
+import introspectionQueryResultData from './fragmentTypes';
+import API, { API_NAME, PullRequestState, MOCK_PULL_REQUEST } from './API';
+import * as queries from './queries';
+import * as mutations from './mutations';
 import {
   APIError,
   readFile,
@@ -15,12 +21,6 @@ import {
   CMS_BRANCH_PREFIX,
   throwOnConflictingBranches,
 } from '../netlify-cms-lib-util';
-import { trim, trimStart } from 'lodash';
-
-import introspectionQueryResultData from './fragmentTypes';
-import API, { API_NAME, PullRequestState, MOCK_PULL_REQUEST } from './API';
-import * as queries from './queries';
-import * as mutations from './mutations';
 
 import type { Config, BlobArgs } from './API';
 import type { NormalizedCacheObject } from 'apollo-cache-inmemory';
@@ -152,7 +152,7 @@ export default class GraphQLAPI extends API {
     try {
       const result = await this.client.mutate(options);
       return result;
-    } catch (error) {
+    } catch (error: any) {
       const errors = error.graphQLErrors;
       if (Array.isArray(errors) && errors.some(e => e.message === 'Ref cannot be created.')) {
         const refName = options?.variables?.createRefInput?.name || '';
@@ -179,7 +179,7 @@ export default class GraphQLAPI extends API {
             await this.deleteBranch(branchName);
             const result = await this.client.mutate(options);
             return result;
-          } catch (e) {
+          } catch (e: any) {
             console.log(e);
           }
         }
@@ -199,7 +199,7 @@ export default class GraphQLAPI extends API {
       // https://developer.github.com/v4/enum/repositorypermission/
       const { viewerPermission } = data.repository;
       return ['ADMIN', 'MAINTAIN', 'WRITE'].includes(viewerPermission);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Problem fetching repo data from GitHub');
       throw error;
     }
@@ -581,7 +581,7 @@ export default class GraphQLAPI extends API {
       } else {
         return await this.deleteBranch(branchName);
       }
-    } catch (e) {
+    } catch (e: any) {
       const { graphQLErrors } = e;
       if (graphQLErrors && graphQLErrors.length > 0) {
         const branchNotFound = graphQLErrors.some((e: Error) => e.type === 'NOT_FOUND');

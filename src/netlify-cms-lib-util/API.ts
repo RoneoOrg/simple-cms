@@ -71,7 +71,8 @@ export async function requestWithBackoff(
       response.json = () => Promise.resolve(json);
     }
     return response;
-  } catch (err) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
     if (attempt > 5 || err.message === "Can't refresh access token when using implicit auth") {
       throw err;
     } else {

@@ -36,7 +36,7 @@ fetch(`${API_HOST}/graphql`, {
     result.data.__schema.types = filteredData;
     fs.writeFile(
       path.join(__dirname, '..', 'src', 'fragmentTypes.js'),
-      `module.exports = ${JSON.stringify(result.data)}`,
+      `export default ${JSON.stringify(result.data)}`,
       err => {
         if (err) {
           console.error('Error writing fragmentTypes file', err);

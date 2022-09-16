@@ -1,11 +1,14 @@
 import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import { fromJS, List, Map } from 'immutable';
-import { validations } from '../netlify-cms-lib-widgets';
+import { List } from 'immutable';
 import React from 'react';
 
+import { validations } from '../netlify-cms-lib-widgets';
+import { isList, isMap, toJS, toList } from '../util/ImmutableUtil';
+
 import type { SelectChangeEvent } from '@mui/material/Select';
+import type { Map } from 'immutable';
 import type { CmsWidgetControlProps } from '../netlify-cms-core';
 
 interface Option {
@@ -17,7 +20,8 @@ function convertToOption(raw: string | Map<string, string> | undefined): Option 
   if (typeof raw === 'string') {
     return { label: raw, value: raw };
   }
-  return Map.isMap(raw) ? (raw as Map<string, string>).toJS() : raw;
+
+  return isMap(raw) ? toJS<Option>(raw) : raw;
 }
 
 export default class SelectControl extends React.Component<
@@ -53,10 +57,10 @@ export default class SelectControl extends React.Component<
       onChange(List<string>());
     } else if (isEmpty) {
       onChange(null);
-    } else if (isMultiple) {
-      onChange(fromJS(selectedOption));
     } else if (typeof selectedOption === 'string') {
       onChange(selectedOption);
+    } else if (isMultiple) {
+      onChange(toList(selectedOption));
     }
   };
 
@@ -64,9 +68,10 @@ export default class SelectControl extends React.Component<
     const { field, onChange, value } = this.props;
     if (field.get('required') && field.get('multiple')) {
       if (value && !List.isList(value)) {
-        onChange(fromJS([value]));
+        onChange(toList([value]));
       } else if (!value) {
-        onChange(fromJS([]));
+        onChange(
+          toList([]));
       }
     }
   }
@@ -96,7 +101,7 @@ export default class SelectControl extends React.Component<
         <Select
           id={forID}
           value={
-            (List.isList(value) ? (value as List<string>).toJS() : (value as string | undefined)) ??
+            (isList(value) ? toJS(value) : value) ??
             (isMultiple ? [] : '')
           }
           onChange={event => this.handleChange(event)}

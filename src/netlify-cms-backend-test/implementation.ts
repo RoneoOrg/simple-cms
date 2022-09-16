@@ -1,13 +1,13 @@
 import { attempt, isError, take, unset, isEmpty } from 'lodash';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
+import { extname, dirname } from 'path-browserify';
+
 import {
   EditorialWorkflowError,
   Cursor,
   CURSOR_COMPATIBILITY_SYMBOL,
   basename,
 } from '../netlify-cms-lib-util';
-import { extname, dirname } from 'path';
-
 import AuthenticationPage from './AuthenticationPage';
 
 import type {

@@ -1,17 +1,7 @@
 import { attempt, flatten, isError, uniq, trim, sortBy, get, set } from 'lodash';
-import { List, fromJS, Set } from 'immutable';
+import { List, Set } from 'immutable';
 import * as fuzzy from 'fuzzy';
-import {
-  localForage,
-  Cursor,
-  CURSOR_COMPATIBILITY_SYMBOL,
-  getPathDepth,
-  blobToFileObj,
-  asyncLock,
-  EDITORIAL_WORKFLOW_ERROR,
-} from '../netlify-cms-lib-util';
-import { basename, join, extname, dirname } from 'path';
-import { stringTemplate } from '../netlify-cms-lib-widgets';
+import { basename, join, extname, dirname } from 'path-browserify';
 
 import { resolveFormat } from './formats/formats';
 import { selectUseWorkflow } from './reducers/config';
@@ -47,6 +37,17 @@ import {
   getI18nBackup,
   formatI18nBackup,
 } from './lib/i18n';
+import { toStaticallyTypedRecord } from '../util/ImmutableUtil';
+import {
+  localForage,
+  Cursor,
+  CURSOR_COMPATIBILITY_SYMBOL,
+  getPathDepth,
+  blobToFileObj,
+  asyncLock,
+  EDITORIAL_WORKFLOW_ERROR,
+} from '../netlify-cms-lib-util';
+import { stringTemplate } from '../netlify-cms-lib-widgets';
 
 import type AssetProxy from './valueObjects/AssetProxy';
 import type {
@@ -59,6 +60,7 @@ import type {
   CollectionFile,
   State,
   EntryField,
+  EntryObject,
 } from './types/redux';
 import type { EntryValue } from './valueObjects/Entry';
 import type {
@@ -399,7 +401,7 @@ export class Backend {
   async logout() {
     try {
       await this.implementation.logout();
-    } catch (e) {
+    } catch (e: any) {
       console.warn('Error during logout', e.message);
     } finally {
       this.user = null;
@@ -468,7 +470,7 @@ export class Backend {
   }
 
   processEntries(loadedEntries: ImplementationEntry[], collection: Collection) {
-    const entries = loadedEntries.map(loadedEntry =>
+    const entries: any[] = loadedEntries.map(loadedEntry =>
       createEntry(
         collection.get('name'),
         selectEntrySlug(collection, loadedEntry.file.path),
@@ -645,12 +647,12 @@ export class Backend {
 
     let hits = fuzzy
       .filter(searchTerm, expandedEntries, {
-        extract: entry => {
+        extract: (entry: any) => {
           return getEntryField(entry.field, entry);
         },
       })
       .sort(sortByScore)
-      .map(f => f.original);
+      .map((f: any) => f.original);
 
     if (limit !== undefined && limit > 0) {
       hits = hits.slice(0, limit);
@@ -728,14 +730,14 @@ export class Backend {
         entry
           .get('mediaFiles')
           .toJS()
-          .map(async (file: MediaFile) => {
+          .map((async (file: MediaFile) => {
             // make sure to serialize the file
             if (file.url?.startsWith('blob:')) {
               const blob = await fetch(file.url as string).then(res => res.blob());
               return { ...file, file: blobToFileObj(file.name, blob) };
             }
             return file;
-          }),
+          }) as any),
       );
 
       let i18n;
@@ -751,7 +753,7 @@ export class Backend {
       });
       const result = await localForage.setItem(getEntryBackupKey(), raw);
       return result;
-    } catch (e) {
+    } catch (e: any) {
       console.warn('persistLocalDraftBackup', e);
     } finally {
       this.backupSync.release();
@@ -766,7 +768,7 @@ export class Backend {
       slug && (await localForage.removeItem(getEntryBackupKey(collection.get('name'))));
       const result = await this.deleteAnonymousBackup();
       return result;
-    } catch (e) {
+    } catch (e: any) {
       console.warn('deleteLocalDraftBackup', e);
     } finally {
       this.backupSync.release();
@@ -849,7 +851,9 @@ export class Backend {
     let extension: string;
     if (collection.get('type') === FILES) {
       const file = collection.get('files')!.find(f => f?.get('name') === slug);
-      extension = extname(file.get('file'));
+      if (file) {
+        extension = extname(file.get('file'));
+      }
     } else {
       extension = selectFolderEntryExtension(collection);
     }
@@ -911,12 +915,12 @@ export class Backend {
     } else if (hasI18n(collection)) {
       // we need to read all locales files and not just the changes
       const path = selectEntryPath(collection, slug) as string;
-      const i18nFiles = getI18nDataFiles(collection, extension, path, slug, dataFiles);
+      const i18nFiles = getI18nDataFiles(collection, extension!, path, slug, dataFiles);
       let entries = await Promise.all(
         i18nFiles.map(dataFile => readAndFormatDataFile(dataFile).catch(() => null)),
       );
       entries = entries.filter(Boolean);
-      const grouped = await groupEntries(collection, extension, entries as EntryValue[]);
+      const grouped = await groupEntries(collection, extension!, entries as EntryValue[]);
       return grouped[0];
     } else {
       const entryWithFormat = await readAndFormatDataFile(dataFiles[0]);
@@ -947,7 +951,11 @@ export class Backend {
 
   async processEntry(state: State, collection: Collection, entry: EntryValue) {
     const integration = selectIntegration(state.integrations, null, 'assetStore');
-    const mediaFolders = selectMediaFolders(state.config, collection, fromJS(entry));
+    const mediaFolders = selectMediaFolders(
+      state.config,
+      collection,
+      toStaticallyTypedRecord(entry as unknown as EntryObject),
+    );
     if (mediaFolders.length > 0 && !integration) {
       const files = await Promise.all(
         mediaFolders.map(folder => this.implementation.getMedia(folder)),

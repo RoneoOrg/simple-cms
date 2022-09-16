@@ -1,6 +1,6 @@
 import { Map, List } from 'immutable';
-import uuid from 'uuid/v4';
-import { dirname } from 'path';
+import { v4 as uuid } from 'uuid';
+import { dirname } from 'path-browserify';
 
 import {
   MEDIA_LIBRARY_OPEN,
@@ -85,14 +85,14 @@ function mediaLibrary(state = Map(defaultState), action: MediaLibraryAction) {
       }
       return state.withMutations(map => {
         map.set('isVisible', true);
-        map.set('forImage', forImage);
-        map.set('controlID', controlID);
+        map.set('forImage', Boolean(forImage));
+        map.set('controlID', controlID as string);
         map.set('canInsert', !!controlID);
-        map.set('privateUpload', privateUpload);
+        map.set('privateUpload', Boolean(privateUpload));
         map.set('config', libConfig);
-        map.set('field', field);
-        map.set('value', value);
-        map.set('replaceIndex', replaceIndex);
+        map.set('field', field as EntryField);
+        map.set('value', value as string);
+        map.set('replaceIndex', replaceIndex as number);
       });
     }
 
@@ -154,10 +154,10 @@ function mediaLibrary(state = Map(defaultState), action: MediaLibraryAction) {
       return state.withMutations(map => {
         map.set('isLoading', false);
         map.set('isPaginating', false);
-        map.set('page', page);
-        map.set('hasNextPage', canPaginate && files.length > 0);
-        map.set('dynamicSearch', dynamicSearch);
-        map.set('dynamicSearchQuery', dynamicSearchQuery);
+        map.set('page', page ?? 1);
+        map.set('hasNextPage', Boolean(canPaginate && files.length > 0));
+        map.set('dynamicSearch', Boolean(dynamicSearch));
+        map.set('dynamicSearchQuery', dynamicSearchQuery ?? '');
         map.set('dynamicSearchActive', !!dynamicSearchQuery);
         if (page && page > 1) {
           const updatedFiles = (map.get('files') as MediaFile[]).concat(filesWithKeys);
@@ -267,7 +267,7 @@ export function selectMediaFiles(state: State, field?: EntryField) {
       .getIn(['entry', 'mediaFiles'], List<MediaFileMap>())
       .toJS() as MediaFile[];
     const entry = entryDraft.get('entry');
-    const collection = state.collections.get(entry?.get('collection'));
+    const collection = state.collections.get(entry?.get('collection') as any);
     const mediaFolder = selectMediaFolder(state.config, collection, entry, field);
     files = entryFiles
       .filter(f => dirname(f.path) === mediaFolder)

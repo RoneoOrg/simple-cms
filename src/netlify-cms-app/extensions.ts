@@ -1,11 +1,8 @@
 // Core
 import { NetlifyCmsCore as CMS } from '../netlify-cms-core';
 // Backends
-import { AzureBackend } from '../netlify-cms-backend-azure';
 import { GitHubBackend } from '../netlify-cms-backend-github';
-import { GitLabBackend } from '../netlify-cms-backend-gitlab';
 import { GitGatewayBackend } from '../netlify-cms-backend-git-gateway';
-import { BitbucketBackend } from '../netlify-cms-backend-bitbucket';
 import { TestBackend } from '../netlify-cms-backend-test';
 import { ProxyBackend } from '../netlify-cms-backend-proxy';
 // Widgets
@@ -15,7 +12,6 @@ import NetlifyCmsWidgetText from '../netlify-cms-widget-text';
 import NetlifyCmsWidgetImage from '../netlify-cms-widget-image';
 import NetlifyCmsWidgetFile from '../netlify-cms-widget-file';
 import NetlifyCmsWidgetSelect from '../netlify-cms-widget-select';
-import NetlifyCmsWidgetMarkdown from '../netlify-cms-widget-markdown';
 import NetlifyCmsWidgetList from '../netlify-cms-widget-list';
 import NetlifyCmsWidgetObject from '../netlify-cms-widget-object';
 import NetlifyCmsWidgetRelation from '../netlify-cms-widget-relation';
@@ -31,10 +27,7 @@ import * as locales from '../netlify-cms-locales';
 
 // Register all the things
 CMS.registerBackend('git-gateway', GitGatewayBackend);
-CMS.registerBackend('azure', AzureBackend);
 CMS.registerBackend('github', GitHubBackend);
-CMS.registerBackend('gitlab', GitLabBackend);
-CMS.registerBackend('bitbucket', BitbucketBackend);
 CMS.registerBackend('test-repo', TestBackend);
 CMS.registerBackend('proxy', ProxyBackend);
 CMS.registerWidget([
@@ -44,7 +37,6 @@ CMS.registerWidget([
   NetlifyCmsWidgetImage.Widget(),
   NetlifyCmsWidgetFile.Widget(),
   NetlifyCmsWidgetSelect.Widget(),
-  NetlifyCmsWidgetMarkdown.Widget(),
   NetlifyCmsWidgetList.Widget(),
   NetlifyCmsWidgetObject.Widget(),
   NetlifyCmsWidgetRelation.Widget(),

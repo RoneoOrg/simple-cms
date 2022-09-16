@@ -1,4 +1,4 @@
-import { actions as notifActions } from 'redux-notifications';
+import { toastr } from 'react-redux-toastr';
 
 import { currentBackend } from '../backend';
 import { selectDeployPreview } from '../reducers';
@@ -6,8 +6,6 @@ import { selectDeployPreview } from '../reducers';
 import type { ThunkDispatch } from 'redux-thunk';
 import type { AnyAction } from 'redux';
 import type { Collection, Entry, State } from '../types/redux';
-
-const { notifSend } = notifActions;
 
 export const DEPLOY_PREVIEW_REQUEST = 'DEPLOY_PREVIEW_REQUEST';
 export const DEPLOY_PREVIEW_SUCCESS = 'DEPLOY_PREVIEW_SUCCESS';
@@ -85,18 +83,9 @@ export function loadDeployPreview(
         return dispatch(deployPreviewLoaded(collectionName, slug, deploy));
       }
       return dispatch(deployPreviewError(collectionName, slug));
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      dispatch(
-        notifSend({
-          message: {
-            details: error.message,
-            key: 'ui.toast.onFailToLoadDeployPreview',
-          },
-          kind: 'danger',
-          dismissAfter: 8000,
-        }),
-      );
+      toastr.error(`Failed to load preview: ${error.message}`);
       dispatch(deployPreviewError(collectionName, slug));
     }
   };

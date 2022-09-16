@@ -13,21 +13,31 @@ export function waitUntil({ predicate, run }: WaitActionArgs) {
   };
 }
 
+export async function waitUntilWithTimeout(
+  dispatch: ThunkDispatch<State, {}, AnyAction>,
+  waitActionArgs: (resolve: () => void) => WaitActionArgs,
+  timeout?: number,
+): Promise<void>;
 export async function waitUntilWithTimeout<T>(
   dispatch: ThunkDispatch<State, {}, AnyAction>,
-  waitActionArgs: (resolve: (value?: T) => void) => WaitActionArgs,
+  waitActionArgs: (resolve: (value: T | PromiseLike<T>) => void) => WaitActionArgs,
+  timeout?: number,
+): Promise<T | null>;
+export async function waitUntilWithTimeout<T>(
+  dispatch: ThunkDispatch<State, {}, AnyAction>,
+  waitActionArgs: (resolve: (value?: T | PromiseLike<T>) => void) => WaitActionArgs,
   timeout = 30000,
-): Promise<T | null> {
+): Promise<T | null | void> {
   let waitDone = false;
 
-  const waitPromise = new Promise<T>(resolve => {
+  const waitPromise = new Promise<T | void>(resolve => {
     dispatch(waitUntil(waitActionArgs(resolve)));
   });
 
   const timeoutPromise = new Promise<T | null>(resolve => {
     setTimeout(() => {
       if (waitDone) {
-        resolve();
+        resolve(null);
       } else {
         console.warn('Wait Action timed out');
         resolve(null);

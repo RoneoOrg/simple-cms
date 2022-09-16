@@ -1,5 +1,4 @@
-/** @jsx jsx */
-import { css, jsx } from '@emotion/react';
+import styled from '@emotion/styled';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -14,17 +13,17 @@ import React from 'react';
 import type { CmsWidgetControlProps } from '../netlify-cms-core';
 import type { t } from 'react-polyglot';
 
+const StyledNowButton = styled.div`
+  position: absolute;
+  right: 20px;
+  transform: translateY(-40px);
+  width: fit-content;
+  z-index: 1;
+`;
+
 function NowButton({ t, handleChange }: { t: t; handleChange: (value: Date) => void }) {
   return (
-    <div
-      css={css`
-        position: absolute;
-        right: 20px;
-        transform: translateY(-40px);
-        width: fit-content;
-        z-index: 1;
-      `}
-    >
+    <StyledNowButton>
       <Button
         onClick={() => {
           handleChange(new Date());
@@ -32,7 +31,7 @@ function NowButton({ t, handleChange }: { t: t; handleChange: (value: Date) => v
       >
         {t('editor.editorWidgets.datetime.now')}
       </Button>
-    </div>
+    </StyledNowButton>
   );
 }
 

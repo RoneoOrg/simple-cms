@@ -1,32 +1,33 @@
-import { List, Set, fromJS, OrderedMap } from 'immutable';
-import { get, escapeRegExp } from 'lodash';
-import { stringTemplate } from '../netlify-cms-lib-widgets';
+import { List, OrderedMap, Set } from 'immutable';
+import { escapeRegExp, get } from 'lodash';
 
-import consoleError from '../lib/consoleError';
+import { stringTemplate } from '../../netlify-cms-lib-widgets';
+import { toMap, toStaticallyTypedRecord } from '../../util/ImmutableUtil';
 import { CONFIG_SUCCESS } from '../actions/config';
 import { FILES, FOLDER } from '../constants/collectionTypes';
-import { COMMIT_DATE, COMMIT_AUTHOR } from '../constants/commitProps';
-import { INFERABLE_FIELDS, IDENTIFIER_FIELDS, SORTABLE_FIELDS } from '../constants/fieldInference';
+import { COMMIT_AUTHOR, COMMIT_DATE } from '../constants/commitProps';
+import { IDENTIFIER_FIELDS, INFERABLE_FIELDS, SORTABLE_FIELDS } from '../constants/fieldInference';
 import { formatExtensions } from '../formats/formats';
-import { selectMediaFolder } from './entries';
+import consoleError from '../lib/consoleError';
 import { summaryFormatter } from '../lib/formatters';
+import { selectMediaFolder } from './entries';
 
+import type { ConfigAction } from '../actions/config';
+import type { Backend } from '../backend';
 import type {
+  CmsConfig,
   Collection,
-  Collections,
   CollectionFiles,
+  Collections,
   EntryField,
   EntryMap,
   ViewFilter,
   ViewGroup,
-  CmsConfig,
 } from '../types/redux';
-import type { ConfigAction } from '../actions/config';
-import type { Backend } from '../backend';
 
 const { keyToPathArray } = stringTemplate;
 
-const defaultState: Collections = fromJS({});
+const defaultState: Collections = toStaticallyTypedRecord<Record<string, Collection>>({});
 
 function collections(state = defaultState, action: ConfigAction) {
   switch (action.type) {
@@ -34,7 +35,7 @@ function collections(state = defaultState, action: ConfigAction) {
       const collections = action.payload.collections;
       let newState = OrderedMap({});
       collections.forEach(collection => {
-        newState = newState.set(collection.name, fromJS(collection));
+        newState = newState.set(collection.name, toMap(collection));
       });
       return newState;
     }
@@ -457,7 +458,9 @@ export function selectFieldsComments(collection: Collection, entryMap: EntryMap)
     fields = collection.get('fields').toArray();
   } else if (collection.has('files')) {
     const file = collection.get('files')!.find(f => f?.get('name') === entryMap.get('slug'));
-    fields = file.get('fields').toArray();
+    if (file) {
+      fields = file.get('fields').toArray();
+    }
   }
   const comments: Record<string, string> = {};
   const names = getFieldsNames(fields);
