@@ -6,7 +6,7 @@ module.exports = {
     'eslint:recommended',
     'plugin:react/recommended',
     'prettier',
-    'plugin:import/recommended',
+    'plugin:react-hooks/recommended',
   ],
   env: {
     es6: true,
@@ -18,32 +18,6 @@ module.exports = {
     NETLIFY_CMS_APP_VERSION: false,
     NETLIFY_CMS_CORE_VERSION: false,
     CMS_ENV: false,
-  },
-  rules: {
-    'no-console': [0],
-    'react/prop-types': [0],
-    'import/no-named-as-default': 0,
-    'import/order': [
-      'error',
-      {
-        'newlines-between': 'always',
-        groups: [['builtin', 'external'], ['internal', 'parent', 'sibling', 'index'], ['type']],
-      },
-    ],
-    'no-duplicate-imports': 'error',
-    '@emotion/no-vanilla': 'error',
-    '@emotion/import-from-emotion': 'error',
-    '@emotion/styled-import': 'error',
-    'require-atomic-updates': [0],
-    'object-shorthand': ['error', 'always'],
-    'func-style': ['error', 'declaration'],
-    'prefer-const': [
-      'error',
-      {
-        destructuring: 'all',
-      },
-    ],
-    'unicorn/prefer-string-slice': 'error',
   },
   plugins: ['babel', '@emotion', 'unicorn'],
   settings: {
@@ -64,9 +38,7 @@ module.exports = {
         'eslint:recommended',
         'plugin:react/recommended',
         'plugin:@typescript-eslint/recommended',
-        'prettier',
-        'plugin:import/recommended',
-        'plugin:import/typescript',
+        'prettier'
       ],
       parserOptions: {
         ecmaVersion: 2018,
