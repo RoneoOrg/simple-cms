@@ -5,7 +5,7 @@
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
-    "types": ["node"],
+    "types": ["node", "@emotion/react/types/css-prop"],
     "esModuleInterop": true,
     "noEmit": true,
     "strict": true,

@@ -1,11 +1,12 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
-import { Wrapper, Button as DropdownButton, Menu, MenuItem } from 'react-aria-menubutton';
+import PropTypes from 'prop-types';
+import React, { ReactNode } from 'react';
+import { Button as DropdownButton, Menu, MenuItem, Wrapper } from 'react-aria-menubutton';
 
-import { colors, buttons, components, zIndex } from './styles';
+import transientOptions from '../util/transientOptions';
 import Icon from './Icon';
+import { buttons, colors, components, zIndex } from './styles';
 
 const StyledWrapper = styled(Wrapper)`
   position: relative;
@@ -32,7 +33,13 @@ const StyledDropdownButton = styled(DropdownButton)`
   }
 `;
 
-const DropdownList = styled.ul`
+interface DropdownListProps {
+  width: string;
+  top: string;
+  position: string;
+}
+
+const DropdownList = styled.ul<DropdownListProps>`
   ${components.dropdownList};
   margin: 0;
   position: absolute;
@@ -49,7 +56,16 @@ const DropdownList = styled.ul`
   `};
 `;
 
-function StyledMenuItem({ isActive, isCheckedItem = false, ...props }) {
+interface StyledMenuItemProps {
+  isActive: boolean;
+  isCheckedItem?: boolean;
+  children: ReactNode;
+  value?: () => void;
+  className?: string;
+  onClick?: () => void;
+}
+
+function StyledMenuItem({ isActive, isCheckedItem = false, ...props }: StyledMenuItemProps) {
   return (
     <MenuItem
       css={css`
@@ -75,12 +91,26 @@ function StyledMenuItem({ isActive, isCheckedItem = false, ...props }) {
   );
 }
 
-const MenuItemIconContainer = styled.div`
+interface MenuItemIconContainerProps {
+  $iconSmall: boolean;
+}
+
+const MenuItemIconContainer = styled('div', transientOptions)<MenuItemIconContainerProps>`
   flex: 1 0 32px;
   text-align: right;
   position: relative;
-  top: ${props => (props.iconSmall ? '0' : '2px')};
+  top: ${props => (props.$iconSmall ? '0' : '2px')};
 `;
+
+interface DropDownProps {
+  renderButton: () => ReactNode;
+  dropdownWidth: string;
+  dropdownPosition: string;
+  dropdownTopOverlap: string;
+  className?: string;
+  children: ReactNode;
+  closeOnSelection?: boolean;
+}
 
 function Dropdown({
   closeOnSelection = true,
@@ -90,11 +120,11 @@ function Dropdown({
   dropdownTopOverlap = '0',
   className,
   children,
-}) {
+}: DropDownProps) {
   return (
     <StyledWrapper
       closeOnSelection={closeOnSelection}
-      onSelection={handler => handler()}
+      onSelection={(handler: any) => handler()}
       className={className}
     >
       {renderButton()}
@@ -107,21 +137,30 @@ function Dropdown({
   );
 }
 
-Dropdown.propTypes = {
-  renderButton: PropTypes.func.isRequired,
-  dropdownWidth: PropTypes.string,
-  dropdownPosition: PropTypes.string,
-  dropdownTopOverlap: PropTypes.string,
-  className: PropTypes.string,
-  children: PropTypes.node,
-};
+interface DropdownItemProps {
+  label: string;
+  icon?: string;
+  iconDirection?: string;
+  onClick: () => void;
+  className?: string;
+  iconSmall?: boolean;
+  isActive?: boolean;
+}
 
-function DropdownItem({ label, icon, iconDirection, iconSmall, isActive, onClick, className }) {
+function DropdownItem({
+  label,
+  icon,
+  iconDirection,
+  iconSmall = false,
+  isActive = false,
+  onClick,
+  className,
+}: DropdownItemProps) {
   return (
     <StyledMenuItem value={onClick} isActive={isActive} className={className}>
       <span>{label}</span>
       {icon ? (
-        <MenuItemIconContainer iconSmall={iconSmall}>
+        <MenuItemIconContainer $iconSmall={iconSmall}>
           <Icon type={icon} direction={iconDirection} size={iconSmall ? 'xsmall' : 'small'} />
         </MenuItemIconContainer>
       ) : null}
@@ -129,15 +168,12 @@ function DropdownItem({ label, icon, iconDirection, iconSmall, isActive, onClick
   );
 }
 
-DropdownItem.propTypes = {
-  label: PropTypes.string,
-  icon: PropTypes.string,
-  iconDirection: PropTypes.string,
-  onClick: PropTypes.func,
-  className: PropTypes.string,
-};
+interface StyledDropdownCheckboxProps {
+  checked: boolean;
+  id: string;
+}
 
-function StyledDropdownCheckbox({ checked, id }) {
+function StyledDropdownCheckbox({ checked, id }: StyledDropdownCheckboxProps) {
   return (
     <input
       readOnly
@@ -151,11 +187,18 @@ function StyledDropdownCheckbox({ checked, id }) {
   );
 }
 
-function DropdownCheckedItem({ label, id, checked, onClick }) {
+interface DropdownCheckedItemProps {
+  label: string;
+  id: string;
+  checked: boolean;
+  onClick: () => {};
+}
+
+function DropdownCheckedItem({ label, id, checked, onClick }: DropdownCheckedItemProps) {
   return (
     <StyledMenuItem isCheckedItem={true} isActive={checked} onClick={onClick}>
       <StyledDropdownCheckbox checked={checked} id={id} />
-      <span htmlFor={id}>{label}</span>
+      <label htmlFor={id}>{label}</label>
     </StyledMenuItem>
   );
 }

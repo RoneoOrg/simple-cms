@@ -89,6 +89,7 @@
     "@mui/icons-material": "^5.10.3",
     "@mui/material": "5.10.5",
     "@mui/x-date-pickers": "5.0.1",
+    "@types/react-aria-menubutton": "^6.2.9",
     "apollo-cache-inmemory": "1.6.6",
     "apollo-client": "2.6.10",
     "apollo-link-context": "1.0.20",
