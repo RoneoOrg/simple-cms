@@ -9,6 +9,8 @@ import { v4 as uuid } from 'uuid';
 import { oneLine } from 'common-tags';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import { arrayMoveImmutable as arrayMove } from 'array-move';
+import CloseIcon from '@mui/icons-material/Close';
+import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 
 import {
   lengths,
@@ -59,8 +61,12 @@ function Image(props) {
 function SortableImageButtons({ onRemove, onReplace }) {
   return (
     <SortableImageButtonsWrapper>
-      <IconButton size="small" type="media" onClick={onReplace}></IconButton>
-      <IconButton size="small" type="close" onClick={onRemove}></IconButton>
+      <IconButton aria-label="replace" onClick={onReplace}>
+        <InsertPhotoIcon />
+      </IconButton>
+      <IconButton aria-label="remove" onClick={onRemove}>
+        <CloseIcon />
+      </IconButton>
     </SortableImageButtonsWrapper>
   );
 }

@@ -5,6 +5,9 @@ import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { translate } from 'react-polyglot';
 import { Link } from 'react-router-dom';
+import PreviewIcon from '@mui/icons-material/Preview';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import InfoIcon from '@mui/icons-material/Info';
 
 import {
   Icon,
@@ -321,12 +324,12 @@ export class EditorToolbar extends React.Component {
         {deployPreviewReady ? (
           <PreviewLink rel="noopener noreferrer" target="_blank" href={url}>
             <span>{label}</span>
-            <Icon type="new-tab" size="xsmall" />
+            <PreviewIcon size="sm" />
           </PreviewLink>
         ) : (
           <RefreshPreviewButton onClick={loadDeployPreview}>
             <span>{t('editor.editorToolbar.deployPreviewPendingButtonLabel')}</span>
-            <Icon type="refresh" size="xsmall" />
+            <RefreshIcon size="sm" />
           </RefreshPreviewButton>
         )}
       </PreviewButtonContainer>
@@ -345,7 +348,7 @@ export class EditorToolbar extends React.Component {
     return (
       <TooltipContainer key="status-info-tooltip">
         <Tooltip>
-          <Icon type="info-circle" size="small" className="tooltip" />
+          <InfoIcon size="sm" />
         </Tooltip>
         {statusKey && (
           <TooltipText>{t(`editor.editorToolbar.${statusToLocaleKey[statusKey]}`)}</TooltipText>
@@ -654,9 +657,13 @@ export class EditorToolbar extends React.Component {
               })}
             </BackCollection>
             {hasChanged ? (
-              <BackStatusChanged key="unsaved">{t('editor.editorToolbar.unsavedChanges')}</BackStatusChanged>
+              <BackStatusChanged key="unsaved">
+                {t('editor.editorToolbar.unsavedChanges')}
+              </BackStatusChanged>
             ) : (
-              <BackStatusUnchanged key="saved">{t('editor.editorToolbar.changesSaved')}</BackStatusUnchanged>
+              <BackStatusUnchanged key="saved">
+                {t('editor.editorToolbar.changesSaved')}
+              </BackStatusUnchanged>
             )}
           </div>
         </ToolbarSectionBackLink>

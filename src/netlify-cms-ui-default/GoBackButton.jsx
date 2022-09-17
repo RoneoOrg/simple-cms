@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import React from 'react';
 import PropTypes from 'prop-types';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import { colorsRaw } from './styles.js';
 import Icon from './Icon';
@@ -31,7 +32,7 @@ export default class GoBackButton extends React.Component {
 
     return (
       <GoBackButtonStyle href={href}>
-        <Icon type="arrow" size="small" />
+        <ArrowBackIcon size="sm" />
         <ButtonText>{t('ui.default.goBackToSite')}</ButtonText>
       </GoBackButtonStyle>
     );

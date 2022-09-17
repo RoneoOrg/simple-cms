@@ -1,6 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
+import DragHandleIcon from '@mui/icons-material/DragHandle';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import CloseIcon from '@mui/icons-material/Close';
 
 import Icon from './Icon';
 import { colors, lengths, buttons } from './styles';
@@ -38,7 +41,7 @@ const DragIconContainer = styled(TopBarButtonSpan)`
 function DragHandle({ dragHandleHOC }) {
   const Handle = dragHandleHOC(() => (
     <DragIconContainer>
-      <Icon type="drag-handle" size="small" />
+      <DragHandleIcon size="sm" />
     </DragIconContainer>
   ));
   return <Handle />;
@@ -49,13 +52,13 @@ function ListItemTopBar({ className, collapsed, onCollapseToggle, onRemove, drag
     <TopBar className={className}>
       {onCollapseToggle ? (
         <TopBarButton onClick={onCollapseToggle}>
-          <Icon type="chevron" size="small" direction={collapsed ? 'right' : 'down'} />
+          <ChevronRightIcon size="sm" sx={{ transform: collapsed ? 'rotate(0)' : 'rotate(90)' }} />
         </TopBarButton>
       ) : null}
       {dragHandleHOC ? <DragHandle dragHandleHOC={dragHandleHOC} /> : null}
       {onRemove ? (
         <TopBarButton onClick={onRemove}>
-          <Icon type="close" size="small" />
+          <CloseIcon size="sm" />
         </TopBarButton>
       ) : null}
     </TopBar>

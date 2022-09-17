@@ -5,6 +5,7 @@ import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import { translate } from 'react-polyglot';
 import { NavLink } from 'react-router-dom';
+import CreateIcon from '@mui/icons-material/Create';
 
 import { Icon, components, colors } from '../../../netlify-cms-ui-default';
 import { searchCollections } from '../../actions/collections';
@@ -98,7 +99,7 @@ export class Sidebar extends React.Component {
           $activeClassName="sidebar-active"
           data-testid={collectionName}
         >
-          <Icon type="write" />
+          <CreateIcon />
           {collection.get('label')}
         </SidebarNavLink>
       </li>

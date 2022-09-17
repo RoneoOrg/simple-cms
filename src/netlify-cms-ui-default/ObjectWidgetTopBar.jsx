@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import ImmutablePropTypes from 'react-immutable-proptypes';
+import AddIcon from '@mui/icons-material/Add';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 import Icon from './Icon';
 import { colors, buttons } from './styles';
@@ -97,7 +99,7 @@ class ObjectWidgetTopBar extends React.Component {
     return (
       <AddButton onClick={this.props.onAdd}>
         {this.props.t('editor.editorWidgets.list.add', { item: this.props.label })}
-        <Icon type="add" size="xsmall" />
+        <AddIcon />
       </AddButton>
     );
   }
@@ -109,7 +111,10 @@ class ObjectWidgetTopBar extends React.Component {
       <TopBarContainer>
         <ExpandButtonContainer hasHeading={!!heading}>
           <ExpandButton onClick={onCollapseToggle} data-testid="expand-button">
-            <Icon type="chevron" direction={collapsed ? 'right' : 'down'} size="small" />
+            <ChevronRightIcon
+              size="sm"
+              sx={{ transform: collapsed ? 'rotate(0)' : 'rotate(90)' }}
+            />
           </ExpandButton>
           {heading}
         </ExpandButtonContainer>

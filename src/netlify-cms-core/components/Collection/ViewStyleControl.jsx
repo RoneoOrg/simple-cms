@@ -1,5 +1,7 @@
 import React from 'react';
 import styled from '@emotion/styled';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import GridViewIcon from '@mui/icons-material/GridView';
 
 import { Icon, buttons, colors } from '../../../netlify-cms-ui-default';
 import { VIEW_STYLE_LIST, VIEW_STYLE_GRID } from '../../constants/collectionViews';
@@ -35,13 +37,13 @@ function ViewStyleControl({ viewStyle, onChangeViewStyle }) {
         isActive={viewStyle === VIEW_STYLE_LIST}
         onClick={() => onChangeViewStyle(VIEW_STYLE_LIST)}
       >
-        <Icon type="list" />
+        <ViewListIcon />
       </ViewControlsButton>
       <ViewControlsButton
         isActive={viewStyle === VIEW_STYLE_GRID}
         onClick={() => onChangeViewStyle(VIEW_STYLE_GRID)}
       >
-        <Icon type="grid" />
+        <GridViewIcon />
       </ViewControlsButton>
     </ViewControlsSection>
   );

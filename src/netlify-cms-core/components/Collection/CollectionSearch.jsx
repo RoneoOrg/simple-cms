@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 import { translate } from 'react-polyglot';
 import PropTypes from 'prop-types';
 import ImmutablePropTypes from 'react-immutable-proptypes';
+import SearchIcon from '@mui/icons-material/Search';
 
 import { colorsRaw, colors, Icon, lengths, zIndex } from '../../../netlify-cms-ui-default';
 
@@ -197,7 +198,7 @@ class CollectionSearch extends React.Component {
         onFocus={() => this.toggleSuggestions(query !== '')}
       >
         <InputContainer>
-          <Icon type="search" />
+          <SearchIcon />
           <SearchInput
             onChange={e => this.handleQueryChange(e.target.value)}
             onKeyDown={this.handleKeyDown}

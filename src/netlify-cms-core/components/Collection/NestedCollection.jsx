@@ -8,6 +8,7 @@ import { dirname, sep } from 'path-browserify';
 import PropTypes from 'prop-types';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import { sortBy } from 'lodash';
+import CreateIcon from '@mui/icons-material/Create';
 
 import { stringTemplate } from '../../../netlify-cms-lib-widgets';
 import { Icon, colors, components } from '../../../netlify-cms-ui-default';
@@ -103,7 +104,7 @@ function TreeNode(props) {
           depth={depth}
           data-testid={node.path}
         >
-          <Icon type="write" />
+          <CreateIcon />
           <NodeTitleContainer>
             <NodeTitle>{title}</NodeTitle>
             {hasChildren && (node.expanded ? <CaretDown /> : <CaretRight />)}

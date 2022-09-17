@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from '@emotion/styled';
 import { Icon, buttons, shadows, zIndex } from '../netlify-cms-ui-default';
+import CloseIcon from '@mui/icons-material/Close';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 const StyledSettingsButton = styled.button`
   ${buttons.button};
@@ -25,7 +27,7 @@ const StyledSettingsButton = styled.button`
 function SettingsButton({ showClose, onClick }) {
   return (
     <StyledSettingsButton onClick={onClick}>
-      <Icon type={showClose ? 'close' : 'settings'} size="small" />
+      {showClose ? <CloseIcon key="close-icon" /> : <SettingsIcon key="settings-icon" />}
     </StyledSettingsButton>
   );
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
+import CloseIcon from '@mui/icons-material/Close';
 
 import { Icon, shadows, colors, buttons } from '../../../netlify-cms-ui-default';
 
@@ -33,7 +34,7 @@ function MediaLibraryHeader({ onClose, title, isPrivate }) {
   return (
     <div>
       <CloseButton onClick={onClose}>
-        <Icon type="close" />
+        <CloseIcon />
       </CloseButton>
       <LibraryTitle isPrivate={isPrivate}>{title}</LibraryTitle>
     </div>
