@@ -10,7 +10,7 @@ import type { Deploys } from '../reducers/deploys';
 import type { Search } from '../reducers/search';
 import type { GlobalUI } from '../reducers/globalUI';
 import type { formatExtensions } from '../formats/formats';
-import { ToastrState } from 'react-redux-toastr';
+import { SnackbarState } from '../redux/slices/snackbars';
 
 export type CmsBackendType =
   | 'azure'
@@ -682,7 +682,7 @@ export interface State {
   medias: Medias;
   mediaLibrary: MediaLibrary;
   search: Search;
-  toastr: ToastrState;
+  snackbar: SnackbarState;
   status: Status;
 }
 

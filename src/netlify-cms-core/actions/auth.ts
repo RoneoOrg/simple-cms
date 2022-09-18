@@ -1,11 +1,10 @@
-import { toastr } from 'react-redux-toastr';
-
 import { currentBackend } from '../backend';
 
 import type { Credentials, User } from '../../netlify-cms-lib-util';
 import type { ThunkDispatch } from 'redux-thunk';
 import type { AnyAction } from 'redux';
 import type { State } from '../types/redux';
+import { addSnackbar } from '../redux/slices/snackbars';
 
 export const AUTH_REQUEST = 'AUTH_REQUEST';
 export const AUTH_SUCCESS = 'AUTH_SUCCESS';
@@ -93,7 +92,10 @@ export function loginUser(credentials: Credentials) {
       })
       .catch((error: Error) => {
         console.error(error);
-        toastr.warning(error.message);
+        dispatch(addSnackbar({
+          type: 'warning',
+          message: error.message
+        }));
         dispatch(authError(error));
       });
   };
@@ -105,7 +107,6 @@ export function logoutUser() {
     const backend = currentBackend(state.config);
     Promise.resolve(backend.logout()).then(() => {
       dispatch(logout());
-      toastr.clean();
     });
   };
 }

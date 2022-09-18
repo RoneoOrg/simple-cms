@@ -1,12 +1,12 @@
 import { combineReducers } from 'redux';
-import {reducer as toastrReducer} from 'react-redux-toastr'
+import snackbarReducer from '../redux/slices/snackbars';
 
 import reducers from './index';
 
 function createRootReducer() {
   return combineReducers({
     ...reducers,
-    toastr: toastrReducer // <- Mounted at toastr.
+    snackbar: snackbarReducer
   });
 }
 

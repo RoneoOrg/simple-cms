@@ -1,6 +1,5 @@
 import { List, Map } from 'immutable';
 import { isEqual } from 'lodash';
-import { toastr } from 'react-redux-toastr';
 
 import { Cursor } from '../../netlify-cms-lib-util';
 import { toMap, toStaticallyTypedRecord } from '../../util/ImmutableUtil';
@@ -41,6 +40,7 @@ import type {
 } from '../types/redux';
 import type AssetProxy from '../valueObjects/AssetProxy';
 import type { EntryValue } from '../valueObjects/Entry';
+import { addSnackbar } from '../redux/slices/snackbars';
 
 /*
  * Constant Declarations
@@ -536,7 +536,10 @@ export function loadEntry(collection: Collection, slug: string) {
       dispatch(createDraftFromEntry(loadedEntry));
     } catch (error: any) {
       console.error(error);
-      toastr.error(`Failed to load entry: ${error.message}`);
+      dispatch(addSnackbar({
+        type: 'error',
+        message: `Failed to load entry: ${error.message}`
+      }));
       dispatch(entryLoadError(error, collection, slug));
     }
   };
@@ -622,7 +625,10 @@ export function loadEntries(collection: Collection, page = 0) {
         ),
       );
     } catch (err: any) {
-      toastr.error(`Failed to load entry: ${err.message}`);
+      dispatch(addSnackbar({
+        type: 'error',
+        message: `Failed to load entry: ${err.message}`
+      }));
       return Promise.reject(dispatch(entriesFailed(collection, err)));
     }
   };
@@ -665,7 +671,10 @@ export function traverseCollectionCursor(collection: Collection, action: string)
       );
     } catch (err: any) {
       console.error(err);
-      toastr.error(`Failed to load entry: ${err.message}`);
+      dispatch(addSnackbar({
+        type: 'error',
+        message: `Failed to load entry: ${err.message}`
+      }));
       return Promise.reject(dispatch(entriesFailed(collection, err)));
     }
   };
@@ -866,7 +875,10 @@ export function persistEntry(collection: Collection) {
       );
 
       if (hasPresenceErrors) {
-        toastr.error("Oops, you've missed a required field. Please complete before saving.");
+        dispatch(addSnackbar({
+          type: 'error',
+          message: "Oops, you've missed a required field. Please complete before saving."
+        }));
       }
 
       return Promise.reject();
@@ -890,7 +902,10 @@ export function persistEntry(collection: Collection) {
         usedSlugs,
       })
       .then(async (newSlug: string) => {
-        toastr.error('Entry saved.');
+        dispatch(addSnackbar({
+          type: 'success',
+          message: 'Entry saved.'
+        }));
 
         // re-load media library if entry had media files
         if (assetProxies.length > 0) {
@@ -907,7 +922,10 @@ export function persistEntry(collection: Collection) {
       })
       .catch((error: Error) => {
         console.error(error);
-        toastr.error(`Failed to persist entry: ${error}`);
+        dispatch(addSnackbar({
+          type: 'error',
+          message: `Failed to persist entry: ${error}`
+        }));
         return Promise.reject(dispatch(entryPersistFail(collection, serializedEntry, error)));
       });
   };
@@ -925,7 +943,10 @@ export function deleteEntry(collection: Collection, slug: string) {
         return dispatch(entryDeleted(collection, slug));
       })
       .catch((error: Error) => {
-        toastr.error(`Failed to delete entry: ${error}`);
+        dispatch(addSnackbar({
+          type: 'error',
+          message: `Failed to delete entry: ${error}`
+        }));
         console.error(error);
         return Promise.reject(dispatch(entryDeleteFail(collection, slug, error)));
       });

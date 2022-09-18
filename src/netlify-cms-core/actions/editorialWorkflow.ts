@@ -1,5 +1,4 @@
 import { get } from 'lodash';
-import { toastr } from 'react-redux-toastr';
 import { Map, List } from 'immutable';
 
 import { currentBackend, slugFromCustomPath } from '../backend';
@@ -38,6 +37,7 @@ import type { AnyAction } from 'redux';
 import type { EntryValue } from '../valueObjects/Entry';
 import type { Status } from '../constants/publishModes';
 import type { ThunkDispatch } from 'redux-thunk';
+import { addSnackbar } from '../redux/slices/snackbars';
 
 /*
  * Constant Declarations
@@ -274,7 +274,10 @@ export function loadUnpublishedEntry(collection: Collection, slug: string) {
         dispatch(unpublishedEntryRedirected(collection, slug));
         dispatch(loadEntry(collection, slug));
       } else {
-        toastr.error(`Failed to load entry: ${error}`);
+        dispatch(addSnackbar({
+          type: 'error',
+          message: `Failed to load entry: ${error}`
+        }));
       }
     }
   };
@@ -295,7 +298,10 @@ export function loadUnpublishedEntries(collections: Collections) {
       .unpublishedEntries(collections)
       .then(response => dispatch(unpublishedEntriesLoaded(response.entries, response.pagination)))
       .catch((error: Error) => {
-        toastr.error(`Failed to load entry: ${error.message}`);
+        dispatch(addSnackbar({
+          type: 'error',
+          message: `Failed to load entry: ${error.message}`
+        }));
         dispatch(unpublishedEntriesFailed(error));
         Promise.reject(error);
       });
@@ -322,7 +328,10 @@ export function persistUnpublishedEntry(collection: Collection, existingUnpublis
       );
 
       if (hasPresenceErrors) {
-        toastr.error("Oops, you've missed a required field. Please complete before saving.");
+        dispatch(addSnackbar({
+          type: 'error',
+          message: "Oops, you've missed a required field. Please complete before saving."
+        }));
       }
       return Promise.reject();
     }
@@ -349,7 +358,10 @@ export function persistUnpublishedEntry(collection: Collection, existingUnpublis
         assetProxies,
         usedSlugs,
       });
-      toastr.success('Entry saved');
+      dispatch(addSnackbar({
+        type: 'success',
+        message: 'Entry saved'
+      }));
       dispatch(unpublishedEntryPersisted(collection, serializedEntry));
 
       if (entry.get('slug') !== newSlug) {
@@ -357,7 +369,10 @@ export function persistUnpublishedEntry(collection: Collection, existingUnpublis
         navigateToEntry(collection.get('name'), newSlug);
       }
     } catch (error: any) {
-      toastr.error(`Failed to persist entry: ${error}`);
+      dispatch(addSnackbar({
+        type: 'error',
+        message: `Failed to persist entry: ${error}`
+      }));
       return Promise.reject(
         dispatch(unpublishedEntryPersistedFail(error, collection, entry.get('slug'))),
       );
@@ -379,11 +394,17 @@ export function updateUnpublishedEntryStatus(
     backend
       .updateUnpublishedEntryStatus(collection, slug, newStatus)
       .then(() => {
-        toastr.success('Entry status updated');
+        dispatch(addSnackbar({
+          type: 'success',
+          message: 'Entry status updated'
+        }));
         dispatch(unpublishedEntryStatusChangePersisted(collection, slug, newStatus));
       })
       .catch((error: Error) => {
-        toastr.error(`Failed to update status: ${error}`);
+        dispatch(addSnackbar({
+          type: 'error',
+          message: `Failed to update status: ${error}`
+        }));
         dispatch(unpublishedEntryStatusChangeError(collection, slug));
       });
   };
@@ -397,11 +418,17 @@ export function deleteUnpublishedEntry(collection: string, slug: string) {
     return backend
       .deleteUnpublishedEntry(collection, slug)
       .then(() => {
-        toastr.success('Unpublished changes deleted');
+        dispatch(addSnackbar({
+          type: 'success',
+          message: 'Unpublished changes deleted'
+        }));
         dispatch(unpublishedEntryDeleted(collection, slug));
       })
       .catch((error: Error) => {
-        toastr.error(`Failed to delete unpublished changes: ${error.message}`);
+        dispatch(addSnackbar({
+          type: 'error',
+          message: `Failed to delete unpublished changes: ${error.message}`
+        }));
         dispatch(unpublishedEntryDeleteError(collection, slug));
       });
   };
@@ -418,7 +445,10 @@ export function publishUnpublishedEntry(collectionName: string, slug: string) {
       await backend.publishUnpublishedEntry(entry);
       // re-load media after entry was published
       dispatch(loadMedia());
-      toastr.success('Entry published');
+      dispatch(addSnackbar({
+        type: 'success',
+        message: 'Entry published'
+      }));
       dispatch(unpublishedEntryPublished(collectionName, slug));
       const collection = collections.get(collectionName);
       if (collection.has('nested')) {
@@ -432,7 +462,10 @@ export function publishUnpublishedEntry(collectionName: string, slug: string) {
         return dispatch(loadEntry(collection, slug));
       }
     } catch (error: any) {
-      toastr.error(`Failed to publish: ${error}`);
+      dispatch(addSnackbar({
+        type: 'error',
+        message: `Failed to publish: ${error}`
+      }));
       dispatch(unpublishedEntryPublishError(collectionName, slug));
     }
   };
@@ -461,10 +494,16 @@ export function unpublishPublishedEntry(collection: Collection, slug: string) {
         dispatch(unpublishedEntryPersisted(collection, entry));
         dispatch(entryDeleted(collection, slug));
         dispatch(loadUnpublishedEntry(collection, slug));
-        toastr.success('Entry unpublished');
+        dispatch(addSnackbar({
+          type: 'success',
+          message: 'Entry unpublished'
+        }));
       })
       .catch((error: Error) => {
-        toastr.error(`Failed to unpublish entry: ${error.message}`);
+        dispatch(addSnackbar({
+          type: 'error',
+          message: `Failed to unpublish entry: ${error.message}`
+        }));
         dispatch(unpublishedEntryPersistedFail(error, collection, entry.get('slug')));
       });
   };

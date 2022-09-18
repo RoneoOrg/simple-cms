@@ -1,18 +1,11 @@
-import { createStore, applyMiddleware } from 'redux';
-import { composeWithDevTools } from 'redux-devtools-extension';
-import thunkMiddleware from 'redux-thunk';
-
-import { waitUntilAction } from './middleware/waitUntilAction';
 import createRootReducer from '../reducers/combinedReducer';
 
-import type { ThunkMiddleware } from 'redux-thunk';
-import type { AnyAction } from 'redux';
-import type { State } from '../types/redux';
-import type { Reducer } from 'react';
+import { configureStore } from '@reduxjs/toolkit';
 
-const store = createStore<State | undefined, AnyAction, unknown, unknown>(
-  createRootReducer() as unknown as Reducer<State | undefined, AnyAction>,
-  composeWithDevTools(applyMiddleware(thunkMiddleware as ThunkMiddleware<State>, waitUntilAction)),
-);
+const store = configureStore({
+  reducer: createRootReducer(),
+});
 
 export { store };
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

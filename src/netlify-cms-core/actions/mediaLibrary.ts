@@ -1,5 +1,4 @@
 import { Map } from 'immutable';
-import { toastr } from 'react-redux-toastr';
 
 import { currentBackend } from '../backend';
 import { createAssetProxy } from '../valueObjects/AssetProxy';
@@ -29,6 +28,7 @@ import type { AnyAction } from 'redux';
 import type { ThunkDispatch } from 'redux-thunk';
 import type AssetProxy from '../valueObjects/AssetProxy';
 import type { ImplementationMediaFile } from '../../netlify-cms-lib-util';
+import { addSnackbar } from '../redux/slices/snackbars';
 
 export const MEDIA_LIBRARY_OPEN = 'MEDIA_LIBRARY_OPEN';
 export const MEDIA_LIBRARY_CLOSE = 'MEDIA_LIBRARY_CLOSE';
@@ -297,7 +297,10 @@ export function persistMedia(file: File, opts: MediaOptions = {}) {
       return dispatch(mediaPersisted(mediaFile, { privateUpload }));
     } catch (error: any) {
       console.error(error);
-      toastr.error(`Failed to persist media: ${error}`);
+      dispatch(addSnackbar({
+        type: 'error',
+        message: `Failed to persist media: ${error}`
+      }));
       return dispatch(mediaPersistFailed({ privateUpload }));
     }
   };
@@ -318,7 +321,10 @@ export function deleteMedia(file: MediaFile, opts: MediaOptions = {}) {
         return dispatch(mediaDeleted(file, { privateUpload }));
       } catch (error: any) {
         console.error(error);
-        toastr.error(`Failed to delete media: ${error.message}`);
+        dispatch(addSnackbar({
+          type: 'error',
+          message: `Failed to delete media: ${error.message}`
+        }));
         return dispatch(mediaDeleteFailed({ privateUpload }));
       }
     }
@@ -342,7 +348,10 @@ export function deleteMedia(file: MediaFile, opts: MediaOptions = {}) {
       }
     } catch (error: any) {
       console.error(error);
-      toastr.error(`Failed to delete media: ${error.message}`);
+      dispatch(addSnackbar({
+        type: 'error',
+        message: `Failed to delete media: ${error.message}`
+      }));
       return dispatch(mediaDeleteFailed());
     }
   };

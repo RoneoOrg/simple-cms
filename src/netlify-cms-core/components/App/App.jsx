@@ -6,7 +6,6 @@ import styled from '@emotion/styled';
 import { connect, Provider } from 'react-redux';
 import { Route, Routes, Navigate, useParams } from 'react-router-dom';
 import TopBarProgress from 'react-topbar-progress-indicator';
-import ReduxToastr from 'react-redux-toastr';
 
 import { Loader, colors } from '../../../netlify-cms-ui-default';
 import { loginUser, logoutUser } from '../../actions/auth';
@@ -24,6 +23,7 @@ import Header from './Header';
 import CollectionRoute from '../Collection/CollectionRoute';
 import { store } from '../../redux';
 import EditorRoute from '../Editor/EditorRoute';
+import Snackbars from '../snackbar/Snackbars';
 
 TopBarProgress.config({
   barColors: {
@@ -118,17 +118,6 @@ class App extends React.Component {
 
     return (
       <div>
-        <ReduxToastr
-          timeOut={4000}
-          newestOnTop={false}
-          preventDuplicates
-          position="top-left"
-          getState={state => state.toastr} // This is the default
-          transitionIn="fadeIn"
-          transitionOut="fadeOut"
-          progressBar
-          closeOnToastrClick
-        />
         {React.createElement(backend.authComponent(), {
           onLogin: this.handleLogin.bind(this),
           error: auth.error,
@@ -176,7 +165,12 @@ class App extends React.Component {
     }
 
     if (user == null) {
-      return this.authenticating(t);
+      return (
+        <Provider store={store}>
+          <Snackbars />
+          {this.authenticating(t)}
+        </Provider>
+      );
     }
 
     const defaultPath = getDefaultPath(collections);
@@ -184,17 +178,7 @@ class App extends React.Component {
 
     return (
       <Provider store={store}>
-        <ReduxToastr
-          timeOut={4000}
-          newestOnTop={false}
-          preventDuplicates
-          position="top-left"
-          getState={state => state.toastr} // This is the default
-          transitionIn="fadeIn"
-          transitionOut="fadeOut"
-          progressBar
-          closeOnToastrClick
-        />
+        <Snackbars />
         <Header
           user={user}
           collections={collections}

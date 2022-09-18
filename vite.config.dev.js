@@ -1,6 +1,5 @@
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import react from '@vitejs/plugin-react';
-import fs from 'fs';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 
@@ -32,15 +31,6 @@ export default defineConfig({
         global: 'globalThis',
       },
       plugins: [
-        {
-          name: 'load-js-files-as-jsx',
-          setup(build) {
-            build.onLoad({ filter: /node_modules\/(react-redux-toastr)\/.*\.js$/ }, async args => ({
-              loader: 'jsx',
-              contents: fs.readFileSync(args.path),
-            }));
-          },
-        },
         // Enable esbuild polyfill plugins
         NodeGlobalsPolyfillPlugin({
           buffer: true,

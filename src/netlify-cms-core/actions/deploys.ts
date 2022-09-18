@@ -1,11 +1,10 @@
-import { toastr } from 'react-redux-toastr';
-
 import { currentBackend } from '../backend';
 import { selectDeployPreview } from '../reducers';
 
 import type { ThunkDispatch } from 'redux-thunk';
 import type { AnyAction } from 'redux';
 import type { Collection, Entry, State } from '../types/redux';
+import { addSnackbar } from '../redux/slices/snackbars';
 
 export const DEPLOY_PREVIEW_REQUEST = 'DEPLOY_PREVIEW_REQUEST';
 export const DEPLOY_PREVIEW_SUCCESS = 'DEPLOY_PREVIEW_SUCCESS';
@@ -85,7 +84,12 @@ export function loadDeployPreview(
       return dispatch(deployPreviewError(collectionName, slug));
     } catch (error: any) {
       console.error(error);
-      toastr.error(`Failed to load preview: ${error.message}`);
+      dispatch(
+        addSnackbar({
+          type: 'error',
+          message: `Failed to load preview: ${error.message}`,
+        }),
+      );
       dispatch(deployPreviewError(collectionName, slug));
     }
   };
