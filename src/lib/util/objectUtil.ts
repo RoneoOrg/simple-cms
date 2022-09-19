@@ -43,7 +43,7 @@ function setInViaPath(object: Record<string, any>, path: string[], value: any): 
 
   object = {
     ...object,
-    [key]: setInViaPath(object[key], path, value),
+    [key]: setInViaPath(object?.[key] ?? {}, path, value),
   };
 
   return object;

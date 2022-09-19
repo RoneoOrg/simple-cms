@@ -601,9 +601,6 @@ export function loadEntries(collection: Collection, page = 0) {
           : Cursor.create(response.cursor),
       };
 
-      console.log('1', response.cursor.meta!.usingOldPaginationAPI
-      ? response.entries.reverse()
-      : response.entries);
       dispatch(
         entriesLoaded(
           collection,
@@ -659,7 +656,6 @@ export function traverseCollectionCursor(collection: Collection, action: string)
       const { entries, cursor: newCursor } = await traverseCursor(backend, cursor, realAction);
 
       const pagination = (newCursor.meta?.page ?? null) as number | null;
-      console.log(entries);
       return dispatch(
         entriesLoaded(collection, entries, pagination, addAppendActionsToCursor(newCursor), append),
       );

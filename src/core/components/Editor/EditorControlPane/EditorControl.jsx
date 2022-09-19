@@ -212,7 +212,7 @@ class EditorControl extends React.Component {
     } = this.props;
 
     const widgetName = field.widget;
-    const widget = resolveWi[widgetName];
+    const widget = resolveWidget(widgetName);
     const fieldName = field.name;
     const fieldHint = field.hint;
     const isFieldOptional = field.required === false;

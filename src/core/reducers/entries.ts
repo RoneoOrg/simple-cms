@@ -225,8 +225,6 @@ function entries(
       const loadedEntries = payload.entries;
       const page = payload.page;
 
-      console.log('hello from entries reducer!');
-
       const entities = {
         ...state.entities,
       };

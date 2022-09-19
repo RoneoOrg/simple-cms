@@ -101,7 +101,6 @@ export default class Cursor {
           meta?: Record<string, any>;
         },
   ) {
-    console.log(args, (args as any)?.actions.length >= 4);
     if ((args as any)?.actions.length >= 4) {
       throw Error();
     }

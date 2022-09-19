@@ -87,13 +87,13 @@ export function registerWidget(name, control, preview, schema = {}) {
       if (typeof widget !== 'object') {
         console.error(`Cannot register widget: ${widget}`);
       } else {
-        registerWidget[widget];
+        registerWidget(widget);
       }
     });
   } else if (typeof name === 'string') {
     // A registered widget control can be reused by a new widget, allowing
     // multiple copies with different previews.
-    const newControl = typeof control === 'string' ? registry.widgets?.[control]?.control : control;
+    const newControl = typeof control === 'string' ? registry.widgets[control]?.control : control;
     registry.widgets[name] = { control: newControl, preview, schema };
   } else if (typeof name === 'object') {
     const {

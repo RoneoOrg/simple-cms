@@ -44,11 +44,9 @@ export interface CmsSelectWidgetOptionObject {
 export type CmsCollectionFormatType =
   | 'yml'
   | 'yaml'
-  | 'toml'
   | 'json'
   | 'frontmatter'
   | 'yaml-frontmatter'
-  | 'toml-frontmatter'
   | 'json-frontmatter';
 
 export type CmsAuthScope = 'repo' | 'public_repo';

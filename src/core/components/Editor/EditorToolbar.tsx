@@ -7,8 +7,8 @@ import Toolbar from '@mui/material/Toolbar';
 import React from 'react';
 import { translate } from 'react-polyglot';
 import { Link } from 'react-router-dom';
+import { Collection } from '../..';
 import { TranslatedProps } from '../../../interface';
-import { Collection } from '../../types/redux';
 import { SettingsDropdown } from '../UI';
 import ExistingSimplePublishControls from './toolbar/ExistingSimplePublishControls';
 import NewSimplePublishControls from './toolbar/NewSimplePublishControls';
@@ -18,7 +18,6 @@ interface EditorToolbarProps {
   onPersist?: () => void;
   onPersistAndNew?: () => void;
   onPersistAndDuplicate?: () => void;
-  showDelete: boolean;
   onDelete?: () => void;
   onDuplicate?: () => void;
   user?: any;
@@ -35,7 +34,6 @@ const EditorToolbar = ({
   onPersist = () => {},
   onPersistAndNew = () => {},
   onPersistAndDuplicate = () => {},
-  showDelete,
   onDelete = () => {},
   onDuplicate = () => {},
   user = {},
@@ -72,11 +70,9 @@ const EditorToolbar = ({
           ? renderExistingEntrySimplePublishControls(canCreate)
           : renderNewEntrySimplePublishControls(canCreate)}
         <div key="delete-button">
-          {showDelete ? (
-            <Button onClick={onDelete} variant="contained" color="error">
-              {t('editor.editorToolbar.deleteEntry')}
-            </Button>
-          ) : null}
+          <Button onClick={onDelete} variant="contained" color="error">
+            {t('editor.editorToolbar.deleteEntry')}
+          </Button>
         </div>
       </>
     );

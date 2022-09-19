@@ -32,7 +32,7 @@ const timestampTag = {
       'Z' + // Z
       '$',
   ),
-  resolve: (str: string) => new Date(str),
+  resolve: (str: string) => str,
   stringify: (value: Node) => (value as Date).toISOString(),
 } as const;
 

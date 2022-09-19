@@ -666,6 +666,7 @@ export class Backend {
       await this.backupSync.acquire();
       const key = getEntryBackupKey(collection.name, entry.slug);
       const raw = this.entryToRaw(collection, entry);
+      console.log('raw', raw);
 
       if (!raw.trim()) {
         return;
@@ -970,6 +971,7 @@ export class Backend {
     const format = resolveFormat(collection, entry);
     const fieldsOrder = this.fieldsOrder(collection, entry);
     const fieldsComments = selectFieldsComments(collection, entry);
+    console.log('entryToRaw', format, fieldsOrder, fieldsComments);
     return format && format.toFile(entry['data'], fieldsOrder, fieldsComments);
   }
 

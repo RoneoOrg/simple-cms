@@ -41,11 +41,9 @@ export interface CmsSelectWidgetOptionObject {
 export type CmsCollectionFormatType =
   | 'yml'
   | 'yaml'
-  | 'toml'
   | 'json'
   | 'frontmatter'
   | 'yaml-frontmatter'
-  | 'toml-frontmatter'
   | 'json-frontmatter';
 
 export type CmsAuthScope = 'repo' | 'public_repo';
@@ -305,7 +303,7 @@ export interface Collection {
   meta?: { path?: { label: string; widget: string; index_file: string } };
 
   /**
-   * It accepts the following values: yml, yaml, toml, json, md, markdown, html
+   * It accepts the following values: yml, yaml, json, md, markdown, html
    *
    * You may also specify a custom extension not included in the list above, by specifying the format value.
    */

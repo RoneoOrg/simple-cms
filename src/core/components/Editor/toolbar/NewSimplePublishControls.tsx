@@ -80,22 +80,22 @@ const NewSimplePublishControls = ({
           </ListItemIcon>
           <ListItemText>{t('editor.editorToolbar.publishNow')}</ListItemText>
         </MenuItem>
-        {canCreate ? (
-          <>
-            <MenuItem key="persist-and-new" onClick={handleOnPersistAndNew}>
-              <ListItemIcon>
-                <AddIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>{t('editor.editorToolbar.publishAndCreateNew')}</ListItemText>
-            </MenuItem>
-            <MenuItem key="persist-and-duplicate" onClick={handleOnPersistAndDuplicate}>
-              <ListItemIcon>
-                <AddIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>{t('editor.editorToolbar.publishAndDuplicate')}</ListItemText>
-            </MenuItem>
-          </>
-        ) : null}
+        {canCreate
+          ? [
+              <MenuItem key="persist-and-new" onClick={handleOnPersistAndNew}>
+                <ListItemIcon>
+                  <AddIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>{t('editor.editorToolbar.publishAndCreateNew')}</ListItemText>
+              </MenuItem>,
+              <MenuItem key="persist-and-duplicate" onClick={handleOnPersistAndDuplicate}>
+                <ListItemIcon>
+                  <AddIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>{t('editor.editorToolbar.publishAndDuplicate')}</ListItemText>
+              </MenuItem>,
+            ]
+          : null}
       </Menu>
     </>
   );

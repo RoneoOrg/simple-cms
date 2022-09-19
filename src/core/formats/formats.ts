@@ -1,18 +1,25 @@
 import { get } from 'lodash';
-import type { Collection, Entry, Format } from '../types/redux';
+import { Collection } from '..';
+import type { Entry, Format } from '../types/redux';
 import type { Delimiter } from './frontmatter';
-import { FrontmatterInfer, frontmatterJSON } from './frontmatter';
+import { FrontmatterInfer, frontmatterJSON, frontmatterYAML } from './frontmatter';
 import jsonFormatter from './json';
+import yamlFormatter from './yaml';
 
-export const frontmatterFormats = ['yaml-frontmatter', 'toml-frontmatter', 'json-frontmatter'];
+export const frontmatterFormats = ['yaml-frontmatter', 'json-frontmatter'];
 
 export const formatExtensions = {
+  yml: 'yml',
+  yaml: 'yml',
   json: 'json',
   frontmatter: 'md',
   'json-frontmatter': 'md',
+  'yaml-frontmatter': 'md',
 };
 
 export const extensionFormatters = {
+  yml: yamlFormatter,
+  yaml: yamlFormatter,
   json: jsonFormatter,
   md: FrontmatterInfer,
   markdown: FrontmatterInfer,
@@ -21,9 +28,12 @@ export const extensionFormatters = {
 
 function formatByName(name: Format, customDelimiter?: Delimiter) {
   return {
+    yml: yamlFormatter,
+    yaml: yamlFormatter,
     json: jsonFormatter,
     frontmatter: FrontmatterInfer,
     'json-frontmatter': frontmatterJSON(customDelimiter),
+    'yaml-frontmatter': frontmatterYAML(customDelimiter),
   }[name];
 }
 

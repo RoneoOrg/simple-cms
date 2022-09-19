@@ -84,27 +84,6 @@ export default class Widget extends Component {
     );
   }
 
-  processInnerControlRef = ref => {
-    if (!ref) return;
-
-    /**
-     * If the widget is a container that receives state updates from the store,
-     * we'll need to get the ref of the actual control via the `react-redux`
-     * `getWrappedInstance` method. Note that connected widgets must pass
-     * `withRef: true` to `connect` in the options object.
-     */
-    this.innerWrappedControl = ref.getWrappedInstance ? ref.getWrappedInstance() : ref;
-
-    this.wrappedControlValid = this.innerWrappedControl.isValid || truthy;
-
-    /**
-     * Get the `shouldComponentUpdate` method from the wrapped control, and
-     * provide the control instance is the `this` binding.
-     */
-    const { shouldComponentUpdate: scu } = this.innerWrappedControl;
-    this.wrappedControlShouldComponentUpdate = scu && scu.bind(this.innerWrappedControl);
-  };
-
   getValidateValue = () => {
     let value = this.innerWrappedControl?.getValidateValue?.() || this.props.value;
     // Convert list input widget value to string for validation test
@@ -311,7 +290,6 @@ export default class Widget extends Component {
       onRemoveInsertedMedia,
       getAsset,
       forID: uniqueFieldId,
-      ref: this.processInnerControlRef,
       validate: this.validate,
       classNameWrapper,
       classNameWidget,

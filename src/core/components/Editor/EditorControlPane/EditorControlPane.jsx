@@ -91,7 +91,7 @@ function getFieldValue({ field, entry, isTranslatable, locale }) {
     return getIn(entry, [...dataPath, field.name]);
   }
 
-  return entry.data[field.name];
+  return entry.data?.[field.name];
 }
 
 export default class ControlPane extends React.Component {

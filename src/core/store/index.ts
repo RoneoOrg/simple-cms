@@ -8,6 +8,7 @@ const store = configureStore({
   middleware: getDefaultMiddleware => 
     getDefaultMiddleware({
       serializableCheck: {
+        ignoredActions: ['WAIT_UNTIL_ACTION'],
         ignoredActionPaths: ['payload.cursor'],
       },
     }).concat(waitUntilAction),

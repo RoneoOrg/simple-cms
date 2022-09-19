@@ -288,7 +288,7 @@ export default function withFileControl({ forImage } = {}) {
     getMediaLibraryFieldOptions = () => {
       const { field } = this.props;
 
-      if ('media_library' in field?.options) {
+      if (field?.options && 'media_library' in field?.options) {
         warnDeprecatedOptions(field);
         return field.options.media_library ?? {};
       }

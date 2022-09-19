@@ -141,10 +141,12 @@ function EditorContent({
 function isPreviewEnabled(collection, entry) {
   if (collection.type === FILES) {
     const file = getFileFromSlug(collection, entry.slug);
-    const previewEnabled = file?.editor.preview;
-    if (previewEnabled != null) return previewEnabled;
+    const previewEnabled = file?.editor?.preview;
+    if (previewEnabled != null) {
+      return previewEnabled;
+    }
   }
-  return collection.editor.preview ?? true;
+  return collection?.editor?.preview ?? true;
 }
 
 class EditorInterface extends Component {
@@ -207,7 +209,6 @@ class EditorInterface extends Component {
       fieldsMetaData,
       fieldsErrors,
       onChange,
-      showDelete,
       onDelete,
       onPublish,
       onDuplicate,
@@ -319,7 +320,6 @@ class EditorInterface extends Component {
           onPersistAndNew={() => this.handleOnPersist({ createNew: true })}
           onPersistAndDuplicate={() => this.handleOnPersist({ createNew: true, duplicate: true })}
           onDelete={onDelete}
-          showDelete={showDelete}
           onPublish={onPublish}
           onDuplicate={onDuplicate}
           onPublishAndNew={() => this.handleOnPublish({ createNew: true })}
@@ -386,7 +386,6 @@ EditorInterface.propTypes = {
   onChange: PropTypes.func.isRequired,
   onValidate: PropTypes.func.isRequired,
   onPersist: PropTypes.func.isRequired,
-  showDelete: PropTypes.bool.isRequired,
   onDelete: PropTypes.func.isRequired,
   onPublish: PropTypes.func.isRequired,
   onDuplicate: PropTypes.func.isRequired,

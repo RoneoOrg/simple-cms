@@ -48,7 +48,7 @@ function inferFrontmatterFormat(str: string) {
   const lineEnd = str.indexOf('\n');
   const firstLine = str.slice(0, lineEnd !== -1 ? lineEnd : 0).trim();
   if (firstLine.length > 3 && firstLine.slice(0, 3) === '---') {
-    // No need to infer, `gray-matter` will handle things like `---toml` for us.
+    // No need to infer, `gray-matter` will handle things for us.
     return;
   }
   switch (firstLine) {

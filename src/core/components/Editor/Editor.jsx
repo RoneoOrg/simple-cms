@@ -38,7 +38,6 @@ export class Editor extends React.Component {
     loadEntry: PropTypes.func.isRequired,
     persistEntry: PropTypes.func.isRequired,
     deleteEntry: PropTypes.func.isRequired,
-    showDelete: PropTypes.bool.isRequired,
     fields: PropTypes.array.isRequired,
     slug: PropTypes.string,
     newEntry: PropTypes.bool.isRequired,
@@ -297,7 +296,6 @@ export class Editor extends React.Component {
         onDelete={this.handleDeleteEntry}
         onPublish={this.handlePublishEntry}
         onDuplicate={this.handleDuplicateEntry}
-        showDelete={this.props.showDelete}
         user={user}
         hasChanged={hasChanged}
         displayUrl={displayUrl}

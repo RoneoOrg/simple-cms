@@ -84,7 +84,6 @@
     "@emotion/babel-preset-css-prop": "11.10.0",
     "@emotion/react": "11.10.4",
     "@emotion/styled": "11.10.4",
-    "@iarna/toml": "2.2.5",
     "@mui/icons-material": "5.10.3",
     "@mui/material": "5.10.5",
     "@mui/x-date-pickers": "5.0.1",
