@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Map } from 'immutable';
 import { isString } from 'lodash';
 import { WidgetPreviewContainer } from '../../ui-default';
 
@@ -8,8 +7,8 @@ function toValue(value, field) {
   if (isString(value)) {
     return value;
   }
-  if (Map.isMap(value)) {
-    return value.get(field.getIn(['keys', 'code'], 'code'), '');
+  if (typeof value === 'object') {
+    return value[field.keys.code ?? 'code'] ?? '';
   }
   return '';
 }

@@ -1,9 +1,7 @@
+import styled from '@emotion/styled';
 import PropTypes from 'prop-types';
 import React from 'react';
-import ImmutablePropTypes from 'react-immutable-proptypes';
-import styled from '@emotion/styled';
 import { Waypoint } from 'react-waypoint';
-import { Map } from 'immutable';
 
 import { selectFields, selectInferedField } from '../../../reducers/collections';
 import EntryCard from './EntryCard';
@@ -20,8 +18,8 @@ const CardsGrid = styled.ul`
 
 export default class EntryListing extends React.Component {
   static propTypes = {
-    collections: ImmutablePropTypes.iterable.isRequired,
-    entries: ImmutablePropTypes.list,
+    collections: PropTypes.object.isRequired,
+    entries: PropTypes.array,
     viewStyle: PropTypes.string,
     cursor: PropTypes.any.isRequired,
     handleCursorActions: PropTypes.func.isRequired,
@@ -45,8 +43,7 @@ export default class EntryListing extends React.Component {
     const imageField = selectInferedField(collection, 'image');
     const fields = selectFields(collection);
     const inferedFields = [titleField, descriptionField, imageField];
-    const remainingFields =
-      fields && fields.filter(f => inferedFields.indexOf(f.name) === -1);
+    const remainingFields = fields && fields.filter(f => inferedFields.indexOf(f.name) === -1);
     return { titleField, descriptionField, imageField, remainingFields };
   };
 
@@ -76,7 +73,7 @@ export default class EntryListing extends React.Component {
     return (
       <div>
         <CardsGrid>
-          {Map.isMap(collections)
+          {typeof collections === 'object'
             ? this.renderCardsForSingleCollection()
             : this.renderCardsForMultipleCollections()}
           {this.hasMore() && <Waypoint key={page} onEnter={this.handleLoadMore} />}

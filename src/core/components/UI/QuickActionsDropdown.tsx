@@ -2,7 +2,6 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { List } from 'immutable';
 import React, { useCallback, useMemo } from 'react';
 import { translate } from 'react-polyglot';
 import { TranslatedProps } from '../../../interface';

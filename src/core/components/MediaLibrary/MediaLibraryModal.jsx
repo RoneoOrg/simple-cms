@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
-import { Map } from 'immutable';
 import { isEmpty } from 'lodash';
 import { translate } from 'react-polyglot';
 
@@ -194,7 +193,7 @@ MediaLibraryModal.propTypes = {
   handleLoadMore: PropTypes.func.isRequired,
   loadDisplayURL: PropTypes.func.isRequired,
   t: PropTypes.func.isRequired,
-  displayURLs: PropTypes.instanceOf(Map).isRequired,
+  displayURLs: PropTypes.object.isRequired,
 };
 
 export default translate()(MediaLibraryModal);

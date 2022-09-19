@@ -1,25 +1,23 @@
-import { flow, partialRight, trimEnd, trimStart } from 'lodash';
 import { stripIndent } from 'common-tags';
-
-import {
-  selectIdentifier,
-  selectField,
-  selectInferedField,
-  getFileFromSlug,
-} from '../reducers/collections';
-import { sanitizeSlug } from './urlHelper';
+import { flow, partialRight, trimEnd, trimStart } from 'lodash';
+import { Collection } from '..';
+import { getIn } from '../../lib/util/objectUtil';
+import { stringTemplate } from '../../lib/widgets';
 import { FILES } from '../constants/collectionTypes';
 import { COMMIT_AUTHOR, COMMIT_DATE } from '../constants/commitProps';
-import { stringTemplate } from '../../lib/widgets';
-
-import type { Collection, CmsConfig, CmsSlug, Entry } from '../types/redux';
-import { getIn } from '../../lib/util/objectUtil';
+import {
+  getFileFromSlug,
+  selectField,
+  selectIdentifier,
+  selectInferedField,
+} from '../reducers/collections';
+import type { CmsConfig, CmsSlug, Entry } from '../types/redux';
+import { sanitizeSlug } from './urlHelper';
 
 const {
   compileStringTemplate,
   parseDateFromEntry,
   SLUG_MISSING_REQUIRED_DATE,
-  keyToPathArray,
   addFileTemplateFields,
 } = stringTemplate;
 
@@ -218,7 +216,7 @@ export function summaryFormatter(summaryTemplate: string, entry: Entry, collecti
       entry as unknown as Record<string, unknown>,
       selectInferedField(collection, 'date'),
     ) || null;
-  const identifier = entryData.getIn(keyToPathArray(selectIdentifier(collection) as string));
+  const identifier = getIn(entryData, selectIdentifier(collection));
 
   entryData = addFileTemplateFields(entry.path, entryData, collection.folder);
   // allow commit information in summary template

@@ -1,6 +1,8 @@
 import { sortBy, unionBy } from 'lodash';
+import { ComponentType } from 'react';
 import type { Semaphore } from 'semaphore';
 import semaphore from 'semaphore';
+import { TranslatedProps } from '../../interface';
 import type { FileMetadata } from './API';
 import type { AsyncLock } from './asyncLock';
 import type Cursor from './Cursor';
@@ -91,8 +93,19 @@ export type Config = {
   site_id?: string;
 };
 
+export interface AuthenticationPageProps {
+  onLogin: (state: {}) => void;
+  inProgress: boolean;
+  config: any;
+  error?: any;
+  siteId: string;
+  base_url: string;
+  authEndpoint: string;
+  clearHash: () => void;
+}
+
 export interface Implementation {
-  authComponent: () => void;
+  authComponent: () => ComponentType<TranslatedProps<AuthenticationPageProps>>;
   restoreUser: (user: User) => Promise<User>;
 
   authenticate: (credentials: Credentials) => Promise<User>;

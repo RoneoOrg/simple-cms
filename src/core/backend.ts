@@ -1,6 +1,7 @@
 import * as fuzzy from 'fuzzy';
 import { attempt, flatten, get, isError, set, trim, uniq } from 'lodash';
 import { basename, dirname, extname, join } from 'path-browserify';
+import { Collection } from '.';
 import type {
   AsyncLock,
   Credentials,
@@ -51,16 +52,13 @@ import { selectCustomPath } from './reducers/entryDraft';
 import { selectIntegration } from './reducers/integrations';
 import type {
   CmsConfig,
-  Collection,
   EntryDraft,
   EntryField,
-  Entry,
   Entry,
   FilterRule,
   State,
 } from './types/redux';
 import type AssetProxy from './valueObjects/AssetProxy';
-import type { EntryValue } from './valueObjects/Entry';
 import { createEntry } from './valueObjects/Entry';
 
 const { extractTemplateVars, dateParsers, expandPath } = stringTemplate;
@@ -108,15 +106,15 @@ function getEntryBackupKey(collectionName?: string, slug?: string) {
   return `${baseKey}.${collectionName}${suffix}`;
 }
 
-function getEntryField(field: string, entry: EntryValue) {
+function getEntryField(field: string, entry: Entry) {
   const value = get(entry.data, field);
   if (value) {
     return String(value);
   } else {
     const firstFieldPart = field.split('.')[0];
-    if (entry[firstFieldPart as keyof EntryValue]) {
+    if (entry[firstFieldPart as keyof Entry]) {
       // allows searching using entry.slug/entry.path etc.
-      return entry[firstFieldPart as keyof EntryValue];
+      return entry[firstFieldPart as keyof Entry];
     } else {
       return '';
     }
@@ -124,7 +122,7 @@ function getEntryField(field: string, entry: EntryValue) {
 }
 
 export function extractSearchFields(searchFields: string[]) {
-  return (entry: EntryValue) =>
+  return (entry: Entry) =>
     searchFields.reduce((acc, field) => {
       const value = getEntryField(field, entry);
       if (value) {
@@ -135,7 +133,7 @@ export function extractSearchFields(searchFields: string[]) {
     }, '');
 }
 
-export function expandSearchEntries(entries: EntryValue[], searchFields: string[]) {
+export function expandSearchEntries(entries: Entry[], searchFields: string[]) {
   // expand the entries for the purpose of the search
   const expandedEntries = entries.reduce((acc, e) => {
     const expandedFields = searchFields.reduce((acc, f) => {
@@ -149,12 +147,12 @@ export function expandSearchEntries(entries: EntryValue[], searchFields: string[
     }
 
     return acc;
-  }, [] as (EntryValue & { field: string })[]);
+  }, [] as (Entry & { field: string })[]);
 
   return expandedEntries;
 }
 
-export function mergeExpandedEntries(entries: (EntryValue & { field: string })[]) {
+export function mergeExpandedEntries(entries: (Entry & { field: string })[]) {
   // merge the search results by slug and only keep data that matched the search
   const fields = entries.map(f => f.field);
   const arrayPaths: Record<string, Set<string>> = {};
@@ -178,7 +176,7 @@ export function mergeExpandedEntries(entries: (EntryValue & { field: string })[]
     }
 
     return acc;
-  }, {} as Record<string, EntryValue>);
+  }, {} as Record<string, Entry>);
 
   // this keeps the search score sorting order designated by the order in entries
   // and filters non matching items
@@ -208,7 +206,7 @@ export function mergeExpandedEntries(entries: (EntryValue & { field: string })[]
   return Object.values(merged);
 }
 
-function sortByScore(a: fuzzy.FilterResult<EntryValue>, b: fuzzy.FilterResult<EntryValue>) {
+function sortByScore(a: fuzzy.FilterResult<Entry>, b: fuzzy.FilterResult<Entry>) {
   if (a.score > b.score) return -1;
   if (a.score < b.score) return 1;
   return 0;
@@ -511,7 +509,7 @@ export class Backend {
     const response = await this.listEntries(collection);
     const { entries } = response;
     let { cursor } = response;
-    while (cursor && cursor.actions!.includes('next')) {
+    while (cursor && cursor.actions!.has('next')) {
       const { entries: newEntries, cursor: newCursor } = await this.traverseCursor(cursor, 'next');
       entries.push(...newEntries);
       cursor = newCursor;
@@ -559,7 +557,7 @@ export class Backend {
       .map(p =>
         p.catch(err => {
           errors.push(err);
-          return [] as fuzzy.FilterResult<EntryValue>[];
+          return [] as fuzzy.FilterResult<Entry>[];
         }),
       );
 
@@ -572,9 +570,9 @@ export class Backend {
     }
 
     const hits = entries
-      .filter(({ score }: fuzzy.FilterResult<EntryValue>) => score > 5)
+      .filter(({ score }: fuzzy.FilterResult<Entry>) => score > 5)
       .sort(sortByScore)
-      .map((f: fuzzy.FilterResult<EntryValue>) => f.original);
+      .map((f: fuzzy.FilterResult<Entry>) => f.original);
     return { entries: hits };
   }
 
@@ -654,7 +652,7 @@ export class Backend {
       );
     };
 
-    const entry: EntryValue = formatRawData(raw);
+    const entry: Entry = formatRawData(raw);
     if (hasI18n(collection) && backup.i18n) {
       const i18n = formatI18nBackup(backup.i18n, formatRawData);
       entry.i18n = i18n;
@@ -745,7 +743,7 @@ export class Backend {
       return entry;
     };
 
-    let entryValue: EntryValue;
+    let entryValue: Entry;
     if (hasI18n(collection)) {
       entryValue = await getI18nEntry(collection, extension, path, slug, getEntryValue);
     } else {
@@ -775,7 +773,7 @@ export class Backend {
   }
 
   entryWithFormat(collection: Collection) {
-    return (entry: EntryValue): EntryValue => {
+    return (entry: Entry): Entry => {
       const format = resolveFormat(collection, entry);
       if (entry && entry.raw !== undefined) {
         const data = (format && attempt(format.fromFile.bind(format, entry.raw))) || {};
@@ -786,16 +784,16 @@ export class Backend {
     };
   }
 
-  async processEntry(state: State, collection: Collection, entry: EntryValue) {
+  async processEntry(state: State, collection: Collection, entry: Entry) {
     const integration = selectIntegration(state.integrations, null, 'assetStore');
     const mediaFolders = selectMediaFolders(
       state.config,
       collection,
       entry as unknown as Entry,
     );
-    if (mediaFolders.length > 0 && !integration) {
+    if (mediaFolders.size > 0 && !integration) {
       const files = await Promise.all(
-        mediaFolders.map((folder: string) => this.implementation.getMedia(folder)),
+        [...mediaFolders].map((folder: string) => this.implementation.getMedia(folder)),
       );
       entry.mediaFiles = entry.mediaFiles.concat(...files);
     } else {
@@ -978,7 +976,7 @@ export class Backend {
   fieldsOrder(collection: Collection, entry: Entry) {
     const fields = collection['fields'];
     if (fields) {
-      return collection.fields.map(f => f!.name);
+      return fields.map(f => f!.name);
     }
 
     const files = collection.files;
@@ -990,7 +988,7 @@ export class Backend {
     return file.fields.map(f => f!.name);
   }
 
-  filterEntries(collection: { entries: EntryValue[] }, filterRule: FilterRule) {
+  filterEntries(collection: { entries: Entry[] }, filterRule: FilterRule) {
     return collection.entries.filter(entry => {
       const fieldValue = entry.data[filterRule.field];
       if (Array.isArray(fieldValue)) {

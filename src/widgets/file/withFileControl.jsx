@@ -1,9 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
-import { Map, List } from 'immutable';
 import { once } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { oneLine } from 'common-tags';
@@ -143,7 +141,7 @@ const FileWidgetButtonRemove = styled.button`
 `;
 
 function isMultiple(value) {
-  return Array.isArray(value) || List.isList(value);
+  return Array.isArray(value) || Array.isArray(value);
 }
 
 function sizeOfValue(value) {
@@ -151,7 +149,7 @@ function sizeOfValue(value) {
     return value.length;
   }
 
-  if (List.isList(value)) {
+  if (Array.isArray(value)) {
     return value.size;
   }
 
@@ -159,7 +157,7 @@ function sizeOfValue(value) {
 }
 
 function valueListToArray(value) {
-  return List.isList(value) ? value : value;
+  return Array.isArray(value) ? value : value;
 }
 
 const warnDeprecatedOptions = once(field =>
@@ -176,7 +174,7 @@ export default function withFileControl({ forImage } = {}) {
     static propTypes = {
       field: PropTypes.object.isRequired,
       getAsset: PropTypes.func.isRequired,
-      mediaPaths: ImmutablePropTypes.map.isRequired,
+      mediaPaths: PropTypes.object.isRequired,
       onAddAsset: PropTypes.func.isRequired,
       onChange: PropTypes.func.isRequired,
       onRemoveInsertedMedia: PropTypes.func.isRequired,
@@ -187,7 +185,7 @@ export default function withFileControl({ forImage } = {}) {
       value: PropTypes.oneOfType([
         PropTypes.string,
         PropTypes.arrayOf(PropTypes.string),
-        ImmutablePropTypes.listOf(PropTypes.string),
+        PropTypes.arrayOf(PropTypes.string),
       ]),
       t: PropTypes.func.isRequired,
     };
@@ -213,7 +211,7 @@ export default function withFileControl({ forImage } = {}) {
        * If there is a media path for this control in the state object, and that
        * path is different than the value in `nextProps`, update.
        */
-      const mediaPath = nextProps.mediaPaths.get(this.controlID);
+      const mediaPath = nextProps.mediaPaths[this.controlID];
       if (mediaPath && nextProps.value !== mediaPath) {
         return true;
       }
@@ -223,7 +221,7 @@ export default function withFileControl({ forImage } = {}) {
 
     componentDidUpdate() {
       const { mediaPaths, value, onRemoveInsertedMedia, onChange } = this.props;
-      const mediaPath = mediaPaths.get(this.controlID);
+      const mediaPath = mediaPaths[this.controlID];
       if (mediaPath && mediaPath !== value) {
         onChange(mediaPath);
       } else if (mediaPath && mediaPath === value) {
@@ -245,7 +243,7 @@ export default function withFileControl({ forImage } = {}) {
         forImage,
         privateUpload: field.private,
         value: valueListToArray(value),
-        allowMultiple: !!mediaLibraryFieldOptions.get('allow_multiple', true),
+        allowMultiple: !!mediaLibraryFieldOptions.allow_multiple ?? true,
         config: mediaLibraryFieldOptions.config,
         field,
       });
@@ -290,19 +288,19 @@ export default function withFileControl({ forImage } = {}) {
     getMediaLibraryFieldOptions = () => {
       const { field } = this.props;
 
-      if (field.hasIn(['options', 'media_library'])) {
+      if ('media_library' in field?.options) {
         warnDeprecatedOptions(field);
-        return field.getIn(['options', 'media_library'], {});
+        return field.options.media_library ?? {};
       }
 
-      return field.get('media_library', {});
+      return field.media_library ?? {};
     };
 
     allowsMultiple = () => {
       const mediaLibraryFieldOptions = this.getMediaLibraryFieldOptions();
       return (
-        mediaLibraryFieldOptions.get('config', false) &&
-        mediaLibraryFieldOptions.config.get('multiple', false)
+        (mediaLibraryFieldOptions.config ?? false) &&
+        (mediaLibraryFieldOptions.config.multiple ?? false)
       );
     };
 
@@ -393,7 +391,7 @@ export default function withFileControl({ forImage } = {}) {
                 }`,
               )}
             </FileWidgetButton>
-            {field.get('choose_url', true) && !this.allowsMultiple() ? (
+            {(field.choose_url ?? true) && !this.allowsMultiple() ? (
               <FileWidgetButton onClick={this.handleUrl(subject)}>
                 {t(`editor.editorWidgets.${subject}.replaceUrl`)}
               </FileWidgetButton>
@@ -413,7 +411,7 @@ export default function withFileControl({ forImage } = {}) {
           <FileWidgetButton onClick={this.handleChange}>
             {t(`editor.editorWidgets.${subject}.choose${this.allowsMultiple() ? 'Multiple' : ''}`)}
           </FileWidgetButton>
-          {field.get('choose_url', true) ? (
+          {field.choose_url ?? true ? (
             <FileWidgetButton onClick={this.handleUrl(subject)}>
               {t(`editor.editorWidgets.${subject}.chooseUrl`)}
             </FileWidgetButton>

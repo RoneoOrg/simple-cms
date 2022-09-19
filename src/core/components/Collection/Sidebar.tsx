@@ -1,17 +1,16 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
-import styled from '@emotion/styled';
 import { css } from '@emotion/react';
+import styled from '@emotion/styled';
+import CreateIcon from '@mui/icons-material/Create';
+import React from 'react';
 import { translate } from 'react-polyglot';
 import { NavLink } from 'react-router-dom';
-import CreateIcon from '@mui/icons-material/Create';
-
-import { Icon, components, colors } from '../../../ui-default';
+import { Collection } from '../..';
+import { TranslatedProps } from '../../../interface';
+import { colors, components, Icon } from '../../../ui-default';
+import transientOptions from '../../../util/transientOptions';
 import { searchCollections } from '../../actions/collections';
 import CollectionSearch from './CollectionSearch';
 import NestedCollection from './NestedCollection';
-import transientOptions from '../../../util/transientOptions';
 
 const styles = {
   sidebarNavLinkActive: css`
@@ -46,7 +45,11 @@ const SidebarNavList = styled.ul`
   overflow: auto;
 `;
 
-const SidebarNavLink = styled(NavLink, transientOptions)`
+interface SidebarNavLinkProps {
+  $activeClassName: string;
+}
+
+const SidebarNavLink = styled(NavLink, transientOptions)<SidebarNavLinkProps>`
   display: flex;
   font-size: 14px;
   font-weight: 500;
@@ -69,17 +72,23 @@ const SidebarNavLink = styled(NavLink, transientOptions)`
   `};
 `;
 
-export class Sidebar extends React.Component {
-  static propTypes = {
-    collections: ImmutablePropTypes.map.isRequired,
-    collection: ImmutablePropTypes.map,
-    isSearchEnabled: PropTypes.bool,
-    searchTerm: PropTypes.string,
-    filterTerm: PropTypes.string,
-    t: PropTypes.func.isRequired,
-  };
+interface SidebarProps {
+  collections: Record<string, Collection>;
+  collection?: Collection;
+  isSearchEnabled?: boolean;
+  searchTerm?: string;
+  filterTerm?: string;
+}
 
-  renderLink = (collection, filterTerm) => {
+const Sidebar = ({
+  collections,
+  collection,
+  isSearchEnabled,
+  searchTerm,
+  filterTerm,
+  t,
+}: TranslatedProps<SidebarProps>) => {
+  const renderLink = (collection: Collection, filterTerm?: string) => {
     const collectionName = collection.name;
     if (collection.nested) {
       return (
@@ -106,28 +115,26 @@ export class Sidebar extends React.Component {
     );
   };
 
-  render() {
-    const { collections, collection, isSearchEnabled, searchTerm = '', t, filterTerm } = this.props;
-    return (
-      <SidebarContainer>
-        <SidebarHeading>{t('collection.sidebar.collections')}</SidebarHeading>
-        {isSearchEnabled && (
-          <CollectionSearch
-            searchTerm={searchTerm}
-            collections={collections}
-            collection={collection}
-            onSubmit={(query, collection) => searchCollections(query, collection)}
-          />
-        )}
-        <SidebarNavList>
-          {collections
-            .toList()
-            .filter(collection => collection.hide !== true)
-            .map(collection => this.renderLink(collection, filterTerm))}
-        </SidebarNavList>
-      </SidebarContainer>
-    );
-  }
-}
+  return (
+    <SidebarContainer>
+      <SidebarHeading>{t('collection.sidebar.collections')}</SidebarHeading>
+      {isSearchEnabled && (
+        <CollectionSearch
+          searchTerm={searchTerm}
+          collections={collections}
+          collection={collection}
+          onSubmit={(query: string, collectionName: string) =>
+            searchCollections(query, collectionName)
+          }
+        />
+      )}
+      <SidebarNavList>
+        {Object.values(collections)
+          .filter(collection => collection.hide !== true)
+          .map(collection => renderLink(collection, filterTerm))}
+      </SidebarNavList>
+    </SidebarContainer>
+  );
+};
 
 export default translate()(Sidebar);

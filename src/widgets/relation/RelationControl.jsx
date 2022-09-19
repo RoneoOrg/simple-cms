@@ -1,8 +1,6 @@
-import { fromJS, List, Map } from 'immutable';
 import { debounce, find, get, isEmpty, last, uniqBy } from 'lodash';
 import PropTypes from 'prop-types';
 import React from 'react';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { components } from 'react-select';
 import AsyncSelect from 'react-select/async';
 import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
@@ -63,11 +61,11 @@ function convertToOption(raw) {
   if (typeof raw === 'string') {
     return { label: raw, value: raw };
   }
-  return Map.isMap(raw) ? raw : raw;
+  return typeof raw === 'object' ? raw : raw;
 }
 
 function getSelectedOptions(value) {
-  const selectedOptions = List.isList(value) ? value : value;
+  const selectedOptions = Array.isArray(value) ? value : value;
 
   if (!selectedOptions || !Array.isArray(selectedOptions)) {
     return null;
@@ -81,7 +79,7 @@ function uniqOptions(initial, current) {
 }
 
 function getSearchFieldArray(searchFields) {
-  return List.isList(searchFields) ? searchFields : [searchFields];
+  return Array.isArray(searchFields) ? searchFields : [searchFields];
 }
 
 function getSelectedValue({ value, options, isMultiple }) {
@@ -112,7 +110,7 @@ export default class RelationControl extends React.Component {
     onChange: PropTypes.func.isRequired,
     forID: PropTypes.string.isRequired,
     value: PropTypes.node,
-    field: ImmutablePropTypes.map,
+    field: PropTypes.object,
     query: PropTypes.func.isRequired,
     queryHits: PropTypes.array,
     classNameWrapper: PropTypes.string.isRequired,
@@ -132,7 +130,7 @@ export default class RelationControl extends React.Component {
 
     const error = validations.validateMinMax(
       t,
-      field.get('label', field.name),
+      field.label ?? field.name,
       value,
       min,
       max,
@@ -203,7 +201,7 @@ export default class RelationControl extends React.Component {
           },
         }) ||
         {};
-      onChange(fromJS(newValue), metadata);
+      onChange(newValue, metadata);
     };
 
   handleChange = selectedOption => {
@@ -222,7 +220,7 @@ export default class RelationControl extends React.Component {
           },
         }) ||
         {};
-      onChange(fromJS(value), metadata);
+      onChange(value, metadata);
     } else {
       this.setState({ initialOptions: [selectedOption].filter(Boolean) });
       const value = optionToString(selectedOption);
@@ -246,19 +244,19 @@ export default class RelationControl extends React.Component {
     if (templateVars.length <= 0) {
       return get(hitData, field);
     }
-    const data = stringTemplate.addFileTemplateFields(hit.path, fromJS(hitData));
+    const data = stringTemplate.addFileTemplateFields(hit.path, hitData);
     const value = stringTemplate.compileStringTemplate(field, null, hit.slug, data);
     return value;
   };
 
   isMultiple() {
-    return this.props.field.get('multiple', false);
+    return this.props.field.multiple ?? false;
   }
 
   parseHitOptions = hits => {
     const { field } = this.props;
     const valueField = field.value_field;
-    const displayField = field.display_fields || List([field.value_field]);
+    const displayField = field.display_fields || [field.value_field];
     const options = hits.reduce((acc, hit) => {
       const valuesPaths = stringTemplate.expandPath({ data: hit.data, path: valueField });
       for (let i = 0; i < valuesPaths.length; i++) {
@@ -298,7 +296,7 @@ export default class RelationControl extends React.Component {
     const { value, field, forID, classNameWrapper, setActiveStyle, setInactiveStyle, queryHits } =
       this.props;
     const isMultiple = this.isMultiple();
-    const isClearable = !field.get('required', true) || isMultiple;
+    const isClearable = !(field.required ?? true) || isMultiple;
 
     const queryOptions = this.parseHitOptions(queryHits);
     const options = uniqOptions(this.state.initialOptions, queryOptions);

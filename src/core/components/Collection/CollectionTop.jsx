@@ -1,10 +1,8 @@
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import React from 'react';
 import styled from '@emotion/styled';
 import { translate } from 'react-polyglot';
 import { Link } from 'react-router-dom';
-
 import { components, buttons, shadows } from '../../../ui-default';
 
 const CollectionTopContainer = styled.div`
@@ -74,7 +72,7 @@ function CollectionTop({ collection, newEntryUrl, t }) {
 }
 
 CollectionTop.propTypes = {
-  collection: ImmutablePropTypes.map.isRequired,
+  collection: PropTypes.object.isRequired,
   newEntryUrl: PropTypes.string,
   t: PropTypes.func.isRequired,
 };

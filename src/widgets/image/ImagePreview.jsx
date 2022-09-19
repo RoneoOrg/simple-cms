@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
-import { List } from 'immutable';
 
 import { WidgetPreviewContainer } from '../../ui-default';
 
@@ -17,7 +16,7 @@ function StyledImageAsset({ getAsset, value, field }) {
 
 function ImagePreviewContent(props) {
   const { value, getAsset, field } = props;
-  if (Array.isArray(value) || List.isList(value)) {
+  if (Array.isArray(value) || Array.isArray(value)) {
     return value.map(val => (
       <StyledImageAsset key={val} value={val} getAsset={getAsset} field={field} />
     ));

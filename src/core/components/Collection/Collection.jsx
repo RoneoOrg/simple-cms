@@ -1,10 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import styled from '@emotion/styled';
 import { connect } from 'react-redux';
 import { translate } from 'react-polyglot';
-
 import { lengths, components } from '../../../ui-default';
 import { getNewEntryUrl } from '../../lib/urlHelper';
 import Sidebar from './Sidebar';
@@ -48,10 +46,10 @@ export class Collection extends React.Component {
     collectionName: PropTypes.string,
     isSearchResults: PropTypes.bool,
     isSingleSearchResult: PropTypes.bool,
-    collection: ImmutablePropTypes.map.isRequired,
-    collections: ImmutablePropTypes.map.isRequired,
+    collection: PropTypes.object.isRequired,
+    collections: PropTypes.object.isRequired,
     sortableFields: PropTypes.array,
-    sort: ImmutablePropTypes.orderedMap,
+    sort: PropTypes.object,
     onSortClick: PropTypes.func.isRequired,
   };
 
@@ -153,7 +151,7 @@ function mapStateToProps(state, ownProps) {
   const { collections } = state;
   const isSearchEnabled = state.config && state.config.search != false;
   const { isSearchResults, match, t, name, searchTerm = '', filterTerm = '' } = ownProps;
-  const collection = name ? collections[name] : collections.first();
+  const collection = name ? collections[name] : Object.values(collections)[0];
   const sort = selectEntriesSort(state.entries, collection.name);
   const sortableFields = selectSortableFields(collection, t);
   const viewFilters = selectViewFilters(collection);

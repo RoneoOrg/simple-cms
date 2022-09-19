@@ -1,13 +1,10 @@
 import { isEqual } from 'lodash';
-
+import type { AnyAction } from 'redux';
+import type { ThunkDispatch } from 'redux-thunk';
 import { currentBackend } from '../backend';
 import { getIntegrationProvider } from '../integrations';
 import { selectIntegration } from '../reducers';
-
-import type { State } from '../types/redux';
-import type { AnyAction } from 'redux';
-import type { ThunkDispatch } from 'redux-thunk';
-import type { EntryValue } from '../valueObjects/Entry';
+import type { Entry, State } from '../types/redux';
 
 /*
  * Constant Declarations
@@ -33,7 +30,7 @@ export function searchingEntries(searchTerm: string, searchCollections: string[]
   } as const;
 }
 
-export function searchSuccess(entries: EntryValue[], page: number) {
+export function searchSuccess(entries: Entry[], page: number) {
   return {
     type: SEARCH_ENTRIES_SUCCESS,
     payload: {
@@ -60,16 +57,16 @@ export function querying(searchTerm: string) {
 }
 
 type SearchResponse = {
-  entries: EntryValue[];
+  entries: Entry[];
   pagination: number;
 };
 
 type QueryResponse = {
-  hits: EntryValue[];
+  hits: Entry[];
   query: string;
 };
 
-export function querySuccess(namespace: string, hits: EntryValue[]) {
+export function querySuccess(namespace: string, hits: Entry[]) {
   return {
     type: QUERY_SUCCESS,
     payload: {
@@ -104,7 +101,7 @@ export function searchEntries(searchTerm: string, searchCollections: string[], p
     const state = getState();
     const { search } = state;
     const backend = currentBackend(state.config);
-    const allCollections = searchCollections || state.collections.keySeq();
+    const allCollections = searchCollections || Object.keys(state.collections);
     const collections = allCollections.filter(collection =>
       selectIntegration(state, collection, 'search'),
     );
@@ -130,10 +127,9 @@ export function searchEntries(searchTerm: string, searchCollections: string[], p
           page,
         )
       : backend.search(
-          state.collections
-            .filter((_, key: string) => allCollections.indexOf(key) !== -1)
-            .valueSeq()
-            ,
+          Object.entries(state.collections)
+            .filter(([key, _value]) => allCollections.indexOf(key) !== -1)
+            .map(([_key, value]) => value),
           searchTerm,
         );
 
@@ -162,9 +158,10 @@ export function query(
     const state = getState();
     const backend = currentBackend(state.config);
     const integration = selectIntegration(state, collectionName, 'search');
-    const collection = state.collections.find(
-      collection => collection.name === collectionName,
-    );
+    const collection = Object.values(state.collections).find(collection => collection.name === collectionName);
+    if (!collection) {
+      return;
+    }
 
     const queryPromise = integration
       ? getIntegrationProvider(state.integrations, backend.getToken, integration).searchBy(

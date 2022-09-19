@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import AddIcon from '@mui/icons-material/Add';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
@@ -54,7 +53,7 @@ const AddButton = styled.button`
 class ObjectWidgetTopBar extends React.Component {
   static propTypes = {
     allowAdd: PropTypes.bool,
-    types: ImmutablePropTypes.list,
+    types: PropTypes.array,
     onAdd: PropTypes.func,
     onAddType: PropTypes.func,
     onCollapseToggle: PropTypes.func,
@@ -87,7 +86,7 @@ class ObjectWidgetTopBar extends React.Component {
         {types.map((type, idx) => (
           <DropdownItem
             key={idx}
-            label={type.get('label', type.name)}
+            label={type.label ?? type.name}
             onClick={() => this.props.onAddType(type.name)}
           />
         ))}

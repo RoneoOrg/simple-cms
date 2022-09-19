@@ -1,9 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import styled from '@emotion/styled';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { translate } from 'react-polyglot';
-
 import { Loader, lengths } from '../../../../ui-default';
 import EntryListing from './EntryListing';
 
@@ -60,8 +58,8 @@ function Entries({
 }
 
 Entries.propTypes = {
-  collections: ImmutablePropTypes.iterable.isRequired,
-  entries: ImmutablePropTypes.list,
+  collections: PropTypes.object.isRequired,
+  entries: PropTypes.array,
   page: PropTypes.number,
   isFetching: PropTypes.bool,
   viewStyle: PropTypes.string,

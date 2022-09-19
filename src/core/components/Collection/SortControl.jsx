@@ -48,7 +48,7 @@ function SortControl({ t, fields, onSortClick, sort }) {
       dropdownPosition="left"
     >
       {fields.map(field => {
-        const sortDir = sort?.getIn([field.key, 'direction']);
+        const sortDir = sort?.[field.key].direction;
         const isActive = sortDir && sortDir !== SortDirection.None;
         const nextSortDir = nextSortDirection(sortDir);
         return (

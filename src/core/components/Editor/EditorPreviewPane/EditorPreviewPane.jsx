@@ -1,17 +1,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import styled from '@emotion/styled';
-import { List, Map } from 'immutable';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { connect } from 'react-redux';
 import { ScrollSyncPane } from 'react-scroll-sync';
 
 import { lengths } from '../../../../ui-default';
-import {
-  resolveWidget,
-  getPreviewTemplate,
-  getPreviewStyles,
-} from '../../../lib/registry';
+import { resolveWidget, getPreviewTemplate, getPreviewStyles } from '../../../lib/registry';
 import { ErrorBoundary } from '../../UI';
 import { selectTemplateName, selectInferedField, selectField } from '../../../reducers/collections';
 import { boundGetAsset } from '../../../actions/media';
@@ -35,7 +29,7 @@ export class PreviewPane extends React.Component {
     const { getAsset, entry } = props;
     const widget = resolveWidget(field.widget);
     const key = idx ? field.name + '_' + idx : field.name;
-    const valueIsInMap = value && !widget.allowMapValue && Map.isMap(value);
+    const valueIsInMap = value && !widget.allowMapValue && typeof value === 'object';
 
     /**
      * Use an HOC to provide conditional updates for all previews.
@@ -46,7 +40,7 @@ export class PreviewPane extends React.Component {
         key={key}
         field={field}
         getAsset={getAsset}
-        value={valueIsInMap ? value.get(field.name) : value}
+        value={valueIsInMap ? value[field.name] : value}
         entry={entry}
         fieldsMetaData={metadata}
         resolveWidget={resolveWidget}
@@ -82,13 +76,13 @@ export class PreviewPane extends React.Component {
     // We retrieve the field by name so that this function can also be used in
     // custom preview templates, where the field object can't be passed in.
     let field = fields && fields.find(f => f.name === name);
-    let value = Map.isMap(values) && values.get(field.name);
+    let value = typeof values === 'object' && values[field.name];
     if (field.meta) {
-      value = this.props.entry.getIn(['meta', field.name]);
+      value = this.props.entry.meta[field.name];
     }
     const nestedFields = field.fields;
     const singleField = field.field;
-    const metadata = fieldsMetaData && fieldsMetaData.get(field.name, {});
+    const metadata = fieldsMetaData && (fieldsMetaData[field.name] ?? {});
 
     if (nestedFields) {
       field = field.set('fields', this.getNestedWidgets(nestedFields, value, metadata));
@@ -115,7 +109,7 @@ export class PreviewPane extends React.Component {
     ) {
       value = (
         <div>
-          <strong>{field.get('label', field.name)}:</strong> {value}
+          <strong>{field.label ?? field.name}:</strong> {value}
         </div>
       );
     }
@@ -128,7 +122,7 @@ export class PreviewPane extends React.Component {
    */
   getNestedWidgets = (fields, values, fieldsMetaData) => {
     // Fields nested within a list field will be paired with a List of value Maps.
-    if (List.isList(values)) {
+    if (Array.isArray(values)) {
       return values.map(value => this.widgetsForNestedFields(fields, value, fieldsMetaData));
     }
     // Fields nested within an object field will be paired with a single Map of values.
@@ -136,12 +130,12 @@ export class PreviewPane extends React.Component {
   };
 
   getSingleNested = (field, values, fieldsMetaData) => {
-    if (List.isList(values)) {
+    if (Array.isArray(values)) {
       return values.map((value, idx) =>
-        this.getWidget(field, value, fieldsMetaData.get(field.name), this.props, idx),
+        this.getWidget(field, value, fieldsMetaData[field.name], this.props, idx),
       );
     }
-    return this.getWidget(field, values, fieldsMetaData.get(field.name), this.props);
+    return this.getWidget(field, values, fieldsMetaData[field.name], this.props);
   };
 
   /**
@@ -161,34 +155,27 @@ export class PreviewPane extends React.Component {
     const { fields, entry, fieldsMetaData } = this.props;
     const field = fields.find(f => f.name === name);
     const nestedFields = field && field.fields;
-    const value = entry.getIn(['data', field.name]);
-    const metadata = fieldsMetaData.get(field.name, {});
+    const value = entry.data[field.name];
+    const metadata = fieldsMetaData[field.name] ?? {};
 
-    if (List.isList(value)) {
+    if (Array.isArray(value)) {
       return value.map(val => {
         const widgets =
           nestedFields &&
-          Map(
-            nestedFields.map((f, i) => [
-              f.name,
-              <div key={i}>{this.getWidget(f, val, metadata.get(f.name), this.props)}</div>,
-            ]),
-          );
-        return Map({ data: val, widgets });
+          nestedFields.map((f, i) => [
+            f.name,
+            <div key={i}>{this.getWidget(f, val, metadata[f.name], this.props)}</div>,
+          ]);
+        return { data: val, widgets };
       });
     }
 
-    return Map({
+    return {
       data: value,
       widgets:
         nestedFields &&
-        Map(
-          nestedFields.map(f => [
-            f.name,
-            this.getWidget(f, value, metadata.get(f.name), this.props),
-          ]),
-        ),
-    });
+        nestedFields.map(f => [f.name, this.getWidget(f, value, metadata[f.name], this.props)]),
+    };
   };
 
   render() {
@@ -230,7 +217,8 @@ export class PreviewPane extends React.Component {
 
     return (
       <ErrorBoundary config={config}>
-        <ScrollSyncPane>{/* attachTo={document.getElementById('control-pane')}>*/}
+        <ScrollSyncPane>
+          {/* attachTo={document.getElementById('control-pane')}>*/}
           <PreviewPaneFrame id="preview-pane" head={styleEls} initialContent={initialContent}>
             <EditorPreviewContent
               {...{ previewComponent, previewProps: { ...previewProps, document, window } }}
@@ -243,10 +231,10 @@ export class PreviewPane extends React.Component {
 }
 
 PreviewPane.propTypes = {
-  collection: ImmutablePropTypes.map.isRequired,
-  fields: ImmutablePropTypes.list.isRequired,
-  entry: ImmutablePropTypes.map.isRequired,
-  fieldsMetaData: ImmutablePropTypes.map.isRequired,
+  collection: PropTypes.object.isRequired,
+  fields: PropTypes.array.isRequired,
+  entry: PropTypes.object.isRequired,
+  fieldsMetaData: PropTypes.object.isRequired,
   getAsset: PropTypes.func.isRequired,
 };
 

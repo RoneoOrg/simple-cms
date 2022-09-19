@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import styled from '@emotion/styled';
 
 import { colors, borders, lengths, shadows, effects } from '../../../ui-default';
@@ -112,7 +111,7 @@ class MediaLibraryCard extends React.Component {
 
 MediaLibraryCard.propTypes = {
   isSelected: PropTypes.bool,
-  displayURL: ImmutablePropTypes.map.isRequired,
+  displayURL: PropTypes.object.isRequired,
   text: PropTypes.string.isRequired,
   onClick: PropTypes.func.isRequired,
   draftText: PropTypes.string.isRequired,

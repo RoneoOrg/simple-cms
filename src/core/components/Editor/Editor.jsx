@@ -1,7 +1,6 @@
 import { debounce } from 'lodash';
 import PropTypes from 'prop-types';
 import React from 'react';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { translate } from 'react-polyglot';
 import { connect } from 'react-redux';
 import { Loader } from '../../../ui-default';
@@ -30,17 +29,17 @@ export class Editor extends React.Component {
   static propTypes = {
     changeDraftField: PropTypes.func.isRequired,
     changeDraftFieldValidation: PropTypes.func.isRequired,
-    collection: ImmutablePropTypes.map.isRequired,
+    collection: PropTypes.object.isRequired,
     createDraftDuplicateFromEntry: PropTypes.func.isRequired,
     createEmptyDraft: PropTypes.func.isRequired,
     discardDraft: PropTypes.func.isRequired,
-    entry: ImmutablePropTypes.map,
-    entryDraft: ImmutablePropTypes.map.isRequired,
+    entry: PropTypes.object,
+    entryDraft: PropTypes.object.isRequired,
     loadEntry: PropTypes.func.isRequired,
     persistEntry: PropTypes.func.isRequired,
     deleteEntry: PropTypes.func.isRequired,
     showDelete: PropTypes.bool.isRequired,
-    fields: ImmutablePropTypes.list.isRequired,
+    fields: PropTypes.array.isRequired,
     slug: PropTypes.string,
     newEntry: PropTypes.bool.isRequired,
     displayUrl: PropTypes.string,
@@ -56,7 +55,7 @@ export class Editor extends React.Component {
     hasChanged: PropTypes.bool,
     t: PropTypes.func.isRequired,
     retrieveLocalBackup: PropTypes.func.isRequired,
-    localBackup: ImmutablePropTypes.map,
+    localBackup: PropTypes.object,
     loadLocalBackup: PropTypes.func,
     persistLocalBackup: PropTypes.func.isRequired,
     deleteLocalBackup: PropTypes.func,
@@ -99,8 +98,8 @@ export class Editor extends React.Component {
       /**
        * New entry being saved and redirected to it's new slug based url.
        */
-      const isPersisting = this.props.entryDraft.getIn(['entry', 'isPersisting']);
-      const newRecord = this.props.entryDraft.getIn(['entry', 'newRecord']);
+      const isPersisting = this.props.entryDraft.entry.isPersisting;
+      const newRecord = this.props.entryDraft.entry.newRecord;
       const newEntryPath = `/collections/${collection.name}/new`;
       if (
         isPersisting &&
@@ -315,7 +314,7 @@ export class Editor extends React.Component {
 function mapStateToProps(state, ownProps) {
   const { collections, entryDraft, auth, config, entries, globalUI } = state;
   const slug = ownProps.slug;
-  const collection = collections.get(ownProps.name);
+  const collection = collections[ownProps.name];
   const collectionName = collection.name;
   const newEntry = ownProps.newRecord === true;
   const fields = selectFields(collection, slug);
@@ -323,8 +322,8 @@ function mapStateToProps(state, ownProps) {
   const user = auth.user;
   const hasChanged = entryDraft.hasChanged;
   const displayUrl = config.display_url;
-  const isModification = entryDraft.getIn(['entry', 'isModification']);
-  const collectionEntriesLoaded = !!entries.getIn(['pages', collectionName]);
+  const isModification = entryDraft.entry.isModification;
+  const collectionEntriesLoaded = !!entries.pages[collectionName];
   const publishedEntry = selectEntry(state, collectionName, slug);
   const localBackup = entryDraft.localBackup;
   const draftKey = entryDraft.key;

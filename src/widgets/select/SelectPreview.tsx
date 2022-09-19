@@ -1,4 +1,3 @@
-import type { List } from 'immutable';
 import React from 'react';
 import type { CmsWidgetPreviewProps } from '../../core';
 import { WidgetPreviewContainer } from '../../ui-default';

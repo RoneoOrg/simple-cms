@@ -1,5 +1,3 @@
-import { Map } from 'immutable';
-
 import { currentBackend } from '../backend';
 import { createAssetProxy } from '../valueObjects/AssetProxy';
 import { selectIntegration } from '../reducers';
@@ -15,8 +13,6 @@ import { addDraftEntryMediaFile, removeDraftEntryMediaFile } from './entries';
 import { sanitizeSlug } from '../lib/urlHelper';
 import { waitUntilWithTimeout } from './waitUntil';
 import { basename, getBlobSHA } from '../../lib/util';
-import { toJS } from '../../util/ImmutableUtil';
-
 import type {
   State,
   MediaFile,
@@ -95,7 +91,7 @@ export function openMediaLibrary(
     const mediaLibrary = state.mediaLibrary.externalLibrary;
     if (mediaLibrary) {
       const { controlID: id, value, config = {}, allowMultiple, forImage } = payload;
-      mediaLibrary.show({ id, value, config: toJS(config), allowMultiple, imagesOnly: forImage });
+      mediaLibrary.show({ id, value, config, allowMultiple, imagesOnly: forImage });
     }
     dispatch(mediaLibraryOpened(payload));
   };
@@ -117,7 +113,7 @@ export function insertMedia(mediaPath: string | string[], field: EntryField | un
     const state = getState();
     const config = state.config;
     const entry = state.entryDraft['entry'];
-    const collectionName = state.entryDraft.getIn(['entry', 'collection']);
+    const collectionName = state.entryDraft.entry.collection;
     const collection = state.collections[collectionName];
     if (Array.isArray(mediaPath)) {
       mediaPath = mediaPath.map(path =>
@@ -265,7 +261,7 @@ export function persistMedia(file: File, opts: MediaOptions = {}) {
         throw new Error('The Private Upload option is only available for Asset Store Integration');
       } else {
         const entry = state.entryDraft['entry'];
-        const collection = state.collections.get(entry?.collection);
+        const collection = state.collections[entry?.collection];
         const path = selectMediaFilePath(state.config, collection, entry, fileName, field);
         assetProxy = createAssetProxy({
           file,
@@ -287,7 +283,7 @@ export function persistMedia(file: File, opts: MediaOptions = {}) {
           id,
           file,
           assetProxy,
-          draft: editingDraft,
+          draft: Boolean(editingDraft),
         });
         return dispatch(addDraftEntryMediaFile(mediaFile));
       } else {

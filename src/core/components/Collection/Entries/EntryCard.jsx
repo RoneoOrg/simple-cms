@@ -129,7 +129,7 @@ function mapStateToProps(state, ownProps) {
   const entryData = entry.data;
   const summary = selectEntryCollectionTitle(collection, entry);
 
-  let image = entryData.get(inferedFields.imageField);
+  let image = entryData[inferedFields.imageField];
   if (image) {
     image = encodeURI(image);
   }

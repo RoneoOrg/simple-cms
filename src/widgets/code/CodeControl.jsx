@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { ClassNames } from '@emotion/react';
-import { Map } from 'immutable';
 import { uniq, isEqual, isEmpty } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { UnControlled as ReactCodeMirror } from 'react-codemirror2';
@@ -62,7 +60,7 @@ const settingsPersistKeys = {
 
 export default class CodeControl extends React.Component {
   static propTypes = {
-    field: ImmutablePropTypes.map.isRequired,
+    field: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
     value: PropTypes.node,
     forID: PropTypes.string.isRequired,
@@ -80,7 +78,7 @@ export default class CodeControl extends React.Component {
     settingsVisible: false,
     codeMirrorKey: uuid(),
     theme: localStorage.getItem(settingsPersistKeys['theme']) || themes[themes.length - 1],
-    lastKnownValue: this.valueIsMap() ? this.props.value?.get(this.keys.code) : this.props.value,
+    lastKnownValue: this.valueIsMap() ? this.props.value?.[this.keys.code] : this.props.value,
   };
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -123,7 +121,7 @@ export default class CodeControl extends React.Component {
   getInitialLang = () => {
     const { value, field } = this.props;
     const lang =
-      (this.valueIsMap() && value && value.get(this.keys.lang)) || field.default_language;
+      (this.valueIsMap() && value && value[this.keys.lang]) || field.default_language;
     const langInfo = this.getLanguageByName(lang);
     if (lang && !langInfo) {
       this.setState({ unknownLang: lang });
@@ -153,7 +151,7 @@ export default class CodeControl extends React.Component {
       return defaults;
     }
 
-    const keys = field.get('keys', {});
+    const keys = field.keys ?? {};
     return { ...defaults, ...keys };
   }
 

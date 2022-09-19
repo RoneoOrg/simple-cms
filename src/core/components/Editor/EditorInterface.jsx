@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { css, Global } from '@emotion/react';
 import styled from '@emotion/styled';
 import SplitPane from 'react-split-pane';
@@ -142,10 +141,10 @@ function EditorContent({
 function isPreviewEnabled(collection, entry) {
   if (collection.type === FILES) {
     const file = getFileFromSlug(collection, entry.slug);
-    const previewEnabled = file?.getIn(['editor', 'preview']);
+    const previewEnabled = file?.editor.preview;
     if (previewEnabled != null) return previewEnabled;
   }
-  return collection.getIn(['editor', 'preview'], true);
+  return collection.editor.preview ?? true;
 }
 
 class EditorInterface extends Component {
@@ -379,11 +378,11 @@ class EditorInterface extends Component {
 }
 
 EditorInterface.propTypes = {
-  collection: ImmutablePropTypes.map.isRequired,
-  entry: ImmutablePropTypes.map.isRequired,
-  fields: ImmutablePropTypes.list.isRequired,
-  fieldsMetaData: ImmutablePropTypes.map.isRequired,
-  fieldsErrors: ImmutablePropTypes.map.isRequired,
+  collection: PropTypes.object.isRequired,
+  entry: PropTypes.object.isRequired,
+  fields: PropTypes.array.isRequired,
+  fieldsMetaData: PropTypes.object.isRequired,
+  fieldsErrors: PropTypes.object.isRequired,
   onChange: PropTypes.func.isRequired,
   onValidate: PropTypes.func.isRequired,
   onPersist: PropTypes.func.isRequired,

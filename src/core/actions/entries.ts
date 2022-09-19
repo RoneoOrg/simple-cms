@@ -1,7 +1,9 @@
 import { isEqual } from 'lodash';
-
+import type { AnyAction } from 'redux';
+import type { ThunkDispatch } from 'redux-thunk';
+import type { ImplementationMediaFile } from '../../lib/util';
 import { Cursor } from '../../lib/util';
-import { toMap } from '../../util/ImmutableUtil';
+import type { Backend, MediaFile } from '../backend';
 import { currentBackend } from '../backend';
 import ValidationErrorTypes from '../constants/validationErrorTypes';
 import { getIntegrationProvider } from '../integrations';
@@ -14,32 +16,23 @@ import { selectCollectionEntriesCursor } from '../reducers/cursors';
 import { selectEntriesSortFields, selectEntryByPath, selectIsFetching } from '../reducers/entries';
 import { selectCustomPath } from '../reducers/entryDraft';
 import { navigateToEntry } from '../routing/history';
-import { SortDirection } from '../types/redux';
-import { createAssetProxy } from '../valueObjects/AssetProxy';
-import { createEntry } from '../valueObjects/Entry';
-import { addAssets, getAsset } from './media';
-import { loadMedia, waitForMediaLibraryToLoad } from './mediaLibrary';
-import { waitUntil } from './waitUntil';
-
-import type { Set } from 'immutable';
-import type { AnyAction } from 'redux';
-import type { ThunkDispatch } from 'redux-thunk';
-import type { ImplementationMediaFile } from '../../lib/util';
-import type { Backend, MediaFile } from '../backend';
+import { addSnackbar } from '../store/slices/snackbars';
 import type {
   Collection,
   Entry,
   EntryField,
   EntryFields,
-  Entry,
-  Entry,
   State,
   ViewFilter,
   ViewGroup,
 } from '../types/redux';
+import { SortDirection } from '../types/redux';
 import type AssetProxy from '../valueObjects/AssetProxy';
-import type { EntryValue } from '../valueObjects/Entry';
-import { addSnackbar } from '../store/slices/snackbars';
+import { createAssetProxy } from '../valueObjects/AssetProxy';
+import { createEntry } from '../valueObjects/Entry';
+import { addAssets, getAsset } from './media';
+import { loadMedia, waitForMediaLibraryToLoad } from './mediaLibrary';
+import { waitUntil } from './waitUntil';
 
 /*
  * Constant Declarations
@@ -101,7 +94,7 @@ export function entryLoading(collection: Collection, slug: string) {
   };
 }
 
-export function entryLoaded(collection: Collection, entry: EntryValue) {
+export function entryLoaded(collection: Collection, entry: Entry) {
   return {
     type: ENTRY_SUCCESS,
     payload: {
@@ -133,7 +126,7 @@ export function entriesLoading(collection: Collection) {
 
 export function entriesLoaded(
   collection: Collection,
-  entries: EntryValue[],
+  entries: Entry[],
   pagination: number | null,
   cursor: Cursor,
   append = true,
@@ -369,7 +362,7 @@ export function entryDeleteFail(collection: Collection, slug: string, error: Err
   };
 }
 
-export function emptyDraftCreated(entry: EntryValue) {
+export function emptyDraftCreated(entry: Entry) {
   return {
     type: DRAFT_CREATE_EMPTY,
     payload: entry,
@@ -378,7 +371,7 @@ export function emptyDraftCreated(entry: EntryValue) {
 /*
  * Exported simple Action Creators
  */
-export function createDraftFromEntry(entry: EntryValue) {
+export function createDraftFromEntry(entry: Entry) {
   return {
     type: DRAFT_CREATE_FROM_ENTRY,
     payload: { entry },
@@ -436,7 +429,7 @@ export function clearFieldErrors() {
   return { type: DRAFT_CLEAR_ERRORS };
 }
 
-export function localBackupRetrieved(entry: EntryValue) {
+export function localBackupRetrieved(entry: Entry) {
   return {
     type: DRAFT_LOCAL_BACKUP_RETRIEVED,
     payload: { entry },
@@ -498,7 +491,7 @@ export function retrieveLocalBackup(collection: Collection, slug: string) {
           } else {
             return getAsset({
               collection,
-              entry: toEntryObject(entry as unknown as Entry),
+              entry,
               path: file.path,
               field: file.field,
             })(dispatch, getState);
@@ -535,10 +528,12 @@ export function loadEntry(collection: Collection, slug: string) {
       dispatch(createDraftFromEntry(loadedEntry));
     } catch (error: any) {
       console.error(error);
-      dispatch(addSnackbar({
-        type: 'error',
-        message: `Failed to load entry: ${error.message}`
-      }));
+      dispatch(
+        addSnackbar({
+          type: 'error',
+          message: `Failed to load entry: ${error.message}`,
+        }),
+      );
       dispatch(entryLoadError(error, collection, slug));
     }
   };
@@ -550,17 +545,17 @@ export async function tryLoadEntry(state: State, collection: Collection, slug: s
   return loadedEntry;
 }
 
-const appendActions = toMap({
+const appendActions: Record<string, { action: string; append: boolean }> = {
   ['append_next']: { action: 'next', append: true },
-});
+};
 
 function addAppendActionsToCursor(cursor: Cursor) {
   return Cursor.create(cursor).updateStore('actions', (actions: Set<string>) => {
-    return actions.union(
-      appendActions
-        .filter((v: Record<string, string | boolean>) => actions.has(v.action as string))
-        .keySeq(),
-    );
+    const newActions = Object.keys(appendActions).filter(key => {
+      actions.has(appendActions[key].action);
+    });
+
+    return new Set(...actions, ...newActions);
   });
 }
 
@@ -590,10 +585,10 @@ export function loadEntries(collection: Collection, page = 0) {
       let response: {
         cursor: Cursor;
         pagination: number;
-        entries: EntryValue[];
+        entries: Entry[];
       } = await (loadAllEntries
         ? // nested collections require all entries to construct the tree
-          provider.listAllEntries(collection).then((entries: EntryValue[]) => ({ entries }))
+          provider.listAllEntries(collection).then((entries: Entry[]) => ({ entries }))
         : provider.listEntries(collection, page));
       response = {
         ...response,
@@ -605,7 +600,7 @@ export function loadEntries(collection: Collection, page = 0) {
         // cursor, which behaves identically to no cursor at all.
         cursor: integration
           ? Cursor.create({
-              actions: ['next'],
+              actions: new Set(['next']),
               meta: { usingOldPaginationAPI: true },
               data: { nextPage: page + 1 },
             })
@@ -624,17 +619,19 @@ export function loadEntries(collection: Collection, page = 0) {
         ),
       );
     } catch (err: any) {
-      dispatch(addSnackbar({
-        type: 'error',
-        message: `Failed to load entry: ${err.message}`
-      }));
+      dispatch(
+        addSnackbar({
+          type: 'error',
+          message: `Failed to load entry: ${err.message}`,
+        }),
+      );
       return Promise.reject(dispatch(entriesFailed(collection, err)));
     }
   };
 }
 
 function traverseCursor(backend: Backend, cursor: Cursor, action: string) {
-  if (!cursor.actions!.[action]) {
+  if (!cursor.actions!.has(action)) {
     throw new Error(`The current cursor does not support the pagination action "${action}".`);
   }
   return backend.traverseCursor(cursor, action);
@@ -644,7 +641,7 @@ export function traverseCollectionCursor(collection: Collection, action: string)
   return async (dispatch: ThunkDispatch<State, {}, AnyAction>, getState: () => State) => {
     const state = getState();
     const collectionName = collection.name;
-    if (state.entries.getIn(['pages', `${collectionName}`, 'isFetching'])) {
+    if (state.entries.pages[collectionName].isFetching) {
       return;
     }
     const backend = currentBackend(state.config);
@@ -656,7 +653,7 @@ export function traverseCollectionCursor(collection: Collection, action: string)
 
     // Handle cursors representing pages in the old, integer-based
     // pagination API
-    if (cursor.meta!.get('usingOldPaginationAPI', false)) {
+    if (Boolean(cursor.meta!.usingOldPaginationAPI)) {
       return dispatch(loadEntries(collection, cursor.data!.nextPage as number));
     }
 
@@ -664,16 +661,18 @@ export function traverseCollectionCursor(collection: Collection, action: string)
       dispatch(entriesLoading(collection));
       const { entries, cursor: newCursor } = await traverseCursor(backend, cursor, realAction);
 
-      const pagination = newCursor.meta?.page;
+      const pagination = (newCursor.meta?.page ?? null) as number | null;
       return dispatch(
         entriesLoaded(collection, entries, pagination, addAppendActionsToCursor(newCursor), append),
       );
     } catch (err: any) {
       console.error(err);
-      dispatch(addSnackbar({
-        type: 'error',
-        message: `Failed to load entry: ${err.message}`
-      }));
+      dispatch(
+        addSnackbar({
+          type: 'error',
+          message: `Failed to load entry: ${err.message}`,
+        }),
+      );
       return Promise.reject(dispatch(entriesFailed(collection, err)));
     }
   };
@@ -700,28 +699,30 @@ function processValue(unsafe: string) {
 }
 
 function getDataFields(fields: EntryFields) {
-  return fields.filter(f => !f!.meta).toList();
+  return fields.filter(f => !f!.meta);
 }
 
 function getMetaFields(fields: EntryFields) {
-  return fields.filter(f => f!.meta === true).toList();
+  return fields.filter(f => f!.meta === true);
 }
 
 export function createEmptyDraft(collection: Collection, search: string) {
   return async (dispatch: ThunkDispatch<State, {}, AnyAction>, getState: () => State) => {
     const params = new URLSearchParams(search);
     params.forEach((value, key) => {
-      collection = updateFieldByKey(collection, key, field =>
-        field.set('default', processValue(value)),
-      );
+      collection = updateFieldByKey(collection, key, field => {
+        const newField = { ...field };
+        newField.default = processValue(value);
+        return newField;
+      });
     });
 
-    const fields = collection.get('fields', List());
+    const fields = collection.fields;
 
-    const dataFields = getDataFields(fields);
+    const dataFields = getDataFields(fields as unknown as EntryFields);
     const data = createEmptyDraftData(dataFields);
 
-    const metaFields = getMetaFields(fields);
+    const metaFields = getMetaFields(fields as unknown as EntryFields);
     const meta = createEmptyDraftData(metaFields);
 
     const state = getState();
@@ -750,6 +751,7 @@ interface DraftEntryData {
     | string
     | null
     | boolean
+    | unknown
     | unknown[]
     | DraftEntryData
     | DraftEntryData[]
@@ -775,20 +777,20 @@ export function createEmptyDraftData(
       const subfields = item.field || item.fields;
       const list = item.widget == 'list';
       const name = item.name;
-      const defaultValue = item.get('default', null);
+      const defaultValue = item.default ?? null;
 
       function isEmptyDefaultValue(val: unknown) {
         return [[{}], {}].some(e => isEqual(val, e));
       }
 
-      const hasSubfields = List.isList(subfields) || Map.isMap(subfields);
+      const hasSubfields = Array.isArray(subfields) || typeof subfields === 'object';
       if (hasSubfields) {
-        if (list && List.isList(defaultValue)) {
+        if (list && Array.isArray(defaultValue)) {
           acc[name] = defaultValue;
         } else {
-          const asList = List.isList(subfields)
+          const asList = Array.isArray(subfields)
             ? (subfields as EntryFields)
-            : List([subfields as EntryField]);
+            : [subfields as EntryField];
 
           const subDefaultValue = list
             ? [createEmptyDraftData(asList, skipField)]
@@ -853,7 +855,7 @@ export function getSerializedEntry(collection: Collection, entry: Entry) {
   }
 
   const serializedData = serializeData(entry.data);
-  let serializedEntry = entry.set('data', serializedData);
+  let serializedEntry = { ...entry, data: serializedData };
   if (hasI18n(collection)) {
     serializedEntry = serializeI18n(collection, serializedEntry, serializeData);
   }
@@ -868,16 +870,18 @@ export function persistEntry(collection: Collection) {
     const usedSlugs = selectPublishedSlugs(state, collection.name);
 
     // Early return if draft contains validation errors
-    if (!fieldsErrors.isEmpty()) {
-      const hasPresenceErrors = fieldsErrors.some(errors =>
-        errors.some(error => error.type && error.type === ValidationErrorTypes.PRESENCE),
-      );
+    if (Object.keys(fieldsErrors).length > 0) {
+      const hasPresenceErrors = Object.values(fieldsErrors).filter(error =>
+        error.find(({ type }) => type === ValidationErrorTypes.PRESENCE),
+      ).length > 0;
 
       if (hasPresenceErrors) {
-        dispatch(addSnackbar({
-          type: 'error',
-          message: "Oops, you've missed a required field. Please complete before saving."
-        }));
+        dispatch(
+          addSnackbar({
+            type: 'error',
+            message: "Oops, you've missed a required field. Please complete before saving.",
+          }),
+        );
       }
 
       return Promise.reject();
@@ -890,7 +894,7 @@ export function persistEntry(collection: Collection) {
     });
 
     const serializedEntry = getSerializedEntry(collection, entry);
-    const serializedEntryDraft = entryDraft.set('entry', serializedEntry);
+    const serializedEntryDraft = { ...entryDraft, entry: serializedEntry };
     dispatch(entryPersisting(collection, serializedEntry));
     return backend
       .persistEntry({
@@ -901,10 +905,12 @@ export function persistEntry(collection: Collection) {
         usedSlugs,
       })
       .then(async (newSlug: string) => {
-        dispatch(addSnackbar({
-          type: 'success',
-          message: 'Entry saved.'
-        }));
+        dispatch(
+          addSnackbar({
+            type: 'success',
+            message: 'Entry saved.',
+          }),
+        );
 
         // re-load media library if entry had media files
         if (assetProxies.length > 0) {
@@ -921,10 +927,12 @@ export function persistEntry(collection: Collection) {
       })
       .catch((error: Error) => {
         console.error(error);
-        dispatch(addSnackbar({
-          type: 'error',
-          message: `Failed to persist entry: ${error}`
-        }));
+        dispatch(
+          addSnackbar({
+            type: 'error',
+            message: `Failed to persist entry: ${error}`,
+          }),
+        );
         return Promise.reject(dispatch(entryPersistFail(collection, serializedEntry, error)));
       });
   };
@@ -942,10 +950,12 @@ export function deleteEntry(collection: Collection, slug: string) {
         return dispatch(entryDeleted(collection, slug));
       })
       .catch((error: Error) => {
-        dispatch(addSnackbar({
-          type: 'error',
-          message: `Failed to delete entry: ${error}`
-        }));
+        dispatch(
+          addSnackbar({
+            type: 'error',
+            message: `Failed to delete entry: ${error}`,
+          }),
+        );
         console.error(error);
         return Promise.reject(dispatch(entryDeleteFail(collection, slug, error)));
       });
@@ -987,13 +997,13 @@ export function validateMetaField(
       return getPathError(value, 'invalidPath', t);
     }
 
-    const customPath = selectCustomPath(collection, toMap({ entry: { meta: { path: value } } }));
+    const customPath = selectCustomPath(collection, { entry: { meta: { path: value } } });
     const existingEntry = customPath
       ? selectEntryByPath(state.entries, collection.name, customPath)
       : undefined;
 
     const existingEntryPath = existingEntry?.path;
-    const draftPath = state.entryDraft?.getIn(['entry', 'path']);
+    const draftPath = state.entryDraft?.entry.path;
 
     if (existingEntryPath && existingEntryPath !== draftPath) {
       return getPathError(value, 'pathExists', t);

@@ -1,12 +1,10 @@
 import React from 'react';
-import { List } from 'immutable';
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { dirname, sep } from 'path-browserify';
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { sortBy } from 'lodash';
 import CreateIcon from '@mui/icons-material/Create';
 
@@ -124,7 +122,7 @@ function TreeNode(props) {
 }
 
 TreeNode.propTypes = {
-  collection: ImmutablePropTypes.map.isRequired,
+  collection: PropTypes.object.isRequired,
   depth: PropTypes.number,
   treeData: PropTypes.array.isRequired,
   onToggle: PropTypes.func.isRequired,
@@ -158,10 +156,17 @@ export function getTreeData(collection, entries) {
     return acc;
   }, {});
 
-  if (collection.getIn(['nested', 'summary'])) {
-    collection = collection.set('summary', collection.getIn(['nested', 'summary']));
+  if (collection?.nested?.summary) {
+    collection = {
+      ...collection,
+      summary: collection.nested.summary
+    };
   } else {
-    collection = collection.delete('summary');
+    const newCollection = {
+      ...collection
+    };
+    delete newCollection.summary;
+    collection = newCollection;
   }
 
   const flatData = [
@@ -242,8 +247,8 @@ export function updateNode(treeData, node, callback) {
 
 export class NestedCollection extends React.Component {
   static propTypes = {
-    collection: ImmutablePropTypes.map.isRequired,
-    entries: ImmutablePropTypes.list.isRequired,
+    collection: PropTypes.object.isRequired,
+    entries: PropTypes.array.isRequired,
     filterTerm: PropTypes.string,
   };
 
@@ -304,7 +309,7 @@ export class NestedCollection extends React.Component {
 
 function mapStateToProps(state, ownProps) {
   const { collection } = ownProps;
-  const entries = selectEntries(state.entries, collection) || List();
+  const entries = selectEntries(state.entries, collection) || [];
   return { entries };
 }
 

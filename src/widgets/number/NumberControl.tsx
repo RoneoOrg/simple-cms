@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import TextField from '@mui/material/TextField';
 import React from 'react';
-
-import type { Map } from 'immutable';
 import type { t } from 'react-polyglot';
 import type { CmsWidgetControlProps } from '../../core';
 
@@ -27,7 +25,7 @@ export function validateMinMax(
       error = {
         type: ValidationErrorTypes.RANGE,
         message: t('editor.editorControlPane.widget.range', {
-          fieldLabel: field.get('label', field.name),
+          fieldLabel: field.label ?? field.name,
           minValue: min,
           maxValue: max,
         }),
@@ -37,7 +35,7 @@ export function validateMinMax(
       error = {
         type: ValidationErrorTypes.RANGE,
         message: t('editor.editorControlPane.widget.min', {
-          fieldLabel: field.get('label', field.name),
+          fieldLabel: field.label ?? field.name,
           minValue: min,
         }),
       };
@@ -46,7 +44,7 @@ export function validateMinMax(
       error = {
         type: ValidationErrorTypes.RANGE,
         message: t('editor.editorControlPane.widget.max', {
-          fieldLabel: field.get('label', field.name),
+          fieldLabel: field.label ?? field.name,
           maxValue: max,
         }),
       };
@@ -78,9 +76,9 @@ export default class NumberControl extends React.Component<CmsWidgetControlProps
 
   isValid = () => {
     const { field, value = '', t } = this.props;
-    const hasPattern = !!field.get('pattern', false);
-    const min = field.get('min', false);
-    const max = field.get('max', false);
+    const hasPattern = !!field.pattern ?? false;
+    const min = field.min ?? false;
+    const max = field.max ?? false;
 
     // Pattern overrides min/max logic always:
     if (hasPattern) {
@@ -93,9 +91,9 @@ export default class NumberControl extends React.Component<CmsWidgetControlProps
 
   render() {
     const { field, value = '', forID, setActiveStyle, setInactiveStyle } = this.props;
-    const min: string | number = field.get('min', '');
-    const max: string | number = field.get('max', '');
-    const step: string | number = field.get('step', field.value_type === 'int' ? 1 : '');
+    const min: string | number = field.min ?? '';
+    const max: string | number = field.max ?? '';
+    const step: string | number = field.step ?? (field.value_type === 'int' ? 1 : '');
     return (
       <TextField
         id={forID}

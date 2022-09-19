@@ -10,7 +10,7 @@ import {
 // and searches are the most common examples), we namespace cursors by
 // their type before storing them in the state.
 export function selectCollectionEntriesCursor(state, collectionName) {
-  return new Cursor(state.getIn(['cursorsByType', 'collectionEntries', collectionName]));
+  return new Cursor(getIn(state, ['cursorsByType', 'collectionEntries', collectionName]));
 }
 
 function cursors(state = { cursorsByType: { collectionEntries: {} } }, action) {

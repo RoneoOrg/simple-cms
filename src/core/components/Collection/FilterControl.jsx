@@ -7,7 +7,7 @@ import { ControlButton } from './ControlButton';
 function FilterControl({ viewFilters, t, onFilterClick, filter }) {
   const hasActiveFilter = filter
     ?.valueSeq()
-    
+
     .some(f => f.active === true);
 
   return (
@@ -21,13 +21,13 @@ function FilterControl({ viewFilters, t, onFilterClick, filter }) {
       dropdownTopOverlap="30px"
       dropdownPosition="left"
     >
-      {viewFilters.map((viewFilter) => {
+      {viewFilters.map(viewFilter => {
         return (
           <DropdownCheckedItem
             key={viewFilter.id}
             label={viewFilter.label}
             id={viewFilter.id}
-            checked={filter.getIn([viewFilter.id, 'active'], false)}
+            checked={filter[viewFilter.id].active ?? false}
             onClick={() => onFilterClick(viewFilter)}
           />
         );

@@ -1,12 +1,12 @@
 import type { Action } from 'redux';
-import type { FILES, FOLDER } from '../constants/collectionTypes';
+import { Collection, CollectionFile } from '..';
 import type { MediaFile as BackendMediaFile } from '../backend';
+import type { formatExtensions } from '../formats/formats';
 import type { Auth } from '../reducers/auth';
-import type { Status } from '../reducers/status';
+import type { GlobalUI } from '../reducers/globalUI';
 import type { Medias } from '../reducers/medias';
 import type { Search } from '../reducers/search';
-import type { GlobalUI } from '../reducers/globalUI';
-import type { formatExtensions } from '../formats/formats';
+import type { Status } from '../reducers/status';
 import { SnackbarState } from '../store/slices/snackbars';
 
 export type CmsBackendType =
@@ -256,20 +256,6 @@ export type CmsField = CmsFieldBase &
     | CmsFieldMeta
   );
 
-export interface CmsCollectionFile {
-  name: string;
-  label: string;
-  file: string;
-  fields: CmsField[];
-  label_singular?: string;
-  description?: string;
-  preview_path?: string;
-  preview_path_date_field?: string;
-  i18n?: boolean | CmsI18nConfig;
-  media_folder?: string;
-  public_folder?: string;
-}
-
 export interface ViewFilter {
   label: string;
   field: string;
@@ -282,55 +268,6 @@ export interface ViewGroup {
   field: string;
   pattern: string;
   id: string;
-}
-
-export interface CmsCollection {
-  name: string;
-  label: string;
-  label_singular?: string;
-  description?: string;
-  folder?: string;
-  files?: CmsCollectionFile[];
-  identifier_field?: string;
-  summary?: string;
-  slug?: string;
-  preview_path?: string;
-  preview_path_date_field?: string;
-  create?: boolean;
-  delete?: boolean;
-  editor?: {
-    preview?: boolean;
-  };
-  publish?: boolean;
-  nested?: {
-    depth: number;
-  };
-  type: typeof FOLDER | typeof FILES;
-  meta?: { path?: { label: string; widget: string; index_file: string } };
-
-  /**
-   * It accepts the following values: yml, yaml, toml, json, md, markdown, html
-   *
-   * You may also specify a custom extension not included in the list above, by specifying the format value.
-   */
-  extension?: string;
-  format?: CmsCollectionFormatType;
-
-  frontmatter_delimiter?: string[] | string;
-  fields?: CmsField[];
-  filter?: { field: string; value: unknown };
-  path?: string;
-  media_folder?: string;
-  public_folder?: string;
-  sortable_fields?: string[];
-  view_filters?: ViewFilter[];
-  view_groups?: ViewGroup[];
-  i18n?: boolean | CmsI18nConfig;
-
-  /**
-   * @deprecated Use sortable_fields instead
-   */
-  sortableFields?: string[];
 }
 
 export interface CmsBackend {
@@ -367,7 +304,7 @@ export interface CmsLocalBackend {
 
 export interface CmsConfig {
   backend: CmsBackend;
-  collections: CmsCollection[];
+  collections: Collection[];
   locale?: string;
   site_url?: string;
   display_url?: string;
@@ -484,20 +421,27 @@ export type Entries = {
   viewStyle: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Entry = {
-  path: string;
+export interface Entry {
+  collection: string;
   slug: string;
+  path: string;
+  partial: boolean;
+  raw: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
-  collection: string;
-  mediaFiles: MediaFileMap[];
-  newRecord: boolean;
-  author?: string;
-  updatedOn?: string;
-  status: string;
-  meta: { path: string };
-};
+  label: string | null;
+  isModification: boolean | null;
+  mediaFiles: MediaFile[];
+  author: string;
+  updatedOn: string;
+  status?: string;
+  meta: { path?: string };
+  i18n?: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [locale: string]: any;
+  };
+  newRecord?: boolean;
+}
 
 export type FieldsErrors = { [field: string]: { type: string }[] };
 
@@ -513,12 +457,12 @@ export type EntryField = {
   types?: EntryField[];
   widget: string;
   name: string;
-  default: string | null | boolean | unknown[];
+  default?: string | null | boolean | unknown | unknown[];
   media_folder?: string;
   public_folder?: string;
   comment?: string;
   meta?: boolean;
-  i18n: 'translate' | 'duplicate' | 'none';
+  i18n?: boolean | 'translate' | 'duplicate' | 'none';
 };
 
 export type EntryFields = EntryField[];
@@ -528,72 +472,9 @@ export type FilterRule = {
   field: string;
 };
 
-export type CollectionFile = {
-  file: string;
-  name: string;
-  fields: EntryFields;
-  label: string;
-  media_folder?: string;
-  public_folder?: string;
-  preview_path?: string;
-  preview_path_date_field?: string;
-};
-
 export type CollectionFiles = CollectionFile[];
 
-type NestedObject = { depth: number };
-
-type Nested = NestedObject;
-
-type PathObject = { label: string; widget: string; index_file: string };
-
-type MetaObject = {
-  path?: PathObject;
-};
-
-type Meta = MetaObject;
-
-type i18n = {
-  structure: string;
-  locales: string[];
-  default_locale: string;
-};
-
 export type Format = keyof typeof formatExtensions;
-
-export type CollectionObject = {
-  name: string;
-  folder?: string;
-  files?: CollectionFiles;
-  fields: EntryFields;
-  isFetching: boolean;
-  media_folder?: string;
-  public_folder?: string;
-  preview_path?: string;
-  preview_path_date_field?: string;
-  summary?: string;
-  filter?: FilterRule;
-  type: 'file_based_collection' | 'folder_based_collection';
-  extension?: string;
-  format?: Format;
-  frontmatter_delimiter?: string[] | string | [string, string];
-  create?: boolean;
-  publish?: boolean;
-  delete?: boolean;
-  identifier_field?: string;
-  path?: string;
-  slug?: string;
-  label_singular?: string;
-  label: string;
-  sortable_fields: string[];
-  view_filters: ViewFilter[];
-  view_groups: ViewGroup[];
-  nested?: Nested;
-  meta?: Meta;
-  i18n: i18n;
-};
-
-export type Collection = CollectionObject;
 
 export type Collections = Record<string, Collection>;
 
@@ -617,13 +498,11 @@ export type MediaFile = BackendMediaFile & { key?: string };
 
 export type MediaFileMap = MediaFile;
 
-type DisplayURLStateObject = {
+export type DisplayURLState = {
   isFetching: boolean;
   url?: string;
   err?: Error;
 };
-
-export type DisplayURLState = DisplayURLStateObject;
 
 interface DisplayURLsObject {
   [id: string]: DisplayURLState;
@@ -634,6 +513,7 @@ export type MediaLibrary = {
   files: MediaFile[];
   displayURLs: DisplayURLsObject & DisplayURLsObject;
   isLoading: boolean;
+  showMediaButton?: boolean;
 };
 
 export type Hook = string | boolean;

@@ -1,4 +1,3 @@
-import { fromJS } from 'immutable';
 import { isFunction } from 'lodash';
 import { EditorComponentField } from '..';
 
@@ -36,7 +35,9 @@ export type CreateEditorComponentProps =
   | CreateEditorComponentElementProps
   | CreateEditorComponentWidgetProps;
 
-function isWidgetComponent(config: CreateEditorComponentProps): config is CreateEditorComponentWidgetProps {
+function isWidgetComponent(
+  config: CreateEditorComponentProps,
+): config is CreateEditorComponentWidgetProps {
   return 'widget' in config;
 }
 
@@ -50,7 +51,7 @@ export default function createEditorComponent(config: CreateEditorComponentProps
       widget = 'object',
       ...remainingConfig
     } = config;
-    
+
     return {
       id: id || label.replace(/[^A-Z0-9]+/gi, '_'),
       label,
@@ -58,10 +59,10 @@ export default function createEditorComponent(config: CreateEditorComponentProps
       icon,
       widget,
       pattern: catchesNothing,
-      fromBlock: (() => ({})),
-      toBlock: (() => 'Plugin'),
-      toPreview: (() => 'Plugin'),
-      fields: fromJS([]),
+      fromBlock: () => ({}),
+      toBlock: () => 'Plugin',
+      toPreview: () => 'Plugin',
+      fields: [],
       ...remainingConfig,
     };
   }
@@ -88,7 +89,7 @@ export default function createEditorComponent(config: CreateEditorComponentProps
     fromBlock: bind(fromBlock) || (() => ({})),
     toBlock: bind(toBlock) || (() => 'Plugin'),
     toPreview: bind(toPreview) || bind(toBlock) || (() => 'Plugin'),
-    fields: fromJS(fields),
+    fields,
     ...remainingConfig,
   };
 }

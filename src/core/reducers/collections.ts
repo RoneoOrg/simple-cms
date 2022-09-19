@@ -1,41 +1,39 @@
-import { List, OrderedMap, Set } from 'immutable';
 import { escapeRegExp, get } from 'lodash';
-
+import { Collection } from '..';
+import { getIn } from '../../lib/util/objectUtil';
 import { stringTemplate } from '../../lib/widgets';
-import { toMap, toStaticallyTypedRecord } from '../../util/ImmutableUtil';
+import type { ConfigAction } from '../actions/config';
 import { CONFIG_SUCCESS } from '../actions/config';
+import type { Backend } from '../backend';
 import { FILES, FOLDER } from '../constants/collectionTypes';
 import { COMMIT_AUTHOR, COMMIT_DATE } from '../constants/commitProps';
 import { IDENTIFIER_FIELDS, INFERABLE_FIELDS, SORTABLE_FIELDS } from '../constants/fieldInference';
 import { formatExtensions } from '../formats/formats';
 import consoleError from '../lib/consoleError';
 import { summaryFormatter } from '../lib/formatters';
-import { selectMediaFolder } from './entries';
-
-import type { ConfigAction } from '../actions/config';
-import type { Backend } from '../backend';
 import type {
   CmsConfig,
-  Collection,
   CollectionFiles,
   Collections,
-  EntryField,
   Entry,
+  EntryField,
+  EntryFields,
   ViewFilter,
   ViewGroup,
 } from '../types/redux';
+import { selectMediaFolder } from './entries';
 
 const { keyToPathArray } = stringTemplate;
 
-const defaultState: Collections = toRecord<string, Collection>({});
+const defaultState: Collections = {};
 
 function collections(state = defaultState, action: ConfigAction) {
   switch (action.type) {
     case CONFIG_SUCCESS: {
       const collections = action.payload.collections;
-      let newState = OrderedMap({});
+      let newState: Collections = {};
       collections.forEach(collection => {
-        newState = newState.set(collection.name, toMap(collection));
+        newState[collection.name] = collection;
       });
       return newState;
     }
@@ -48,8 +46,7 @@ const selectors = {
   [FOLDER]: {
     entryExtension(collection: Collection) {
       return (
-        collection.extension ||
-        get(formatExtensions, collection.format || 'frontmatter')
+        collection.extension || get(formatExtensions, collection.format || 'frontmatter')
       ).replace(/^\./, '');
     },
     fields(collection: Collection) {
@@ -72,7 +69,7 @@ const selectors = {
       return collection.create;
     },
     allowDeletion(collection: Collection) {
-      return collection.get('delete', true);
+      return collection.delete ?? true;
     },
     templateName(collection: Collection) {
       return collection.name;
@@ -92,9 +89,7 @@ const selectors = {
       return file && file.file;
     },
     entrySlug(collection: Collection, path: string) {
-      const file = (collection.files as CollectionFiles)
-        .filter(f => f?.file === path)
-        [0];
+      const file = (collection.files as CollectionFiles).filter(f => f?.file === path)[0];
       return file && file.name;
     },
     entryLabel(collection: Collection, slug: string) {
@@ -105,7 +100,7 @@ const selectors = {
       return false;
     },
     allowDeletion(collection: Collection) {
-      return collection.get('delete', false);
+      return collection.delete ?? false;
     },
     templateName(_collection: Collection, slug: string) {
       return slug;
@@ -120,14 +115,11 @@ function getFieldsWithMediaFolders(fields: EntryField[]) {
     }
 
     if (f.fields) {
-      const fields = f.fields? as EntryField[];
-      acc = [...acc, ...getFieldsWithMediaFolders(fields)];
+      acc = [...acc, ...getFieldsWithMediaFolders(f.fields)];
     } else if (f.field) {
-      const field = f.field as EntryField;
-      acc = [...acc, ...getFieldsWithMediaFolders([field])];
+      acc = [...acc, ...getFieldsWithMediaFolders([f.field])];
     } else if (f.types) {
-      const types = f.types? as EntryField[];
-      acc = [...acc, ...getFieldsWithMediaFolders(types)];
+      acc = [...acc, ...getFieldsWithMediaFolders(f.types)];
     }
 
     return acc;
@@ -137,19 +129,16 @@ function getFieldsWithMediaFolders(fields: EntryField[]) {
 }
 
 export function getFileFromSlug(collection: Collection, slug: string) {
-  return collection
-    .files
-    ?
-    .find(f => f.name === slug);
+  return collection.files?.find(f => f.name === slug);
 }
 
 export function selectFieldsWithMediaFolders(collection: Collection, slug: string) {
   if (collection.folder) {
-    const fields = collection.fields;
-    return getFieldsWithMediaFolders(fields);
+    const fields = collection.fields ?? [];
+    return getFieldsWithMediaFolders(fields as unknown as EntryFields);
   } else if (collection.files) {
-    const fields = getFileFromSlug(collection, slug)?.fields || [];
-    return getFieldsWithMediaFolders(fields);
+    const fields = getFileFromSlug(collection, slug)?.fields ?? [];
+    return getFieldsWithMediaFolders(fields as unknown as EntryFields);
   }
 
   return [];
@@ -166,11 +155,13 @@ export function selectMediaFolders(config: CmsConfig, collection: Collection, en
   }
   if (collection.media_folder) {
     // stop evaluating media folders at collection level
-    collection = collection.delete('files');
+    const newCollection = { ...collection };
+    delete newCollection.files;
+    collection = newCollection;
     folders.unshift(selectMediaFolder(config, collection, entry, undefined));
   }
 
-  return Set(folders);
+  return new Set(folders);
 }
 
 export function selectFields(collection: Collection, slug: string) {
@@ -210,13 +201,13 @@ export function getFieldsNames(fields: EntryField[], prefix = '') {
 
   fields.forEach((f, index) => {
     if (f.fields) {
-      const fields = f.fields? as EntryField[];
+      const fields = f.fields;
       names = [...names, ...getFieldsNames(fields, `${names[index]}.`)];
     } else if (f.field) {
-      const field = f.field as EntryField;
+      const field = f.field;
       names = [...names, ...getFieldsNames([field], `${names[index]}.`)];
     } else if (f.types) {
-      const types = f.types? as EntryField[];
+      const types = f.types;
       names = [...names, ...getFieldsNames(types, `${names[index]}.`)];
     }
   });
@@ -227,16 +218,16 @@ export function getFieldsNames(fields: EntryField[], prefix = '') {
 export function selectField(collection: Collection, key: string) {
   const array = keyToPathArray(key);
   let name: string | undefined;
-  let field;
-  let fields = collection.get('fields', EntryField[]());
+  let field: EntryField | undefined;
+  let fields = (collection.fields ?? []) as EntryFields;
   while ((name = array.shift()) && fields) {
-    field = fields.find(f => f.name === name);
+    field = fields.find(f => f.name === name) as EntryField;
     if (field?.fields) {
-      fields = field?.fields? as EntryField[];
+      fields = field?.fields;
     } else if (field?.field) {
-      fields = [field?.field as EntryField];
+      fields = [field?.field];
     } else if (field?.types) {
-      fields = field?.types? as EntryField[];
+      fields = field?.types;
     }
   }
 
@@ -252,27 +243,29 @@ export function traverseFields(
     return fields;
   }
 
-  fields = fields
-    .map(f => {
-      const field = updater(f as EntryField);
-      if (done()) {
-        return field;
-      } else if (field.fields) {
-        return field.set('fields', traverseFields(field.fields!, updater, done));
-      } else if (field.field) {
-        return field.set(
-          'field',
-          traverseFields(List([field.field!]), updater, done)[0],
-        );
-      } else if (field.types) {
-        return field.set('types', traverseFields(field.types!, updater, done));
-      } else {
-        return field;
-      }
-    })
-    .toList() as EntryField[];
-
-  return fields;
+  return fields.map((f: EntryField): EntryField => {
+    const field = updater(f as EntryField);
+    if (done()) {
+      return field;
+    } else if (field.fields) {
+      return {
+        ...field,
+        fields: traverseFields(field.fields!, updater, done),
+      };
+    } else if (field.field) {
+      return {
+        ...field,
+        field: traverseFields([field.field!], updater, done)[0],
+      };
+    } else if (field.types) {
+      return {
+        ...field,
+        types: traverseFields(field.types!, updater, done),
+      };
+    } else {
+      return field;
+    }
+  });
 }
 
 export function updateFieldByKey(
@@ -297,21 +290,25 @@ export function updateFieldByKey(
     }
   }
 
-  collection = collection.set(
-    'fields',
-    traverseFields(collection.get('fields', EntryField[]()), updateAndBreak, () => updated),
-  );
+  const newCollection = {
+    ...collection,
+    fields: traverseFields(
+      (collection.fields ?? []) as EntryField[],
+      updateAndBreak,
+      () => updated,
+    ),
+  };
 
-  return collection;
+  return newCollection;
 }
 
 export function selectIdentifier(collection: Collection) {
   const identifier = collection.identifier_field;
   const identifierFields = identifier ? [identifier, ...IDENTIFIER_FIELDS] : [...IDENTIFIER_FIELDS];
-  const fieldNames = getFieldsNames(collection.get('fields', List()));
+  const fieldNames = getFieldsNames((collection.fields ?? []) as EntryField[]);
   return identifierFields.find(id =>
     fieldNames.find(name => name.toLowerCase().trim() === id.toLowerCase().trim()),
-  );
+  ) ?? '';
 }
 
 export function selectInferedField(collection: Collection, fieldName: string) {
@@ -337,28 +334,34 @@ export function selectInferedField(collection: Collection, fieldName: string) {
   if (!fields || !inferableField) return null;
   // Try to return a field of the specified type with one of the synonyms
   const mainTypeFields = fields
-    .filter(f => f?.get('widget', 'string') === inferableField.type)
+    .filter(f => (f.widget ?? 'string') === inferableField.type)
     .map(f => f?.name);
   field = mainTypeFields.filter(f => inferableField.synonyms.indexOf(f as string) !== -1);
-  if (field && field.size > 0) return field.first();
+
+  if (field && field.length > 0) {
+    return field[0];
+  }
 
   // Try to return a field for each of the specified secondary types
   const secondaryTypeFields = fields
-    .filter(f => inferableField.secondaryTypes.indexOf(f?.get('widget', 'string') as string) !== -1)
+    .filter(f => inferableField.secondaryTypes.indexOf(f.widget ?? 'string') !== -1)
     .map(f => f?.name);
   field = secondaryTypeFields.filter(f => inferableField.synonyms.indexOf(f as string) !== -1);
-  if (field && field.size > 0) return field.first();
+
+  if (field && field.length > 0) {
+    return field[0];
+  }
 
   // Try to return the first field of the specified type
-  if (inferableField.fallbackToFirstField && mainTypeFields.size > 0) return mainTypeFields.first();
+  if (inferableField.fallbackToFirstField && mainTypeFields.length > 0) {
+    return mainTypeFields[0];
+  }
 
   // Coundn't infer the field. Show error and return null.
   if (inferableField.showError) {
     consoleError(
       `The Field ${fieldName} is missing for the collection “${collection.name}”`,
-      `Netlify CMS tries to infer the entry ${fieldName} automatically, but one couldn't be found for entries of the collection “${collection.get(
-        'name',
-      )}”. Please check your site configuration.`,
+      `Netlify CMS tries to infer the entry ${fieldName} automatically, but one couldn't be found for entries of the collection “${collection.name}”. Please check your site configuration.`,
     );
   }
 
@@ -379,11 +382,11 @@ export function selectEntryCollectionTitle(collection: Collection, entry: Entry)
   // try to infer a title field from the entry data
   const entryData = entry.data;
   const titleField = selectInferedField(collection, 'title');
-  const result = titleField && entryData.getIn(keyToPathArray(titleField));
+  const result = titleField && getIn(entryData, titleField);
 
   // if the custom field does not yield a result, fallback to 'title'
   if (!result && titleField !== 'title') {
-    return entryData.getIn(keyToPathArray('title'));
+    return getIn(entryData, 'title');
   }
 
   return result;
@@ -424,7 +427,7 @@ export function selectSortableFields(collection: Collection, t: (key: string) =>
         return { key, field: { name: key, label: t('collection.defaultFields.author.label') } };
       }
 
-      return { key, field: field? };
+      return { key, field };
     })
     .filter(item => !!item.field)
     .map(item => ({ ...item.field, key: item.key }));
@@ -455,11 +458,11 @@ export function selectViewGroups(collection: Collection) {
 export function selectFieldsComments(collection: Collection, entryMap: Entry) {
   let fields: EntryField[] = [];
   if (collection.folder) {
-    fields = collection.fields;
+    fields = collection.fields as EntryField[];
   } else if (collection.files) {
     const file = collection.files!.find(f => f?.name === entryMap.slug);
     if (file) {
-      fields = file.fields;
+      fields = file.fields as EntryField[];
     }
   }
   const comments: Record<string, string> = {};
@@ -476,10 +479,7 @@ export function selectFieldsComments(collection: Collection, entryMap: Entry) {
 
 export function selectHasMetaPath(collection: Collection) {
   return (
-    collection.folder &&
-    collection.type === FOLDER &&
-    collection.meta &&
-    collection.meta?.path
+    collection.folder && collection.type === FOLDER && collection.meta && collection.meta?.path
   );
 }
 

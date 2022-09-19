@@ -1,9 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import styled from '@emotion/styled';
 import { css, keyframes } from '@emotion/react';
+import styled from '@emotion/styled';
+import React, { ReactNode } from 'react';
 import { CSSTransition } from 'react-transition-group';
 
+import transientOptions from '../util/transientOptions';
 import { colors, zIndex } from './styles';
 
 const styles = {
@@ -56,15 +56,17 @@ const LoaderItem = styled.div`
   transform: translateX(-50%);
 `;
 
-class Loader extends React.Component {
-  static propTypes = {
-    children: PropTypes.node,
-    className: PropTypes.string,
-  };
+interface LoaderProps {
+  children: ReactNode | ReactNode[];
+  className?: string;
+}
 
+class Loader extends React.Component<LoaderProps> {
   state = {
     currentItem: 0,
   };
+
+  private interval: NodeJS.Timer | undefined;
 
   componentWillUnmount() {
     if (this.interval) {
@@ -76,9 +78,11 @@ class Loader extends React.Component {
     if (this.interval) return;
     const { children } = this.props;
 
+    const childArray = Array.isArray(children) ? children : [children];
+
     this.interval = setInterval(() => {
       const nextItem =
-        this.state.currentItem === children.length - 1 ? 0 : this.state.currentItem + 1;
+        this.state.currentItem === childArray.length - 1 ? 0 : this.state.currentItem + 1;
       this.setState({ currentItem: nextItem });
     }, 5000);
   };
@@ -116,8 +120,12 @@ class Loader extends React.Component {
   }
 }
 
-const StyledLoader = styled(Loader)`
-  display: ${props => (props.active ? 'block' : 'none')};
+interface StyledLoaderProps {
+  $active: Boolean;
+}
+
+const StyledLoader = styled(Loader, transientOptions)<StyledLoaderProps>`
+  display: ${props => (props.$active ? 'block' : 'none')};
   position: absolute;
   top: 50%;
   left: 50%;

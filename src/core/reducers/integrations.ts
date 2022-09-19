@@ -50,8 +50,8 @@ function integrations(state = defaultState, action: ConfigAction) {
 
 export function selectIntegration(state: Integrations, collection: string | null, hook: string) {
   return collection
-    ? (state.hooks[collection][hook] ?? false)
-    : (state.hooks[hook], false);
+    ? (state.hooks?.[collection]?.[hook] ?? false)
+    : (state.hooks?.[hook] ?? false);
 }
 
 export default integrations;

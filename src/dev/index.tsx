@@ -696,11 +696,11 @@ const PostPreview = ({ entry, widgetFor }: PreviewTemplateComponentProps) => {
   return (
     <div>
       <div className="cover">
-        <h1>{entry.getIn(['data', 'title']) as string}</h1>
+        <h1>{entry.data.title}</h1>
         {widgetFor('image')}
       </div>
       <p>
-        <small>{`Written ${entry.getIn(['data', 'date'])}`}</small>
+        <small>{`Written ${entry.data.date}`}</small>
       </p>
       <div className="text">{widgetFor('body')}</div>
     </div>
@@ -708,8 +708,8 @@ const PostPreview = ({ entry, widgetFor }: PreviewTemplateComponentProps) => {
 };
 
 const GeneralPreview = ({ entry, widgetsFor, getAsset }: PreviewTemplateComponentProps) => {
-  var title = entry.getIn(['data', 'site_title']) as string;
-  var posts = entry.getIn(['data', 'posts']) as any;
+  var title = entry.data.site_title as string;
+  var posts = entry.data.posts as any;
   var thumb = posts && posts.thumb;
 
   return (
@@ -717,9 +717,9 @@ const GeneralPreview = ({ entry, widgetsFor, getAsset }: PreviewTemplateComponen
       <h1>{title}</h1>
       <dl>
         <dt>Posts on Frontpage</dt>
-        <dd>{widgetsFor('posts').getIn(['widgets', 'front_limit']) || 0}</dd>
+        <dd>{widgetsFor('posts').widgets.front_limit || 0}</dd>
         <dt>Default Author</dt>
-        <dd>{widgetsFor('posts').getIn(['data', 'author']) || 'None'}</dd>
+        <dd>{widgetsFor('posts').data.author || 'None'}</dd>
         <dt>Default Thumbnail</dt>
         <dd>{thumb ? <img src={getAsset(thumb).toString()} /> : null}</dd>
       </dl>
@@ -734,8 +734,8 @@ const AuthorsPreview = ({ widgetsFor }: PreviewTemplateComponentProps) => {
       {widgetsFor('authors').map((author: any, index: number) => (
         <div key={index}>
           <hr />
-          <strong>{author.getIn(['data', 'name'])}</strong>
-          {author.getIn(['widgets', 'description'])}
+          <strong>{author.data.name}</strong>
+          {author.widgets.description}
         </div>
       ))}
     </div>
@@ -749,7 +749,7 @@ const RelationKitchenSinkPostPreview = ({ value, fieldsMetaData }: CmsWidgetPrev
   // In this case, the post would be nested under "posts" and then under
   // the title of the selected post, since our `value_field` in the config
   // is "title".
-  const post = fieldsMetaData && (fieldsMetaData.getIn(['posts', value]) as Record<string, any>);
+  const post = fieldsMetaData && (fieldsMetaData.posts[value] as Record<string, any>);
   const style = { border: '2px solid #ccc', borderRadius: '8px', padding: '20px' };
 
   if (!post) {

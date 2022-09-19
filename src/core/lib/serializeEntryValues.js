@@ -1,6 +1,4 @@
 import { isNil } from 'lodash';
-import { Map, List } from 'immutable';
-
 import { getWidgetValueSerializer } from './registry';
 
 /**
@@ -35,7 +33,7 @@ function runSerializer(values, fields, method) {
     const nestedFields = field.fields;
 
     // Call recursively for fields within lists
-    if (nestedFields && List.isList(value)) {
+    if (nestedFields && Array.isArray(value)) {
       return acc.set(
         fieldName,
         value.map(val => runSerializer(val, nestedFields, method)),
@@ -43,7 +41,7 @@ function runSerializer(values, fields, method) {
     }
 
     // Call recursively for fields within objects
-    if (nestedFields && Map.isMap(value)) {
+    if (nestedFields && typeof value === 'object') {
       return acc.set(fieldName, runSerializer(value, nestedFields, method));
     }
 

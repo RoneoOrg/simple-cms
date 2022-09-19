@@ -19,7 +19,7 @@ export function resolveFunctionForTypedField(field) {
 }
 
 export function resolveFieldKeyType(field) {
-  return field.get(TYPE_KEY, DEFAULT_TYPE_KEY);
+  return field[TYPE_KEY] ?? DEFAULT_TYPE_KEY;
 }
 
 export function getErrorMessageForTypedFieldAndValue(field, value) {

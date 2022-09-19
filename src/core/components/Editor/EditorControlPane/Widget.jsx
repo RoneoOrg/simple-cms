@@ -1,7 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import ImmutablePropTypes from 'react-immutable-proptypes';
-import { Map, List } from 'immutable';
 import { oneLine } from 'common-tags';
 
 import ValidationErrorTypes from '../../../constants/validationErrorTypes';
@@ -16,14 +14,14 @@ function isEmpty(value) {
     value === undefined ||
     (Object.prototype.hasOwnProperty.call(value, 'length') && value.length === 0) ||
     (value.constructor === Object && Object.keys(value).length === 0) ||
-    (List.isList(value) && value.size === 0)
+    (Array.isArray(value) && value.size === 0)
   );
 }
 
 export default class Widget extends Component {
   static propTypes = {
     controlComponent: PropTypes.func.isRequired,
-    field: ImmutablePropTypes.map.isRequired,
+    field: PropTypes.object.isRequired,
     hasActiveStyle: PropTypes.bool,
     setActiveStyle: PropTypes.func.isRequired,
     setInactiveStyle: PropTypes.func.isRequired,
@@ -38,9 +36,9 @@ export default class Widget extends Component {
       PropTypes.string,
       PropTypes.bool,
     ]),
-    mediaPaths: ImmutablePropTypes.map.isRequired,
-    metadata: ImmutablePropTypes.map,
-    fieldsErrors: ImmutablePropTypes.map,
+    mediaPaths: PropTypes.object.isRequired,
+    metadata: PropTypes.object,
+    fieldsErrors: PropTypes.object,
     onChange: PropTypes.func.isRequired,
     onValidate: PropTypes.func,
     onOpenMediaLibrary: PropTypes.func.isRequired,
@@ -65,7 +63,7 @@ export default class Widget extends Component {
     onValidateObject: PropTypes.func,
     isEditorComponent: PropTypes.bool,
     isNewEditorComponent: PropTypes.bool,
-    entry: ImmutablePropTypes.map.isRequired,
+    entry: PropTypes.object.isRequired,
     isDisabled: PropTypes.bool,
     isFieldDuplicate: PropTypes.func,
     isFieldHidden: PropTypes.func,
@@ -110,7 +108,7 @@ export default class Widget extends Component {
   getValidateValue = () => {
     let value = this.innerWrappedControl?.getValidateValue?.() || this.props.value;
     // Convert list input widget value to string for validation test
-    List.isList(value) && (value = value.join(','));
+    Array.isArray(value) && (value = value.join(','));
     return value;
   };
 
@@ -138,13 +136,13 @@ export default class Widget extends Component {
 
   validatePresence = (field, value) => {
     const { t, parentIds } = this.props;
-    const isRequired = field.get('required', true);
+    const isRequired = field.required ?? true;
     if (isRequired && isEmpty(value)) {
       const error = {
         type: ValidationErrorTypes.PRESENCE,
         parentIds,
         message: t('editor.editorControlPane.widget.required', {
-          fieldLabel: field.get('label', field.name),
+          fieldLabel: field.labelo ?? field.name,
         }),
       };
 
@@ -155,19 +153,20 @@ export default class Widget extends Component {
 
   validatePattern = (field, value) => {
     const { t, parentIds } = this.props;
-    const pattern = field.get('pattern', false);
+    const pattern = field.pattern ?? false;
+    const patterns = !pattern || Array.isArray(pattern) ? pattern : [pattern];
 
     if (isEmpty(value)) {
       return { error: false };
     }
 
-    if (pattern && !RegExp(pattern.first()).test(value)) {
+    if (patterns?.length && !RegExp(patterns[0]).test(value)) {
       const error = {
         type: ValidationErrorTypes.PATTERN,
         parentIds,
         message: t('editor.editorControlPane.widget.regexPattern', {
-          fieldLabel: field.get('label', field.name),
-          pattern: pattern.last(),
+          fieldLabel: field.label ?? field.name,
+          pattern: patterns[patterns.length - 1],
         }),
       };
 
@@ -200,7 +199,7 @@ export default class Widget extends Component {
         err => {
           const error = {
             type: ValidationErrorTypes.CUSTOM,
-            message: `${field.get('label', field.name)} - ${err}.`,
+            message: `${field.label ?? field.name} - ${err}.`,
           };
 
           this.validate({ error });
@@ -211,7 +210,7 @@ export default class Widget extends Component {
         type: ValidationErrorTypes.CUSTOM,
         parentIds,
         message: t('editor.editorControlPane.widget.processing', {
-          fieldLabel: field.get('label', field.name),
+          fieldLabel: field.label ?? field.name,
         }),
       };
 

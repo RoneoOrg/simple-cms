@@ -1,12 +1,8 @@
-import { List } from 'immutable';
 import { get } from 'lodash';
-
-import jsonFormatter from './json';
-import { FrontmatterInfer, frontmatterJSON } from './frontmatter';
-
-import type { Delimiter } from './frontmatter';
 import type { Collection, Entry, Format } from '../types/redux';
-import type { EntryValue } from '../valueObjects/Entry';
+import type { Delimiter } from './frontmatter';
+import { FrontmatterInfer, frontmatterJSON } from './frontmatter';
+import jsonFormatter from './json';
 
 export const frontmatterFormats = ['yaml-frontmatter', 'toml-frontmatter', 'json-frontmatter'];
 
@@ -31,16 +27,10 @@ function formatByName(name: Format, customDelimiter?: Delimiter) {
   }[name];
 }
 
-function frontmatterDelimiterIsList(
-  frontmatterDelimiter?: Delimiter | string[],
-): frontmatterDelimiter is string[] {
-  return List.isList(frontmatterDelimiter);
-}
-
-export function resolveFormat(collection: Collection, entry: Entry | EntryValue) {
+export function resolveFormat(collection: Collection, entry: Entry | Entry) {
   // Check for custom delimiter
   const frontmatter_delimiter = collection.frontmatter_delimiter;
-  const customDelimiter = frontmatterDelimiterIsList(frontmatter_delimiter)
+  const customDelimiter = Array.isArray(frontmatter_delimiter)
     ? (frontmatter_delimiter as [string, string])
     : frontmatter_delimiter;
 

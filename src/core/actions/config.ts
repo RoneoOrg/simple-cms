@@ -9,7 +9,7 @@ import { getIntegrations, selectIntegration } from '../reducers/integrations';
 import type { AnyAction } from 'redux';
 import type { ThunkDispatch } from 'redux-thunk';
 import type {
-  CmsCollection,
+  Collection,
   CmsConfig,
   CmsField,
   CmsFieldBase,
@@ -142,8 +142,7 @@ function throwOnMissingDefaultLocale(i18n?: CmsI18nConfig) {
   }
 }
 
-function hasIntegration(config: CmsConfig, collection: CmsCollection) {
-  // TODO remove fromJS when Immutable is removed from the integrations state slice
+function hasIntegration(config: CmsConfig, collection: Collection) {
   const integrations = getIntegrations(config);
   const integration = selectIntegration(integrations, collection.name, 'listEntries');
   return !!integration;

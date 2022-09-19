@@ -1,11 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { connect } from 'react-redux';
 import styled from '@emotion/styled';
 import { translate } from 'react-polyglot';
 import { partial } from 'lodash';
-
 import { Cursor } from '../../../../lib/util';
 import { colors } from '../../../../ui-default';
 import {
@@ -58,9 +56,9 @@ function withGroups(groups, entries, EntriesToRender, t) {
 
 export class EntriesCollection extends React.Component {
   static propTypes = {
-    collection: ImmutablePropTypes.map.isRequired,
+    collection: PropTypes.object.isRequired,
     page: PropTypes.number,
-    entries: ImmutablePropTypes.list,
+    entries: PropTypes.array,
     groups: PropTypes.array,
     isFetching: PropTypes.bool.isRequired,
     viewStyle: PropTypes.string,
@@ -137,7 +135,7 @@ export function filterNestedEntries(path, collectionFolder, entries) {
 
 function mapStateToProps(state, ownProps) {
   const { collection, viewStyle, filterTerm } = ownProps;
-  const page = state.entries.getIn(['pages', collection.name, 'page']);
+  const page = state.entries.pages[collection.name]?.page;
 
   let entries = selectEntries(state.entries, collection);
   const groups = selectGroups(state.entries, collection);

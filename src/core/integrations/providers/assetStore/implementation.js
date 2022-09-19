@@ -13,7 +13,7 @@ export default class AssetStore {
     }
     this.getToken = getToken;
 
-    this.shouldConfirmUpload = config.get('shouldConfirmUpload', false);
+    this.shouldConfirmUpload = config.shouldConfirmUpload ?? false;
     this.getSignedFormURL = trimEnd(config.getSignedFormURL, '/');
   }
 

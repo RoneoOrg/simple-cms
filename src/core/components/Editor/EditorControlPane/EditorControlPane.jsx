@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { css } from '@emotion/react';
 import styled from '@emotion/styled';
 
@@ -84,15 +83,15 @@ function LocaleDropdown({ locales, dropdownText, onLocaleChange }) {
 
 function getFieldValue({ field, entry, isTranslatable, locale }) {
   if (field.meta) {
-    return entry.getIn(['meta', field.name]);
+    return entry.meta[field.name];
   }
 
   if (isTranslatable) {
     const dataPath = getLocaleDataPath(locale);
-    return entry.getIn([...dataPath, field.name]);
+    return getIn(entry, [...dataPath, field.name]);
   }
 
-  return entry.getIn(['data', field.name]);
+  return entry.data[field.name];
 }
 
 export default class ControlPane extends React.Component {
@@ -246,11 +245,11 @@ export default class ControlPane extends React.Component {
 }
 
 ControlPane.propTypes = {
-  collection: ImmutablePropTypes.map.isRequired,
-  entry: ImmutablePropTypes.map.isRequired,
-  fields: ImmutablePropTypes.list.isRequired,
-  fieldsMetaData: ImmutablePropTypes.map.isRequired,
-  fieldsErrors: ImmutablePropTypes.map.isRequired,
+  collection: PropTypes.object.isRequired,
+  entry: PropTypes.object.isRequired,
+  fields: PropTypes.array.isRequired,
+  fieldsMetaData: PropTypes.object.isRequired,
+  fieldsErrors: PropTypes.object.isRequired,
   onChange: PropTypes.func.isRequired,
   onValidate: PropTypes.func.isRequired,
   locale: PropTypes.string,

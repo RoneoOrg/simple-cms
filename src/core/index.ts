@@ -1,10 +1,10 @@
 import bootstrap from './bootstrap';
 import Registry from './lib/registry';
 
-import type { List, Map } from 'immutable';
 import type { ComponentType } from 'react';
 import type { t } from 'react-polyglot';
 import type { CmsConfig } from './types/redux';
+import { FILES, FOLDER } from './constants/collectionTypes';
 
 export type CmsBackendType =
   | 'azure'
@@ -64,6 +64,7 @@ export interface CmsFieldBase {
   required?: boolean;
   hint?: string;
   pattern?: [string, string];
+  meta?: boolean;
   i18n?: boolean | 'translate' | 'duplicate' | 'none';
   media_folder?: string;
   public_folder?: string;
@@ -253,13 +254,15 @@ export type CmsField = CmsFieldBase &
     | CmsFieldMeta
   );
 
-export interface CmsCollectionFile {
+export interface CollectionFile {
   name: string;
   label: string;
   file: string;
   fields: CmsField[];
   label_singular?: string;
   description?: string;
+  preview_path?: string;
+  preview_path_date_field?: string;
   i18n?: boolean | CmsI18nConfig;
   media_folder?: string;
   public_folder?: string;
@@ -277,19 +280,20 @@ export interface ViewGroup {
   pattern?: string;
 }
 
-export interface CmsCollection {
+export interface Collection {
   name: string;
   label: string;
   label_singular?: string;
   description?: string;
   folder?: string;
-  files?: CmsCollectionFile[];
+  files?: CollectionFile[];
   identifier_field?: string;
   summary?: string;
   slug?: string;
+  preview_path?: string;
+  preview_path_date_field?: string;
   create?: boolean;
   delete?: boolean;
-  hide?: boolean;
   editor?: {
     preview?: boolean;
   };
@@ -297,6 +301,7 @@ export interface CmsCollection {
   nested?: {
     depth: number;
   };
+  type: typeof FOLDER | typeof FILES;
   meta?: { path?: { label: string; widget: string; index_file: string } };
 
   /**
@@ -309,19 +314,21 @@ export interface CmsCollection {
 
   frontmatter_delimiter?: string[] | string;
   fields?: CmsField[];
-  filter?: { field: string; value: any };
+  filter?: { field: string; value: string };
   path?: string;
   media_folder?: string;
   public_folder?: string;
   sortable_fields?: string[];
   view_filters?: ViewFilter[];
   view_groups?: ViewGroup[];
-  i18n?: boolean | CmsI18nConfig;
+  i18n?: false | CmsI18nConfig;
 
   /**
    * @deprecated Use sortable_fields instead
    */
   sortableFields?: string[];
+  isFetching?: boolean;
+  hide?: boolean;
 }
 
 export interface CmsBackend {

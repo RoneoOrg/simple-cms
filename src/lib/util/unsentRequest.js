@@ -1,7 +1,7 @@
-import { fromJS, List, Map } from 'immutable';
 import curry from 'lodash/curry';
 import flow from 'lodash/flow';
 import isString from 'lodash/isString';
+import { getIn, mergeDeep, setIn } from './objectUtil';
 
 function isAbortControllerSupported() {
   if (typeof window !== 'undefined') {
@@ -32,25 +32,24 @@ function fetchWithTimeout(input, init) {
 }
 
 function decodeParams(paramsString) {
-  return List(paramsString.split('&'))
-    .map(s => List(s.split('=')).map(decodeURIComponent))
-    .update(Map);
+  return paramsString.split('&').map(s => s.split('=').map(decodeURIComponent));
 }
 
 function fromURL(wholeURL) {
   const [url, allParamsString] = wholeURL.split('?');
-  return Map({ url, ...(allParamsString ? { params: decodeParams(allParamsString) } : {}) });
+  return { url, ...(allParamsString ? { params: decodeParams(allParamsString) } : {}) };
 }
 
 function fromFetchArguments(wholeURL, options) {
-  return fromURL(wholeURL).merge(
-    (options ? fromJS(options) : {}).remove('url').remove('params'),
-  );
+  const newOptions = { ...(options ?? {}) };
+  delete newOptions.url;
+  delete newOptions.params;
+
+  return { ...fromURL(wholeURL), ...newOptions };
 }
 
 function encodeParams(params) {
-  return params
-    .entrySeq()
+  return Object.entries(params)
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&');
 }
@@ -60,7 +59,11 @@ function toURL(req) {
 }
 
 function toFetchArguments(req) {
-  return [toURL(req), req.remove('url').remove('params')];
+  const options = { ...(req ?? {}) };
+  delete options.url;
+  delete options.params;
+
+  return [toURL(req), options];
 }
 
 function maybeRequestArg(req) {
@@ -68,7 +71,7 @@ function maybeRequestArg(req) {
     return fromURL(req);
   }
   if (req) {
-    return fromJS(req);
+    return req;
   }
   return {};
 }
@@ -84,7 +87,7 @@ function ensureRequestArg2(func) {
 // This actually performs the built request object
 const performRequest = ensureRequestArg(req => {
   const args = toFetchArguments(req);
-  return fetchWithTimeout(...args);
+  return fetchWithTimeout(args[0], args[1]);
 });
 
 // Each of the following functions takes options and returns another
@@ -92,11 +95,18 @@ const performRequest = ensureRequestArg(req => {
 const getCurriedRequestProcessor = flow([ensureRequestArg2, curry]);
 
 function getPropSetFunction(path) {
-  return getCurriedRequestProcessor((val, req) => req.setIn(path, val));
+  return getCurriedRequestProcessor((val, req) => {
+    const newReq = { ...req };
+    newReq[path] = val;
+    return newReq;
+  });
 }
 
 function getPropMergeFunction(path) {
-  return getCurriedRequestProcessor((obj, req) => req.updateIn(path, (p = {}) => p.merge(obj)));
+  return getCurriedRequestProcessor((obj, req) => {
+    const target = getIn(req, path);
+    return setIn(req, path, mergeDeep(target, obj));
+  });
 }
 
 const withMethod = getPropSetFunction(['method']);

@@ -2,9 +2,7 @@ import React from 'react';
 import styled from '@emotion/styled';
 import { translate } from 'react-polyglot';
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import SearchIcon from '@mui/icons-material/Search';
-
 import { colorsRaw, colors, Icon, lengths, zIndex } from '../../../ui-default';
 
 const SearchContainer = styled.div`
@@ -90,8 +88,8 @@ const SuggestionDivider = styled.div`
 
 class CollectionSearch extends React.Component {
   static propTypes = {
-    collections: ImmutablePropTypes.map.isRequired,
-    collection: ImmutablePropTypes.map,
+    collections: PropTypes.object.isRequired,
+    collection: PropTypes.object,
     searchTerm: PropTypes.string.isRequired,
     onSubmit: PropTypes.func.isRequired,
     t: PropTypes.func.isRequired,
@@ -147,7 +145,7 @@ class CollectionSearch extends React.Component {
 
     this.toggleSuggestions(false);
     if (selectedCollectionIdx !== -1) {
-      onSubmit(query, collections.toIndexedSeq().getIn([selectedCollectionIdx, 'name']));
+      onSubmit(query, Object.values(collections)[selectedCollectionIdx].name);
     } else {
       onSubmit(query);
     }

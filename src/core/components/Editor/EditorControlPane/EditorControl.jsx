@@ -1,7 +1,6 @@
 import React from 'react';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { translate } from 'react-polyglot';
 import { ClassNames, Global, css as coreCss } from '@emotion/react';
 import styled from '@emotion/styled';
@@ -100,7 +99,7 @@ export const ControlHint = styled.p`
 `;
 
 function LabelComponent({ field, isActive, hasErrors, uniqueFieldId, isFieldOptional, t }) {
-  const label = `${field.get('label', field.name)}`;
+  const label = `${field.label ?? field.name}`;
   const labelComponent = (
     <FieldLabel isActive={isActive} hasErrors={hasErrors} htmlFor={uniqueFieldId}>
       {label} {`${isFieldOptional ? ` (${t('editor.editorControl.field.optional')})` : ''}`}
@@ -118,10 +117,10 @@ class EditorControl extends React.Component {
       PropTypes.string,
       PropTypes.bool,
     ]),
-    field: ImmutablePropTypes.map.isRequired,
-    fieldsMetaData: ImmutablePropTypes.map,
-    fieldsErrors: ImmutablePropTypes.map,
-    mediaPaths: ImmutablePropTypes.map.isRequired,
+    field: PropTypes.object.isRequired,
+    fieldsMetaData: PropTypes.object,
+    fieldsErrors: PropTypes.object,
+    mediaPaths: PropTypes.object.isRequired,
     boundGetAsset: PropTypes.func.isRequired,
     onChange: PropTypes.func.isRequired,
     openMediaLibrary: PropTypes.func.isRequired,
@@ -141,8 +140,8 @@ class EditorControl extends React.Component {
     isEditorComponent: PropTypes.bool,
     isNewEditorComponent: PropTypes.bool,
     parentIds: PropTypes.arrayOf(PropTypes.string),
-    entry: ImmutablePropTypes.map.isRequired,
-    collection: ImmutablePropTypes.map.isRequired,
+    entry: PropTypes.object.isRequired,
+    collection: PropTypes.object.isRequired,
     isDisabled: PropTypes.bool,
     isHidden: PropTypes.bool,
     isFieldDuplicate: PropTypes.func,
@@ -219,7 +218,7 @@ class EditorControl extends React.Component {
     const isFieldOptional = field.required === false;
     const onValidateObject = onValidate;
     const metadata = fieldsMetaData && fieldsMetaData[fieldName];
-    const errors = fieldsErrors && fieldsErrors.get(this.uniqueFieldId);
+    const errors = fieldsErrors && fieldsErrors[this.uniqueFieldId];
     const childErrors = this.isAncestorOfFieldError();
     const hasErrors = !!errors || childErrors;
 
@@ -363,7 +362,7 @@ class EditorControl extends React.Component {
 function mapStateToProps(state) {
   const { collections, entryDraft } = state;
   const entry = entryDraft['entry'];
-  const collection = collections.get(entryDraft.getIn(['entry', 'collection']));
+  const collection = collections[entryDraft.entry.collection];
   const isLoadingAsset = selectIsLoadingAsset(state.medias);
 
   async function loadEntry(collectionName, slug) {

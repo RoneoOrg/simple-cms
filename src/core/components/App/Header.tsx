@@ -4,25 +4,25 @@ import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
-import { List } from 'immutable';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { FC, useCallback, useEffect, useMemo } from 'react';
 import { translate } from 'react-polyglot';
 import { connect } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
 import { TranslatedProps } from '../../../interface';
 import { checkBackendStatus } from '../../actions/status';
+import { Collections } from '../../types/redux';
 import QuickActionsDropdown from '../UI/QuickActionsDropdown';
 import SettingsDropdown from '../UI/SettingsDropdown';
 
 interface HeaderProps {
   user: any;
-  collections: any[];
-  onCreateEntryClick: (collectionName: string) => {};
-  onLogoutClick: () => {};
-  openMediaLibrary: () => {};
+  collections: Collections;
+  onCreateEntryClick: (collectionName: string) => void;
+  onLogoutClick: () => void;
+  openMediaLibrary: () => void;
   displayUrl?: string;
   isTestRepo?: boolean;
-  checkBackendStatus: () => {};
+  checkBackendStatus?: () => void;
   showMediaButton?: boolean;
 }
 
@@ -35,7 +35,7 @@ const Header = ({
   displayUrl,
   isTestRepo,
   t,
-  checkBackendStatus,
+  checkBackendStatus = () => {},
   showMediaButton,
 }: TranslatedProps<HeaderProps>) => {
   useEffect(() => {
@@ -55,7 +55,7 @@ const Header = ({
   }, []);
 
   const createableCollections = useMemo(
-    () => collections.filter((collection: any) => collection.create).toList(),
+    () => Object.values(collections).filter((collection: any) => collection.create),
     [],
   );
 
@@ -91,7 +91,7 @@ const Header = ({
           </Button>
         ) : null}
         <Box sx={{ flexGrow: 1 }} />
-        {createableCollections.size > 0 ? (
+        {createableCollections.length > 0 ? (
           <QuickActionsDropdown
             key="quick-actions"
             createableCollections={createableCollections}
@@ -113,4 +113,4 @@ const mapDispatchToProps = {
   checkBackendStatus,
 };
 
-export default connect(null, mapDispatchToProps)(translate()(Header));
+export default connect(null, mapDispatchToProps)(translate()(Header)) as FC<HeaderProps>;

@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
-
+import { Collections } from '../../types/redux';
 import Editor from './Editor';
 
-function getDefaultPath(collections: any) {
-  const first = collections.filter((collection: any) => collection.hide !== true).first();
+function getDefaultPath(collections: Collections) {
+  const first = Object.values(collections).filter((collection: any) => collection.hide !== true)[0];
   if (first) {
     return `/collections/${first.name}`;
   } else {

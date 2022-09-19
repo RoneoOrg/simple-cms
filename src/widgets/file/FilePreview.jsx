@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
-import { List } from 'immutable';
 
 import { WidgetPreviewContainer } from '../../ui-default';
 
@@ -25,7 +24,7 @@ function FileLinkList({ values, getAsset, field }) {
 
 function FileContent(props) {
   const { value, getAsset, field } = props;
-  if (Array.isArray(value) || List.isList(value)) {
+  if (Array.isArray(value) || Array.isArray(value)) {
     return <FileLinkList values={value} getAsset={getAsset} field={field} />;
   }
   return <FileLink key={value} path={value} href={getAsset(value, field)} />;

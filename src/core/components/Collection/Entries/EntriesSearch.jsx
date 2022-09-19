@@ -1,9 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { connect } from 'react-redux';
 import { isEqual } from 'lodash';
-
 import { Cursor } from '../../../../lib/util';
 import { selectSearchedEntries } from '../../../reducers';
 import {
@@ -18,9 +16,9 @@ class EntriesSearch extends React.Component {
     searchEntries: PropTypes.func.isRequired,
     clearSearch: PropTypes.func.isRequired,
     searchTerm: PropTypes.string.isRequired,
-    collections: ImmutablePropTypes.seq,
+    collections: PropTypes.object,
     collectionNames: PropTypes.array,
-    entries: ImmutablePropTypes.list,
+    entries: PropTypes.array,
     page: PropTypes.number,
   };
 

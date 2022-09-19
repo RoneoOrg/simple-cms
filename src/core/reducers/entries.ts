@@ -1,8 +1,8 @@
 import { groupBy, once, orderBy, set, sortBy, trim } from 'lodash';
 import { dirname, join } from 'path-browserify';
-
+import { Collection } from '..';
 import { basename, isAbsolutePath } from '../../lib/util';
-import { stringTemplate } from '../../lib/widgets';
+import { getIn } from '../../lib/util/objectUtil';
 import {
   CHANGE_VIEW_STYLE,
   ENTRIES_FAILURE,
@@ -26,14 +26,9 @@ import { SEARCH_ENTRIES_SUCCESS } from '../actions/search';
 import { VIEW_STYLE_LIST } from '../constants/collectionViews';
 import { folderFormatter } from '../lib/formatters';
 import { joinUrlPath } from '../lib/urlHelper';
-import { SortDirection } from '../types/redux';
-import { selectSortDataPath } from './collections';
-
-import { getIn } from '../../lib/util/objectUtil';
 import type {
   ChangeViewStylePayload,
   CmsConfig,
-  Collection,
   CollectionFiles,
   Entries,
   EntriesAction,
@@ -60,8 +55,8 @@ import type {
   SortMap,
   SortObject,
 } from '../types/redux';
-
-const { keyToPathArray } = stringTemplate;
+import { SortDirection } from '../types/redux';
+import { selectSortDataPath } from './collections';
 
 const storageSortKey = '../netlify-cms.entries.sort';
 const viewStyleKey = '../netlify-cms.entries.viewStyle';
@@ -686,7 +681,7 @@ export function selectEntries(state: Entries, collection: Collection) {
         const pattern = f.pattern;
         const field = f.field;
         const data = e!.data || {};
-        const toMatch = data.getIn(keyToPathArray(field));
+        const toMatch = getIn(data, field);
         const matched = toMatch !== undefined && new RegExp(String(pattern)).test(String(toMatch));
         return matched;
       });
@@ -802,7 +797,7 @@ function hasCustomFolder(
   }
 
   if (collection.files) {
-    const file = getFileField(collection.files!, slug);
+    const file = getFileField(collection.files, slug);
     if (file && file[folderKey]) {
       return true;
     }
@@ -942,7 +937,7 @@ function evaluateFolder(
           collection,
           entryMap,
           field,
-          file.fields!,
+          file.fields! as EntryField[],
           currentFolder,
         );
 
@@ -970,7 +965,7 @@ function evaluateFolder(
         collection,
         entryMap,
         field,
-        collection.fields!,
+        collection.fields! as EntryField[],
         currentFolder,
       );
 

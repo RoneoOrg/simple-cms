@@ -61,10 +61,10 @@ export default function withMapControl({ getFormat, getMap } = {}) {
         map.getView().fit(featuresSource.getExtent(), { maxZoom: 16, padding: [80, 80, 80, 80] });
       }
 
-      const draw = new Draw({ source: featuresSource, type: field.get('type', 'Point') });
+      const draw = new Draw({ source: featuresSource, type: field.type ?? 'Point' });
       map.addInteraction(draw);
 
-      const writeOptions = { decimals: field.get('decimals', 7) };
+      const writeOptions = { decimals: field.decimals ?? 7 };
       draw.on('drawend', ({ feature }) => {
         featuresSource.clear();
         onChange(format.writeGeometry(feature.getGeometry(), writeOptions));

@@ -1,9 +1,9 @@
 import format from 'date-fns/format';
 import isValid from 'date-fns/isValid';
 import parseISO from 'date-fns/parseISO';
-import { Map } from 'immutable';
 import { get, trimEnd, truncate } from 'lodash';
 import { basename, dirname, extname } from 'path-browserify';
+import { getIn } from '../util/objectUtil';
 
 const filters = [
   { pattern: /^upper$/, transform: (str: string) => str.toUpperCase() },
@@ -56,12 +56,12 @@ export const dateParsers: Record<string, (date: Date) => string> = {
   second: (date: Date) => formatDate(date.getUTCSeconds()),
 };
 
-export function parseDateFromEntry(entry: Record<string, unknown>, dateFieldName?: string | null) {
+export function parseDateFromEntry(entry: Record<string, any>, dateFieldName?: string | null) {
   if (!dateFieldName) {
     return;
   }
 
-  const dateValue = entry.getIn(['data', dateFieldName]) as string | Date;
+  const dateValue = entry.data[dateFieldName] as string | Date;
   const dateMoment = dateValue instanceof Date ? dateValue : parseISO(dateValue);
   if (dateMoment && isValid(dateMoment)) {
     return dateMoment;
@@ -138,7 +138,7 @@ function getExplicitFieldReplacement(key: string, data: Record<string, unknown>)
     return '';
   }
   const fieldName = key.slice(FIELD_PREFIX.length);
-  const value = data.getIn(keyToPathArray(fieldName)) as string | object;
+  const value = getIn(data, fieldName) as string | object;
   if (typeof value === 'object' && value !== null) {
     return JSON.stringify(value);
   }
@@ -164,7 +164,7 @@ export function compileStringTemplate(
   template: string,
   date: Date | undefined | null,
   identifier = '',
-  data = Record<string, unknown>(),
+  data: Record<string, unknown> = {},
   processor?: (value: string) => string,
 ) {
   let missingRequiredDate;
@@ -189,7 +189,7 @@ export function compileStringTemplate(
       } else if (key === 'slug') {
         replacement = identifier;
       } else {
-        replacement = data.getIn(keyToPathArray(key), '') as string;
+        replacement = (getIn(data, key) ?? '') as string;
       }
 
       if (processor) {
@@ -232,7 +232,11 @@ export function extractTemplateVars(template: string) {
  *   eg: `addFileTemplateFields('foo/bar/baz.ext', fields, 'foo')`
  *       will result in: `{ dirname: 'bar', filename: 'baz', extension: 'ext' }`
  */
-export function addFileTemplateFields(entryPath: string, fields: Record<string, string>, folder = '') {
+export function addFileTemplateFields(
+  entryPath: string,
+  fields: Record<string, string>,
+  folder = '',
+) {
   if (!entryPath) {
     return fields;
   }
@@ -240,11 +244,11 @@ export function addFileTemplateFields(entryPath: string, fields: Record<string, 
   const extension = extname(entryPath);
   const filename = basename(entryPath, extension);
   const dirnameExcludingFolder = dirname(entryPath).replace(new RegExp(`^(/?)${folder}/?`), '$1');
-  fields = fields.withMutations(map => {
-    map.set('dirname', dirnameExcludingFolder);
-    map.set('filename', filename);
-    map.set('extension', extension === '' ? extension : extension.slice(1));
-  });
 
-  return fields;
+  return {
+    ...fields,
+    dirname: dirnameExcludingFolder,
+    filename,
+    extension: extension === '' ? extension : extension.slice(1),
+  };
 }

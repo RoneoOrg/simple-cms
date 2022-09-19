@@ -1,11 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { ClassNames } from '@emotion/react';
-import { List, Map } from 'immutable';
-
-import { colors, lengths, ObjectWidgetTopBar } from '../../ui-default';
+import PropTypes from 'prop-types';
+import React from 'react';
 import { stringTemplate } from '../../lib/widgets';
+import { colors, lengths, ObjectWidgetTopBar } from '../../ui-default';
 
 const styleStrings = {
   nestedObjectControl: `
@@ -37,7 +34,7 @@ export default class ObjectControl extends React.Component {
     editorControl: PropTypes.elementType.isRequired,
     resolveWidget: PropTypes.func.isRequired,
     clearFieldErrors: PropTypes.func.isRequired,
-    fieldsErrors: ImmutablePropTypes.map.isRequired,
+    fieldsErrors: PropTypes.object.isRequired,
     hasError: PropTypes.bool,
     t: PropTypes.func.isRequired,
     locale: PropTypes.string,
@@ -50,7 +47,7 @@ export default class ObjectControl extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      collapsed: props.field.get('collapsed', false),
+      collapsed: props.field.collapsed ?? false,
     };
   }
 
@@ -67,7 +64,7 @@ export default class ObjectControl extends React.Component {
   validate = () => {
     const { field } = this.props;
     let fields = field.field || field.fields;
-    fields = List.isList(fields) ? fields : List([fields]);
+    fields = Array.isArray(fields) ? fields : [fields];
     fields.forEach(field => {
       if (field.widget === 'hidden') return;
       this.componentValidate[field.name]();
@@ -94,7 +91,7 @@ export default class ObjectControl extends React.Component {
       return null;
     }
     const fieldName = field.name;
-    const fieldValue = value && Map.isMap(value) ? value[fieldName] : value;
+    const fieldValue = value && typeof value === 'object' ? value[fieldName] : value;
 
     const isDuplicate = isFieldDuplicate && isFieldDuplicate(field);
     const isHidden = isFieldHidden && isFieldHidden(field);
@@ -134,7 +131,7 @@ export default class ObjectControl extends React.Component {
 
   objectLabel = () => {
     const { value, field } = this.props;
-    const label = field.get('label', field.name);
+    const label = field.label ?? field.name;
     const summary = field.summary;
     return summary ? stringTemplate.compileStringTemplate(summary, null, '', value) : label;
   };

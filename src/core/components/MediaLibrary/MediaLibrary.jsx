@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ImmutablePropTypes from 'react-immutable-proptypes';
 import { connect } from 'react-redux';
 import { orderBy, map } from 'lodash';
 import { translate } from 'react-polyglot';
@@ -39,7 +38,7 @@ class MediaLibrary extends React.Component {
   static propTypes = {
     isVisible: PropTypes.bool,
     loadMediaDisplayURL: PropTypes.func,
-    displayURLs: ImmutablePropTypes.map,
+    displayURLs: PropTypes.object,
     canInsert: PropTypes.bool,
     files: PropTypes.arrayOf(PropTypes.shape(fileShape)).isRequired,
     dynamicSearch: PropTypes.bool,
@@ -51,7 +50,7 @@ class MediaLibrary extends React.Component {
     hasNextPage: PropTypes.bool,
     isPaginating: PropTypes.bool,
     privateUpload: PropTypes.bool,
-    config: ImmutablePropTypes.map,
+    config: PropTypes.object,
     loadMedia: PropTypes.func.isRequired,
     dynamicSearchQuery: PropTypes.string,
     page: PropTypes.number,
@@ -227,7 +226,7 @@ class MediaLibrary extends React.Component {
   handleDownload = () => {
     const { selectedFile } = this.state;
     const { displayURLs } = this.props;
-    const url = displayURLs.getIn([selectedFile.id, 'url']) || selectedFile.url;
+    const url = displayURLs[selectedFile.id].url || selectedFile.url;
     if (!url) {
       return;
     }
