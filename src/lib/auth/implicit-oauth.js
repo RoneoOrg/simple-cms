@@ -44,7 +44,7 @@ export default class ImplicitAuthenticator {
    */
   completeAuth(cb) {
     const hashParams = new URLSearchParams(document.location.hash.replace(/^#?\/?/, ''));
-    if (!hashParams.has('access_token') && !hashParams.has('error')) {
+    if (!hashParams.access_token && !hashParams.error) {
       return;
     }
     // Remove tokens from hash so that token does not remain in browser history.
@@ -52,18 +52,18 @@ export default class ImplicitAuthenticator {
 
     const params = Map(hashParams.entries());
 
-    const { nonce } = JSON.parse(params.get('state'));
+    const { nonce } = JSON.parse(params.state);
     const validNonce = validateNonce(nonce);
     if (!validNonce) {
       return cb(new Error('Invalid nonce'));
     }
 
-    if (params.has('error')) {
-      return cb(new Error(`${params.get('error')}: ${params.get('error_description')}`));
+    if (params.error) {
+      return cb(new Error(`${params.error}: ${params.error_description}`));
     }
 
-    if (params.has('access_token')) {
-      const { access_token: token, ...data } = params.toJS();
+    if (params.access_token) {
+      const { access_token: token, ...data } = params;
       cb(null, { token, ...data });
     }
   }

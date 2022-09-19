@@ -23,22 +23,22 @@ import { duplicateI18nFields, getDataPath } from '../lib/i18n';
 import { selectFolderEntryExtension, selectHasMetaPath } from './collections';
 
 const initialState = Map({
-  entry: Map(),
-  fieldsMetaData: Map(),
-  fieldsErrors: Map(),
+  entry: {},
+  fieldsMetaData: {},
+  fieldsErrors: {},
   hasChanged: false,
   key: '',
 });
 
-function entryDraftReducer(state = Map(), action) {
+function entryDraftReducer(state = {}, action) {
   switch (action.type) {
     case DRAFT_CREATE_FROM_ENTRY:
       // Existing Entry
       return state.withMutations(state => {
         state.set('entry', fromJS(action.payload.entry));
         state.setIn(['entry', 'newRecord'], false);
-        state.set('fieldsMetaData', Map());
-        state.set('fieldsErrors', Map());
+        state.set('fieldsMetaData', {});
+        state.set('fieldsErrors', {});
         state.set('hasChanged', false);
         state.set('key', uuid());
       });
@@ -47,21 +47,21 @@ function entryDraftReducer(state = Map(), action) {
       return state.withMutations(state => {
         state.set('entry', fromJS(action.payload));
         state.setIn(['entry', 'newRecord'], true);
-        state.set('fieldsMetaData', Map());
-        state.set('fieldsErrors', Map());
+        state.set('fieldsMetaData', {});
+        state.set('fieldsErrors', {});
         state.set('hasChanged', false);
         state.set('key', uuid());
       });
     case DRAFT_CREATE_FROM_LOCAL_BACKUP:
       // Local Backup
       return state.withMutations(state => {
-        const backupDraftEntry = state.get('localBackup');
-        const backupEntry = backupDraftEntry.get('entry');
+        const backupDraftEntry = state.localBackup;
+        const backupEntry = backupDraftEntry['entry'];
         state.delete('localBackup');
         state.set('entry', backupEntry);
-        state.setIn(['entry', 'newRecord'], !backupEntry.get('path'));
-        state.set('fieldsMetaData', Map());
-        state.set('fieldsErrors', Map());
+        state.setIn(['entry', 'newRecord'], !backupEntry.path);
+        state.set('fieldsMetaData', {});
+        state.set('fieldsErrors', {});
         state.set('hasChanged', true);
         state.set('key', uuid());
       });
@@ -71,8 +71,8 @@ function entryDraftReducer(state = Map(), action) {
         state.set('entry', fromJS(action.payload));
         state.setIn(['entry', 'newRecord'], true);
         state.set('mediaFiles', List());
-        state.set('fieldsMetaData', Map());
-        state.set('fieldsErrors', Map());
+        state.set('fieldsMetaData', {});
+        state.set('fieldsErrors', {});
         state.set('hasChanged', true);
       });
     case DRAFT_DISCARD:
@@ -87,8 +87,8 @@ function entryDraftReducer(state = Map(), action) {
     case DRAFT_CHANGE_FIELD: {
       return state.withMutations(state => {
         const { field, value, metadata, entries, i18n } = action.payload;
-        const name = field.get('name');
-        const meta = field.get('meta');
+        const name = field.name;
+        const meta = field.meta;
 
         const dataPath = (i18n && getDataPath(i18n.currentLocale, i18n.defaultLocale)) || ['data'];
         if (meta) {
@@ -105,7 +105,7 @@ function entryDraftReducer(state = Map(), action) {
         state.set(
           'hasChanged',
           !entries.some(e => newData.equals(e.get(...dataPath))) ||
-            !entries.some(e => newMeta.equals(e.get('meta'))),
+            !entries.some(e => newMeta.equals(e.meta)),
         );
       });
     }
@@ -117,7 +117,7 @@ function entryDraftReducer(state = Map(), action) {
       }
 
     case DRAFT_CLEAR_ERRORS: {
-      return state.set('fieldsErrors', Map());
+      return state.set('fieldsErrors', {});
     }
 
     case ENTRY_PERSIST_REQUEST: {
@@ -150,7 +150,7 @@ function entryDraftReducer(state = Map(), action) {
         state.setIn(
           ['entry', 'mediaFiles'],
           mediaFiles
-            .filterNot(file => file.get('id') === action.payload.id)
+            .filterNot(file => file.id === action.payload.id)
             .insert(0, fromJS(action.payload)),
         );
         state.set('hasChanged', true);
@@ -163,7 +163,7 @@ function entryDraftReducer(state = Map(), action) {
 
         state.setIn(
           ['entry', 'mediaFiles'],
-          mediaFiles.filterNot(file => file.get('id') === action.payload.id),
+          mediaFiles.filterNot(file => file.id === action.payload.id),
         );
         state.set('hasChanged', true);
       });
@@ -179,10 +179,10 @@ export function selectCustomPath(collection, entryDraft) {
     return;
   }
   const meta = entryDraft.getIn(['entry', 'meta']);
-  const path = meta && meta.get('path');
-  const indexFile = get(collection.toJS(), ['meta', 'path', 'index_file']);
+  const path = meta && meta.path;
+  const indexFile = get(collection, ['meta', 'path', 'index_file']);
   const extension = selectFolderEntryExtension(collection);
-  const customPath = path && join(collection.get('folder'), path, `${indexFile}.${extension}`);
+  const customPath = path && join(collection.folder, path, `${indexFile}.${extension}`);
   return customPath;
 }
 

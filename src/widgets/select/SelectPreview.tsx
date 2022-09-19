@@ -4,20 +4,20 @@ import type { CmsWidgetPreviewProps } from '../../core';
 import { WidgetPreviewContainer } from '../../ui-default';
 
 interface ListPreviewProps {
-  values: List<string>;
+  values: string[];
 }
 
 function ListPreview({ values }: ListPreviewProps) {
   return (
     <ul>
-      {(values.toJS() as string[]).map((value, idx) => (
+      {(values as string[]).map((value, idx) => (
         <li key={idx}>{value}</li>
       ))}
     </ul>
   );
 }
 
-function SelectPreview({ value }: CmsWidgetPreviewProps<string | List<string> | null>) {
+function SelectPreview({ value }: CmsWidgetPreviewProps<string | string[] | null>) {
   if (!value) {
     return <WidgetPreviewContainer />;
   }

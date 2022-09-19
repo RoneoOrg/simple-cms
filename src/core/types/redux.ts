@@ -1,6 +1,4 @@
 import type { Action } from 'redux';
-import type { StaticallyTypedRecord } from './immutable';
-import type { Map, List, OrderedMap, Set } from 'immutable';
 import type { FILES, FOLDER } from '../constants/collectionTypes';
 import type { MediaFile as BackendMediaFile } from '../backend';
 import type { Auth } from '../reducers/auth';
@@ -405,11 +403,11 @@ export interface CmsMediaLibrary {
   config?: CmsMediaLibraryOptions;
 }
 
-export type SlugConfig = StaticallyTypedRecord<{
+export type SlugConfig = {
   encoding: string;
   clean_accents: boolean;
   sanitize_replacement: string;
-}>;
+};
 
 type BackendObject = {
   name: string;
@@ -422,16 +420,16 @@ type BackendObject = {
   gateway_url?: string;
   large_media_url?: string;
   use_large_media_transforms_in_media_library?: boolean;
-  commit_messages: Map<string, string>;
+  commit_messages: Record<string, string>;
 };
 
-type Backend = StaticallyTypedRecord<Backend> & BackendObject;
+type Backend = BackendObject;
 
-export type Config = StaticallyTypedRecord<{
+export type Config = {
   backend: Backend;
   media_folder: string;
   public_folder: string;
-  media_library: StaticallyTypedRecord<{ name: string }> & { name: string };
+  media_library: { name: string } & { name: string };
   locale?: string;
   slug: SlugConfig;
   media_folder_relative?: boolean;
@@ -440,17 +438,15 @@ export type Config = StaticallyTypedRecord<{
   site_url?: string;
   show_preview_links?: boolean;
   isFetching?: boolean;
-  integrations: List<Integration>;
-  collections: List<StaticallyTypedRecord<{ name: string }>>;
-}>;
-
-type PagesObject = {
-  [collection: string]: { isFetching: boolean; page: number; ids: List<string> };
+  integrations: Integration[];
+  collections: { name: string }[];
 };
 
-type Pages = StaticallyTypedRecord<PagesObject>;
+type PagesObject = {
+  [collection: string]: { isFetching: boolean; page: number; ids: string[] };
+};
 
-type EntitiesObject = { [key: string]: EntryMap };
+type Entities = Record<string, Record<string, Entry>>;
 
 export enum SortDirection {
   Ascending = 'Ascending',
@@ -460,17 +456,17 @@ export enum SortDirection {
 
 export type SortObject = { key: string; direction: SortDirection };
 
-export type SortMap = OrderedMap<string, StaticallyTypedRecord<SortObject>>;
+export type SortMap = Record<string, SortObject>;
 
-export type Sort = Map<string, SortMap>;
+export type Sort = Record<string, SortMap>;
 
-export type FilterMap = StaticallyTypedRecord<ViewFilter & { active: boolean }>;
+export type FilterMap = ViewFilter & { active: boolean };
 
-export type GroupMap = StaticallyTypedRecord<ViewGroup & { active: boolean }>;
+export type GroupMap = ViewGroup & { active: boolean };
 
-export type Filter = Map<string, Map<string, FilterMap>>; // collection.field.active
+export type Filter = Record<string, Record<string, FilterMap>>; // collection.field.active
 
-export type Group = Map<string, Map<string, GroupMap>>; // collection.field.active
+export type Group = Record<string, Record<string, GroupMap>>; // collection.field.active
 
 export type GroupOfEntries = {
   id: string;
@@ -479,66 +475,60 @@ export type GroupOfEntries = {
   paths: Set<string>;
 };
 
-export type Entities = StaticallyTypedRecord<EntitiesObject>;
-
-export type Entries = StaticallyTypedRecord<{
-  pages: Pages & PagesObject;
-  entities: Entities & EntitiesObject;
+export type Entries = {
+  pages: PagesObject;
+  entities: Entities;
   sort: Sort;
   filter: Filter;
   group: Group;
   viewStyle: string;
-}>;
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type EntryObject = {
+export type Entry = {
   path: string;
   slug: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   collection: string;
-  mediaFiles: List<MediaFileMap>;
+  mediaFiles: MediaFileMap[];
   newRecord: boolean;
   author?: string;
   updatedOn?: string;
   status: string;
-  meta: StaticallyTypedRecord<{ path: string }>;
+  meta: { path: string };
 };
 
-export type EntryMap = StaticallyTypedRecord<EntryObject>;
+export type FieldsErrors = { [field: string]: { type: string }[] };
 
-export type Entry = EntryMap & EntryObject;
-
-export type FieldsErrors = StaticallyTypedRecord<{ [field: string]: { type: string }[] }>;
-
-export type EntryDraft = StaticallyTypedRecord<{
+export type EntryDraft = {
   entry: Entry;
   fieldsErrors: FieldsErrors;
-  fieldsMetaData?: Map<string, Map<string, string>>;
-}>;
+  fieldsMetaData?: Record<string, Record<string, string>>;
+};
 
-export type EntryField = StaticallyTypedRecord<{
+export type EntryField = {
   field?: EntryField;
-  fields?: List<EntryField>;
-  types?: List<EntryField>;
+  fields?: EntryField[];
+  types?: EntryField[];
   widget: string;
   name: string;
-  default: string | null | boolean | List<unknown>;
+  default: string | null | boolean | unknown[];
   media_folder?: string;
   public_folder?: string;
   comment?: string;
   meta?: boolean;
   i18n: 'translate' | 'duplicate' | 'none';
-}>;
+};
 
-export type EntryFields = List<EntryField>;
+export type EntryFields = EntryField[];
 
-export type FilterRule = StaticallyTypedRecord<{
+export type FilterRule = {
   value: string;
   field: string;
-}>;
+};
 
-export type CollectionFile = StaticallyTypedRecord<{
+export type CollectionFile = {
   file: string;
   name: string;
   fields: EntryFields;
@@ -547,27 +537,27 @@ export type CollectionFile = StaticallyTypedRecord<{
   public_folder?: string;
   preview_path?: string;
   preview_path_date_field?: string;
-}>;
+};
 
-export type CollectionFiles = List<CollectionFile>;
+export type CollectionFiles = CollectionFile[];
 
 type NestedObject = { depth: number };
 
-type Nested = StaticallyTypedRecord<NestedObject>;
+type Nested = NestedObject;
 
 type PathObject = { label: string; widget: string; index_file: string };
 
 type MetaObject = {
-  path?: StaticallyTypedRecord<PathObject>;
+  path?: PathObject;
 };
 
-type Meta = StaticallyTypedRecord<MetaObject>;
+type Meta = MetaObject;
 
-type i18n = StaticallyTypedRecord<{
+type i18n = {
   structure: string;
   locales: string[];
   default_locale: string;
-}>;
+};
 
 export type Format = keyof typeof formatExtensions;
 
@@ -586,7 +576,7 @@ export type CollectionObject = {
   type: 'file_based_collection' | 'folder_based_collection';
   extension?: string;
   format?: Format;
-  frontmatter_delimiter?: List<string> | string | [string, string];
+  frontmatter_delimiter?: string[] | string | [string, string];
   create?: boolean;
   publish?: boolean;
   delete?: boolean;
@@ -595,23 +585,23 @@ export type CollectionObject = {
   slug?: string;
   label_singular?: string;
   label: string;
-  sortable_fields: List<string>;
-  view_filters: List<StaticallyTypedRecord<ViewFilter>>;
-  view_groups: List<StaticallyTypedRecord<ViewGroup>>;
+  sortable_fields: string[];
+  view_filters: ViewFilter[];
+  view_groups: ViewGroup[];
   nested?: Nested;
   meta?: Meta;
   i18n: i18n;
 };
 
-export type Collection = StaticallyTypedRecord<CollectionObject>;
+export type Collection = CollectionObject;
 
-export type Collections = StaticallyTypedRecord<Record<string, Collection>>;
+export type Collections = Record<string, Collection>;
 
 export interface MediaLibraryInstance {
   show: (args: {
     id?: string;
     value?: string;
-    config: StaticallyTypedRecord<{}>;
+    config: {};
     allowMultiple?: boolean;
     imagesOnly?: boolean;
   }) => void;
@@ -625,7 +615,7 @@ export type DisplayURL = { id: string; path: string } | string;
 
 export type MediaFile = BackendMediaFile & { key?: string };
 
-export type MediaFileMap = StaticallyTypedRecord<MediaFile>;
+export type MediaFileMap = MediaFile;
 
 type DisplayURLStateObject = {
   isFetching: boolean;
@@ -633,27 +623,27 @@ type DisplayURLStateObject = {
   err?: Error;
 };
 
-export type DisplayURLState = StaticallyTypedRecord<DisplayURLStateObject>;
+export type DisplayURLState = DisplayURLStateObject;
 
 interface DisplayURLsObject {
   [id: string]: DisplayURLState;
 }
 
-export type MediaLibrary = StaticallyTypedRecord<{
+export type MediaLibrary = {
   externalLibrary?: MediaLibraryInstance;
   files: MediaFile[];
-  displayURLs: StaticallyTypedRecord<DisplayURLsObject> & DisplayURLsObject;
+  displayURLs: DisplayURLsObject & DisplayURLsObject;
   isLoading: boolean;
-}>;
+};
 
 export type Hook = string | boolean;
 
-export type Integrations = StaticallyTypedRecord<{
+export type Integrations = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hooks: { [collectionOrHook: string]: any };
-}>;
+};
 
-export type Cursors = StaticallyTypedRecord<{}>;
+export type Cursors = {};
 
 export interface State {
   auth: Auth;
@@ -686,7 +676,7 @@ export interface EntryRequestPayload extends EntryPayload {
 }
 
 export interface EntrySuccessPayload extends EntryPayload {
-  entry: EntryObject;
+  entry: Entry;
 }
 
 export interface EntryFailurePayload extends EntryPayload {
@@ -702,7 +692,7 @@ export interface EntryDeletePayload {
 export type EntriesRequestPayload = EntryPayload;
 
 export interface EntriesSuccessPayload extends EntryPayload {
-  entries: EntryObject[];
+  entries: Entry[];
   append: boolean;
   page: number;
 }
@@ -742,7 +732,7 @@ export interface ChangeViewStylePayload {
 }
 
 export interface EntriesMoveSuccessPayload extends EntryPayload {
-  entries: EntryObject[];
+  entries: Entry[];
 }
 
 export interface EntriesAction extends Action<string> {

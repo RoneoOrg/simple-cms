@@ -22,8 +22,8 @@ export interface CreateEditorComponentElementProps extends CreateEditorComponent
   toBlock: (data: any) => string;
   toPreview: (
     data: any,
-    getAsset: (asset: string, field?: Map<string, any>) => string,
-    field: Map<string, any>,
+    getAsset: (asset: string, field?: Record<string, any>) => string,
+    field: Record<string, any>,
   ) => string | React.ReactNode;
 }
 

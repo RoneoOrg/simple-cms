@@ -104,7 +104,7 @@ export function searchEntries(searchTerm: string, searchCollections: string[], p
     const state = getState();
     const { search } = state;
     const backend = currentBackend(state.config);
-    const allCollections = searchCollections || state.collections.keySeq().toArray();
+    const allCollections = searchCollections || state.collections.keySeq();
     const collections = allCollections.filter(collection =>
       selectIntegration(state, collection, 'search'),
     );
@@ -133,7 +133,7 @@ export function searchEntries(searchTerm: string, searchCollections: string[], p
           state.collections
             .filter((_, key: string) => allCollections.indexOf(key) !== -1)
             .valueSeq()
-            .toArray(),
+            ,
           searchTerm,
         );
 
@@ -163,7 +163,7 @@ export function query(
     const backend = currentBackend(state.config);
     const integration = selectIntegration(state, collectionName, 'search');
     const collection = state.collections.find(
-      collection => collection.get('name') === collectionName,
+      collection => collection.name === collectionName,
     );
 
     const queryPromise = integration

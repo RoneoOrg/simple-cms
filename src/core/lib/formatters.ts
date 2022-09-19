@@ -12,8 +12,8 @@ import { FILES } from '../constants/collectionTypes';
 import { COMMIT_AUTHOR, COMMIT_DATE } from '../constants/commitProps';
 import { stringTemplate } from '../../lib/widgets';
 
-import type { Collection, CmsConfig, CmsSlug, EntryMap } from '../types/redux';
-import type { Map } from 'immutable';
+import type { Collection, CmsConfig, CmsSlug, Entry } from '../types/redux';
+import { getIn } from '../../lib/util/objectUtil';
 
 const {
   compileStringTemplate,
@@ -57,7 +57,7 @@ export function commitMessageFormatter(
       case 'path':
         return path || '';
       case 'collection':
-        return collection ? collection.get('label_singular') || collection.get('label') : '';
+        return collection ? collection.label_singular || collection.label : '';
       case 'author-login':
         return authorLogin || '';
       case 'author-name':
@@ -113,12 +113,12 @@ export function getProcessSegment(slugConfig?: CmsSlug, ignoreValues?: string[])
 
 export function slugFormatter(
   collection: Collection,
-  entryData: Map<string, unknown>,
+  entryData: Record<string, unknown>,
   slugConfig?: CmsSlug,
 ) {
-  const slugTemplate = collection.get('slug') || '{{slug}}';
+  const slugTemplate = collection.slug || '{{slug}}';
 
-  const identifier = entryData.getIn(keyToPathArray(selectIdentifier(collection) as string)) as string;
+  const identifier = getIn(entryData, selectIdentifier(collection) as string) as string;
   if (!identifier) {
     throw new Error(
       'Collection must have a field name that is a valid entry identifier, or must have `identifier_field` set',
@@ -129,10 +129,10 @@ export function slugFormatter(
   const date = new Date();
   const slug = compileStringTemplate(slugTemplate, date, identifier, entryData, processSegment);
 
-  if (!collection.has('path')) {
+  if (!collection.path) {
     return slug;
   } else {
-    const pathTemplate = prepareSlug(collection.get('path') as string);
+    const pathTemplate = prepareSlug(collection.path as string);
     return compileStringTemplate(pathTemplate, date, slug, entryData, (value: string) =>
       value === slug ? value : processSegment(value),
     );
@@ -143,7 +143,7 @@ export function previewUrlFormatter(
   baseUrl: string,
   collection: Collection,
   slug: string,
-  entry: EntryMap,
+  entry: Entry,
   slugConfig?: CmsSlug,
 ) {
   /**
@@ -156,15 +156,15 @@ export function previewUrlFormatter(
 
   const basePath = trimEnd(baseUrl, '/');
 
-  const isFileCollection = collection.get('type') === FILES;
-  const file = isFileCollection ? getFileFromSlug(collection, entry.get('slug')) : undefined;
+  const isFileCollection = collection.type === FILES;
+  const file = isFileCollection ? getFileFromSlug(collection, entry.slug) : undefined;
 
   function getPathTemplate() {
-    return file?.get('preview_path') ?? collection.get('preview_path');
+    return file?.preview_path ?? collection.preview_path;
   }
 
   function getDateField() {
-    return file?.get('preview_path_date_field') ?? collection.get('preview_path_date_field');
+    return file?.preview_path_date_field ?? collection.preview_path_date_field;
   }
 
   /**
@@ -181,14 +181,14 @@ export function previewUrlFormatter(
     return baseUrl;
   }
 
-  let fields = entry.get('data') as Map<string, string>;
-  fields = addFileTemplateFields(entry.get('path'), fields, collection.get('folder'));
+  let fields = entry.data as Record<string, string>;
+  fields = addFileTemplateFields(entry.path, fields, collection.folder);
   const dateFieldName = getDateField() || selectInferedField(collection, 'date');
-  const date = parseDateFromEntry(entry as unknown as Map<string, unknown>, dateFieldName);
+  const date = parseDateFromEntry(entry as unknown as Record<string, unknown>, dateFieldName);
 
   // Prepare and sanitize slug variables only, leave the rest of the
   // `preview_path` template as is.
-  const processSegment = getProcessSegment(slugConfig, [fields.get('dirname') as string]);
+  const processSegment = getProcessSegment(slugConfig, [fields['dirname'] as string]);
   let compiledPath;
 
   try {
@@ -199,7 +199,7 @@ export function previewUrlFormatter(
     //   2. A date expression (eg. `{{year}}`) is used in `preview_path`
     if (err.name === SLUG_MISSING_REQUIRED_DATE) {
       console.error(stripIndent`
-        Collection "${collection.get('name')}" configuration error:
+        Collection "${collection.name}" configuration error:
           \`preview_path_date_field\` must be a field with a valid date. Ignoring \`preview_path\`.
       `);
       return basePath;
@@ -211,22 +211,22 @@ export function previewUrlFormatter(
   return `${basePath}/${previewPath}`;
 }
 
-export function summaryFormatter(summaryTemplate: string, entry: EntryMap, collection: Collection) {
-  let entryData = entry.get('data');
+export function summaryFormatter(summaryTemplate: string, entry: Entry, collection: Collection) {
+  let entryData = entry.data;
   const date =
     parseDateFromEntry(
-      entry as unknown as Map<string, unknown>,
+      entry as unknown as Record<string, unknown>,
       selectInferedField(collection, 'date'),
     ) || null;
   const identifier = entryData.getIn(keyToPathArray(selectIdentifier(collection) as string));
 
-  entryData = addFileTemplateFields(entry.get('path'), entryData, collection.get('folder'));
+  entryData = addFileTemplateFields(entry.path, entryData, collection.folder);
   // allow commit information in summary template
-  if (entry.get('author') && !selectField(collection, COMMIT_AUTHOR)) {
-    entryData = entryData.set(COMMIT_AUTHOR, entry.get('author'));
+  if (entry.author && !selectField(collection, COMMIT_AUTHOR)) {
+    entryData = entryData.set(COMMIT_AUTHOR, entry.author);
   }
-  if (entry.get('updatedOn') && !selectField(collection, COMMIT_DATE)) {
-    entryData = entryData.set(COMMIT_DATE, entry.get('updatedOn'));
+  if (entry.updatedOn && !selectField(collection, COMMIT_DATE)) {
+    entryData = entryData.set(COMMIT_DATE, entry.updatedOn);
   }
   const summary = compileStringTemplate(summaryTemplate, date, identifier, entryData);
   return summary;
@@ -234,26 +234,30 @@ export function summaryFormatter(summaryTemplate: string, entry: EntryMap, colle
 
 export function folderFormatter(
   folderTemplate: string,
-  entry: EntryMap | undefined,
+  entry: Entry | undefined,
   collection: Collection,
   defaultFolder: string,
   folderKey: string,
   slugConfig?: CmsSlug,
 ) {
-  if (!entry || !entry.get('data')) {
+  if (!entry || !entry.data) {
     return folderTemplate;
   }
 
-  let fields = (entry.get('data') as Map<string, string>).set(folderKey, defaultFolder);
-  fields = addFileTemplateFields(entry.get('path'), fields, collection.get('folder'));
+  let fields = entry.data as Record<string, string>;
+  fields[folderKey] = defaultFolder;
+  fields = addFileTemplateFields(entry.path, fields, collection.folder);
 
   const date =
     parseDateFromEntry(
-      entry as unknown as Map<string, unknown>,
+      entry as unknown as Record<string, unknown>,
       selectInferedField(collection, 'date'),
     ) || null;
-  const identifier = fields.getIn(keyToPathArray(selectIdentifier(collection) as string)) as string;
-  const processSegment = getProcessSegment(slugConfig, [defaultFolder, fields.get('dirname') as string]);
+  const identifier = getIn(fields, selectIdentifier(collection) as string) as string;
+  const processSegment = getProcessSegment(slugConfig, [
+    defaultFolder,
+    fields['dirname'] as string,
+  ]);
 
   const mediaFolder = compileStringTemplate(
     folderTemplate,

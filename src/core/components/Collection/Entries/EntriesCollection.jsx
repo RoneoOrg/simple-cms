@@ -30,7 +30,7 @@ const GroupHeading = styled.h2`
 const GroupContainer = styled.div``;
 
 function getGroupEntries(entries, paths) {
-  return entries.filter(entry => paths.has(entry.get('path')));
+  return entries.filter(entry => paths.has(entry.path));
 }
 
 function getGroupTitle(group, t) {
@@ -98,7 +98,7 @@ export class EntriesCollection extends React.Component {
           collections={collection}
           entries={entries}
           isFetching={isFetching}
-          collectionName={collection.get('label')}
+          collectionName={collection.label}
           viewStyle={viewStyle}
           cursor={cursor}
           handleCursorActions={partial(this.handleCursorActions, cursor)}
@@ -117,7 +117,7 @@ export class EntriesCollection extends React.Component {
 
 export function filterNestedEntries(path, collectionFolder, entries) {
   const filtered = entries.filter(e => {
-    const entryPath = e.get('path').slice(collectionFolder.length + 1);
+    const entryPath = e.path.slice(collectionFolder.length + 1);
     if (!entryPath.startsWith(path)) {
       return false;
     }
@@ -137,19 +137,19 @@ export function filterNestedEntries(path, collectionFolder, entries) {
 
 function mapStateToProps(state, ownProps) {
   const { collection, viewStyle, filterTerm } = ownProps;
-  const page = state.entries.getIn(['pages', collection.get('name'), 'page']);
+  const page = state.entries.getIn(['pages', collection.name, 'page']);
 
   let entries = selectEntries(state.entries, collection);
   const groups = selectGroups(state.entries, collection);
 
-  if (collection.has('nested')) {
-    const collectionFolder = collection.get('folder');
+  if (collection.nested) {
+    const collectionFolder = collection.folder;
     entries = filterNestedEntries(filterTerm || '', collectionFolder, entries);
   }
-  const entriesLoaded = selectEntriesLoaded(state.entries, collection.get('name'));
-  const isFetching = selectIsFetching(state.entries, collection.get('name'));
+  const entriesLoaded = selectEntriesLoaded(state.entries, collection.name);
+  const isFetching = selectIsFetching(state.entries, collection.name);
 
-  const rawCursor = selectCollectionEntriesCursor(state.cursors, collection.get('name'));
+  const rawCursor = selectCollectionEntriesCursor(state.cursors, collection.name);
   const cursor = Cursor.create(rawCursor).clearData();
 
   return { collection, page, entries, groups, entriesLoaded, isFetching, viewStyle, cursor };

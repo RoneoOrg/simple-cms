@@ -1,5 +1,4 @@
 import { CONFIG_SUCCESS } from '../actions/config';
-import { toStaticallyTypedRecord } from '../../util/ImmutableUtil';
 
 import type { ConfigAction } from '../actions/config';
 import type { Integrations, CmsConfig } from '../types/redux';
@@ -34,10 +33,10 @@ export function getIntegrations(config: CmsConfig) {
     },
     { providers: {}, hooks: {} } as Acc,
   );
-  return toStaticallyTypedRecord(newState);
+  return newState;
 }
 
-const defaultState = toStaticallyTypedRecord({ providers: {}, hooks: {} });
+const defaultState = { providers: {}, hooks: {} };
 
 function integrations(state = defaultState, action: ConfigAction) {
   switch (action.type) {
@@ -51,8 +50,8 @@ function integrations(state = defaultState, action: ConfigAction) {
 
 export function selectIntegration(state: Integrations, collection: string | null, hook: string) {
   return collection
-    ? state.getIn(['hooks', collection, hook], false)
-    : state.getIn(['hooks', hook], false);
+    ? (state.hooks[collection][hook] ?? false)
+    : (state.hooks[hook], false);
 }
 
 export default integrations;

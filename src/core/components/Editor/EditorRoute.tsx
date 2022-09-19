@@ -4,9 +4,9 @@ import { Navigate, useLocation, useParams } from 'react-router-dom';
 import Editor from './Editor';
 
 function getDefaultPath(collections: any) {
-  const first = collections.filter((collection: any) => collection.get('hide') !== true).first();
+  const first = collections.filter((collection: any) => collection.hide !== true).first();
   if (first) {
-    return `/collections/${first.get('name')}`;
+    return `/collections/${first.name}`;
   } else {
     throw new Error('Could not find a non hidden collection');
   }
@@ -24,7 +24,7 @@ const EditorRoute = ({ newRecord, collections }: EditorRouteProps) => {
     if (!name) {
       return false;
     }
-    return !Boolean(collections.get(name));
+    return !Boolean(collections[name]);
   }, [name]);
 
   const defaultPath = useMemo(() => getDefaultPath(collections), [collections]);

@@ -710,7 +710,7 @@ const PostPreview = ({ entry, widgetFor }: PreviewTemplateComponentProps) => {
 const GeneralPreview = ({ entry, widgetsFor, getAsset }: PreviewTemplateComponentProps) => {
   var title = entry.getIn(['data', 'site_title']) as string;
   var posts = entry.getIn(['data', 'posts']) as any;
-  var thumb = posts && posts.get('thumb');
+  var thumb = posts && posts.thumb;
 
   return (
     <div>
@@ -749,7 +749,7 @@ const RelationKitchenSinkPostPreview = ({ value, fieldsMetaData }: CmsWidgetPrev
   // In this case, the post would be nested under "posts" and then under
   // the title of the selected post, since our `value_field` in the config
   // is "title".
-  const post = fieldsMetaData && (fieldsMetaData.getIn(['posts', value]) as Map<string, any>);
+  const post = fieldsMetaData && (fieldsMetaData.getIn(['posts', value]) as Record<string, any>);
   const style = { border: '2px solid #ccc', borderRadius: '8px', padding: '20px' };
 
   if (!post) {
@@ -759,9 +759,9 @@ const RelationKitchenSinkPostPreview = ({ value, fieldsMetaData }: CmsWidgetPrev
   return (
     <div style={style}>
       <h2>Related Post</h2>
-      <h3>{post.get('title')}</h3>
-      <img src={post.get('image')} />
-      <p>{`${post.get('body').slice(0, 100)}...`}</p>
+      <h3>{post.title}</h3>
+      <img src={post.image} />
+      <p>{`${post.body.slice(0, 100)}...`}</p>
     </div>
   );
 };

@@ -77,7 +77,7 @@ const valueTypes = {
 
 function handleSummary(summary, entry, label, item) {
   const data = stringTemplate.addFileTemplateFields(
-    entry.get('path'),
+    entry.path,
     item.set('fields.label', label),
   );
   return stringTemplate.compileStringTemplate(summary, null, '', data);
@@ -86,7 +86,7 @@ function handleSummary(summary, entry, label, item) {
 function validateItem(field, item) {
   if (!Map.isMap(item)) {
     console.warn(
-      `'${field.get('name')}' field item value value should be a map but is a '${typeof item}'`,
+      `'${field.name}' field item value value should be a map but is a '${typeof item}'`,
     );
     return false;
   }
@@ -94,7 +94,7 @@ function validateItem(field, item) {
   return true;
 }
 function LabelComponent({ field, isActive, hasErrors, uniqueFieldId, isFieldOptional, t }) {
-  const label = `${field.get('label', field.get('name'))}`;
+  const label = `${field.get('label', field.name)}`;
   return (
     <FieldLabel isActive={isActive} hasErrors={hasErrors} htmlFor={uniqueFieldId}>
       {label} {`${isFieldOptional ? ` (${t('editor.editorControl.field.optional')})` : ''}`}
@@ -168,18 +168,18 @@ export default class ListControl extends React.Component {
 
   getValueType = () => {
     const { field } = this.props;
-    if (field.get('fields')) {
+    if (field.fields) {
       return valueTypes.MULTIPLE;
-    } else if (field.get('field')) {
+    } else if (field.field) {
       return valueTypes.SINGLE;
-    } else if (field.get(TYPES_KEY)) {
+    } else if (field[TYPES_KEY]) {
       return valueTypes.MIXED;
     } else {
       return null;
     }
   };
 
-  uniqueFieldId = uniqueId(`${this.props.field.get('name')}-field-`);
+  uniqueFieldId = uniqueId(`${this.props.field.name}-field-`);
   /**
    * Always update so that each nested widget has the option to update. This is
    * required because ControlHOC provides a default `shouldComponentUpdate`
@@ -223,7 +223,7 @@ export default class ListControl extends React.Component {
     const parsedValue =
       this.getValueType() === valueTypes.SINGLE
         ? this.singleDefault()
-        : fromJS(this.multipleDefault(field.get('fields')));
+        : fromJS(this.multipleDefault(field.fields));
     this.addItem(parsedValue);
   };
 
@@ -241,17 +241,17 @@ export default class ListControl extends React.Component {
   };
 
   mixedDefault = (typeKey, type) => {
-    const selectedType = this.props.field.get(TYPES_KEY).find(f => f.get('name') === type);
-    const fields = selectedType.get('fields') || [selectedType.get('field')];
+    const selectedType = this.props.field[TYPES_KEY].find(f => f.name === type);
+    const fields = selectedType.fields || [selectedType.field];
 
     return this.getFieldsDefault(fields, { [typeKey]: type });
   };
 
   getFieldsDefault = (fields, initialValue = {}) => {
     return fields.reduce((acc, item) => {
-      const subfields = item.get('field') || item.get('fields');
-      const object = item.get('widget') == 'object';
-      const name = item.get('name');
+      const subfields = item.field || item.fields;
+      const object = item.widget == 'object';
+      const name = item.name;
       const defaultValue = item.get('default', null);
 
       if (List.isList(subfields) && object) {
@@ -316,8 +316,8 @@ export default class ListControl extends React.Component {
 
   validateSize = () => {
     const { field, value, t } = this.props;
-    const min = field.get('min');
-    const max = field.get('max');
+    const min = field.min;
+    const max = field.max;
     const required = field.get('required', true);
 
     if (!required && !value?.size) {
@@ -326,7 +326,7 @@ export default class ListControl extends React.Component {
 
     const error = validations.validateMinMax(
       t,
-      field.get('label', field.get('name')),
+      field.get('label', field.name),
       value,
       min,
       max,
@@ -340,21 +340,21 @@ export default class ListControl extends React.Component {
    * e.g. when debounced, always get the latest object value instead of using
    * `this.props.value` directly.
    */
-  getObjectValue = idx => this.props.value.get(idx) || Map();
+  getObjectValue = idx => this.props.value[idx] || {};
 
   handleChangeFor(index) {
     return (f, newValue, newMetadata) => {
       const { value, metadata, onChange, field } = this.props;
-      const collectionName = field.get('name');
+      const collectionName = field.name;
       const listFieldObjectWidget = field.getIn(['field', 'widget']) === 'object';
       const withNameKey =
         this.getValueType() !== valueTypes.SINGLE ||
         (this.getValueType() === valueTypes.SINGLE && listFieldObjectWidget);
       const newObjectValue = withNameKey
-        ? this.getObjectValue(index).set(f.get('name'), newValue)
+        ? this.getObjectValue(index).set(f.name, newValue)
         : newValue;
       const parsedMetadata = {
-        [collectionName]: Object.assign(metadata ? metadata.toJS() : {}, newMetadata || {}),
+        [collectionName]: Object.assign(metadata ? metadata : {}, newMetadata || {}),
       };
       onChange(value.set(index, newObjectValue), parsedMetadata);
     };
@@ -364,10 +364,10 @@ export default class ListControl extends React.Component {
     event.preventDefault();
     const { itemsCollapsed } = this.state;
     const { value, metadata, onChange, field, clearFieldErrors } = this.props;
-    const collectionName = field.get('name');
+    const collectionName = field.name;
     const isSingleField = this.getValueType() === valueTypes.SINGLE;
 
-    const metadataRemovePath = isSingleField ? value.get(index) : value.get(index).valueSeq();
+    const metadataRemovePath = isSingleField ? value[index] : value[index].valueSeq();
     const parsedMetadata =
       metadata && !metadata.isEmpty()
         ? { [collectionName]: metadata.removeIn(metadataRemovePath) }
@@ -429,17 +429,17 @@ export default class ListControl extends React.Component {
           return;
         }
         const itemType = getTypedFieldForValue(field, item);
-        const label = itemType.get('label', itemType.get('name'));
+        const label = itemType.get('label', itemType.name);
         // each type can have its own summary, but default to the list summary if exists
-        const summary = itemType.get('summary', field.get('summary'));
+        const summary = itemType.get('summary', field.summary);
         const labelReturn = summary ? handleSummary(summary, entry, label, item) : label;
         return labelReturn;
       }
       case valueTypes.SINGLE: {
-        const singleField = field.get('field');
-        const label = singleField.get('label', singleField.get('name'));
-        const summary = field.get('summary');
-        const data = fromJS({ [singleField.get('name')]: item });
+        const singleField = field.field;
+        const label = singleField.get('label', singleField.name);
+        const summary = field.summary;
+        const data = fromJS({ [singleField.name]: item });
         const labelReturn = summary ? handleSummary(summary, entry, label, data) : label;
         return labelReturn;
       }
@@ -447,12 +447,12 @@ export default class ListControl extends React.Component {
         if (!validateItem(field, item)) {
           return;
         }
-        const multiFields = field.get('fields');
+        const multiFields = field.fields;
         const labelField = multiFields && multiFields.first();
-        const value = item.get(labelField.get('name'));
-        const summary = field.get('summary');
+        const value = item.get(labelField.name);
+        const summary = field.summary;
         const labelReturn = summary ? handleSummary(summary, entry, value, item) : value;
-        return (labelReturn || `No ${labelField.get('name')}`).toString();
+        return (labelReturn || `No ${labelField.name}`).toString();
       }
     }
     return '';
@@ -463,7 +463,7 @@ export default class ListControl extends React.Component {
     const { itemsCollapsed, keys } = this.state;
 
     // Update value
-    const item = value.get(oldIndex);
+    const item = value[oldIndex];
     const newValue = value.delete(oldIndex).insert(newIndex, item);
     this.props.onChange(newValue);
 
@@ -490,7 +490,7 @@ export default class ListControl extends React.Component {
   hasError = index => {
     const { fieldsErrors } = this.props;
     if (fieldsErrors && fieldsErrors.size > 0) {
-      return Object.values(fieldsErrors.toJS()).some(arr =>
+      return Object.values(fieldsErrors).some(arr =>
         arr.some(err => err.parentIds && err.parentIds.includes(this.state.keys[index])),
       );
     }
@@ -536,7 +536,7 @@ export default class ListControl extends React.Component {
             isActive={false}
             hasErrors={hasError}
             uniqueFieldId={this.uniqueFieldId}
-            isFieldOptional={field.get('required') === false}
+            isFieldOptional={field.required === false}
             t={t}
           />
         )}
@@ -608,8 +608,8 @@ export default class ListControl extends React.Component {
     const { value, forID, field, classNameWrapper, t } = this.props;
     const { itemsCollapsed, listCollapsed } = this.state;
     const items = value || List();
-    const label = field.get('label', field.get('name'));
-    const labelSingular = field.get('label_singular') || field.get('label', field.get('name'));
+    const label = field.get('label', field.name);
+    const labelSingular = field.label_singular || field.get('label', field.name);
     const listLabel = items.size === 1 ? labelSingular.toLowerCase() : label.toLowerCase();
     const minimizeCollapsedItems = field.get('minimize_collapsed', false);
     const allItemsCollapsed = itemsCollapsed.every(val => val === true);

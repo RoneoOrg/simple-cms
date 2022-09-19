@@ -1,8 +1,7 @@
-import { List, Map } from 'immutable';
 import { isEqual } from 'lodash';
 
 import { Cursor } from '../../lib/util';
-import { toMap, toStaticallyTypedRecord } from '../../util/ImmutableUtil';
+import { toMap } from '../../util/ImmutableUtil';
 import { currentBackend } from '../backend';
 import ValidationErrorTypes from '../constants/validationErrorTypes';
 import { getIntegrationProvider } from '../integrations';
@@ -32,8 +31,8 @@ import type {
   Entry,
   EntryField,
   EntryFields,
-  EntryMap,
-  EntryObject,
+  Entry,
+  Entry,
   State,
   ViewFilter,
   ViewGroup,
@@ -96,7 +95,7 @@ export function entryLoading(collection: Collection, slug: string) {
   return {
     type: ENTRY_REQUEST,
     payload: {
-      collection: collection.get('name'),
+      collection: collection.name,
       slug,
     },
   };
@@ -106,7 +105,7 @@ export function entryLoaded(collection: Collection, entry: EntryValue) {
   return {
     type: ENTRY_SUCCESS,
     payload: {
-      collection: collection.get('name'),
+      collection: collection.name,
       entry,
     },
   };
@@ -117,7 +116,7 @@ export function entryLoadError(error: Error, collection: Collection, slug: strin
     type: ENTRY_FAILURE,
     payload: {
       error,
-      collection: collection.get('name'),
+      collection: collection.name,
       slug,
     },
   };
@@ -127,7 +126,7 @@ export function entriesLoading(collection: Collection) {
   return {
     type: ENTRIES_REQUEST,
     payload: {
-      collection: collection.get('name'),
+      collection: collection.name,
     },
   };
 }
@@ -142,7 +141,7 @@ export function entriesLoaded(
   return {
     type: ENTRIES_SUCCESS,
     payload: {
-      collection: collection.get('name'),
+      collection: collection.name,
       entries,
       page: pagination,
       cursor: Cursor.create(cursor),
@@ -156,13 +155,13 @@ export function entriesFailed(collection: Collection, error: Error) {
     type: ENTRIES_FAILURE,
     error: 'Failed to load entries',
     payload: error.toString(),
-    meta: { collection: collection.get('name') },
+    meta: { collection: collection.name },
   };
 }
 
 async function getAllEntries(state: State, collection: Collection) {
   const backend = currentBackend(state.config);
-  const integration = selectIntegration(state, collection.get('name'), 'listEntries');
+  const integration = selectIntegration(state, collection.name, 'listEntries');
   const provider: Backend = integration
     ? getIntegrationProvider(state.integrations, backend.getToken, integration)
     : backend;
@@ -178,11 +177,11 @@ export function sortByField(
   return async (dispatch: ThunkDispatch<State, {}, AnyAction>, getState: () => State) => {
     const state = getState();
     // if we're already fetching we update the sort key, but skip loading entries
-    const isFetching = selectIsFetching(state.entries, collection.get('name'));
+    const isFetching = selectIsFetching(state.entries, collection.name);
     dispatch({
       type: SORT_ENTRIES_REQUEST,
       payload: {
-        collection: collection.get('name'),
+        collection: collection.name,
         key,
         direction,
       },
@@ -196,7 +195,7 @@ export function sortByField(
       dispatch({
         type: SORT_ENTRIES_SUCCESS,
         payload: {
-          collection: collection.get('name'),
+          collection: collection.name,
           key,
           direction,
           entries,
@@ -206,7 +205,7 @@ export function sortByField(
       dispatch({
         type: SORT_ENTRIES_FAILURE,
         payload: {
-          collection: collection.get('name'),
+          collection: collection.name,
           key,
           direction,
           error,
@@ -220,11 +219,11 @@ export function filterByField(collection: Collection, filter: ViewFilter) {
   return async (dispatch: ThunkDispatch<State, {}, AnyAction>, getState: () => State) => {
     const state = getState();
     // if we're already fetching we update the filter key, but skip loading entries
-    const isFetching = selectIsFetching(state.entries, collection.get('name'));
+    const isFetching = selectIsFetching(state.entries, collection.name);
     dispatch({
       type: FILTER_ENTRIES_REQUEST,
       payload: {
-        collection: collection.get('name'),
+        collection: collection.name,
         filter,
       },
     });
@@ -237,7 +236,7 @@ export function filterByField(collection: Collection, filter: ViewFilter) {
       dispatch({
         type: FILTER_ENTRIES_SUCCESS,
         payload: {
-          collection: collection.get('name'),
+          collection: collection.name,
           filter,
           entries,
         },
@@ -246,7 +245,7 @@ export function filterByField(collection: Collection, filter: ViewFilter) {
       dispatch({
         type: FILTER_ENTRIES_FAILURE,
         payload: {
-          collection: collection.get('name'),
+          collection: collection.name,
           filter,
           error,
         },
@@ -258,11 +257,11 @@ export function filterByField(collection: Collection, filter: ViewFilter) {
 export function groupByField(collection: Collection, group: ViewGroup) {
   return async (dispatch: ThunkDispatch<State, {}, AnyAction>, getState: () => State) => {
     const state = getState();
-    const isFetching = selectIsFetching(state.entries, collection.get('name'));
+    const isFetching = selectIsFetching(state.entries, collection.name);
     dispatch({
       type: GROUP_ENTRIES_REQUEST,
       payload: {
-        collection: collection.get('name'),
+        collection: collection.name,
         group,
       },
     });
@@ -275,7 +274,7 @@ export function groupByField(collection: Collection, group: ViewGroup) {
       dispatch({
         type: GROUP_ENTRIES_SUCCESS,
         payload: {
-          collection: collection.get('name'),
+          collection: collection.name,
           group,
           entries,
         },
@@ -284,7 +283,7 @@ export function groupByField(collection: Collection, group: ViewGroup) {
       dispatch({
         type: GROUP_ENTRIES_FAILURE,
         payload: {
-          collection: collection.get('name'),
+          collection: collection.name,
           group,
           error,
         },
@@ -302,22 +301,22 @@ export function changeViewStyle(viewStyle: string) {
   };
 }
 
-export function entryPersisting(collection: Collection, entry: EntryMap) {
+export function entryPersisting(collection: Collection, entry: Entry) {
   return {
     type: ENTRY_PERSIST_REQUEST,
     payload: {
-      collectionName: collection.get('name'),
-      entrySlug: entry.get('slug'),
+      collectionName: collection.name,
+      entrySlug: entry.slug,
     },
   };
 }
 
-export function entryPersisted(collection: Collection, entry: EntryMap, slug: string) {
+export function entryPersisted(collection: Collection, entry: Entry, slug: string) {
   return {
     type: ENTRY_PERSIST_SUCCESS,
     payload: {
-      collectionName: collection.get('name'),
-      entrySlug: entry.get('slug'),
+      collectionName: collection.name,
+      entrySlug: entry.slug,
 
       /**
        * Pass slug from backend for newly created entries.
@@ -327,13 +326,13 @@ export function entryPersisted(collection: Collection, entry: EntryMap, slug: st
   };
 }
 
-export function entryPersistFail(collection: Collection, entry: EntryMap, error: Error) {
+export function entryPersistFail(collection: Collection, entry: Entry, error: Error) {
   return {
     type: ENTRY_PERSIST_FAILURE,
     error: 'Failed to persist entry',
     payload: {
-      collectionName: collection.get('name'),
-      entrySlug: entry.get('slug'),
+      collectionName: collection.name,
+      entrySlug: entry.slug,
       error: error.toString(),
     },
   };
@@ -343,7 +342,7 @@ export function entryDeleting(collection: Collection, slug: string) {
   return {
     type: ENTRY_DELETE_REQUEST,
     payload: {
-      collectionName: collection.get('name'),
+      collectionName: collection.name,
       entrySlug: slug,
     },
   };
@@ -353,7 +352,7 @@ export function entryDeleted(collection: Collection, slug: string) {
   return {
     type: ENTRY_DELETE_SUCCESS,
     payload: {
-      collectionName: collection.get('name'),
+      collectionName: collection.name,
       entrySlug: slug,
     },
   };
@@ -363,7 +362,7 @@ export function entryDeleteFail(collection: Collection, slug: string, error: Err
   return {
     type: ENTRY_DELETE_FAILURE,
     payload: {
-      collectionName: collection.get('name'),
+      collectionName: collection.name,
       entrySlug: slug,
       error: error.toString(),
     },
@@ -386,12 +385,12 @@ export function createDraftFromEntry(entry: EntryValue) {
   };
 }
 
-export function draftDuplicateEntry(entry: EntryMap) {
+export function draftDuplicateEntry(entry: Entry) {
   return {
     type: DRAFT_CREATE_DUPLICATE_FROM_ENTRY,
-    payload: createEntry(entry.get('collection'), '', '', {
-      data: entry.get('data'),
-      mediaFiles: entry.get('mediaFiles').toJS() as MediaFile[],
+    payload: createEntry(entry.collection, '', '', {
+      data: entry.data,
+      mediaFiles: entry.mediaFiles as MediaFile[],
     }),
   };
 }
@@ -410,7 +409,7 @@ export function changeDraftField({
   field: EntryField;
   value: string;
   metadata: Record<string, unknown>;
-  entries: EntryMap[];
+  entries: Entry[];
   i18n?: {
     currentLocale: string;
     defaultLocale: string;
@@ -458,7 +457,7 @@ export function removeDraftEntryMediaFile({ id }: { id: string }) {
   return { type: REMOVE_DRAFT_ENTRY_MEDIA_FILE, payload: { id } };
 }
 
-export function persistLocalBackup(entry: EntryMap, collection: Collection) {
+export function persistLocalBackup(entry: Entry, collection: Collection) {
   return (_dispatch: ThunkDispatch<State, {}, AnyAction>, getState: () => State) => {
     const state = getState();
     const backend = currentBackend(state.config);
@@ -467,7 +466,7 @@ export function persistLocalBackup(entry: EntryMap, collection: Collection) {
   };
 }
 
-export function createDraftDuplicateFromEntry(entry: EntryMap) {
+export function createDraftDuplicateFromEntry(entry: Entry) {
   return (dispatch: ThunkDispatch<State, {}, AnyAction>) => {
     dispatch(
       waitUntil({
@@ -499,7 +498,7 @@ export function retrieveLocalBackup(collection: Collection, slug: string) {
           } else {
             return getAsset({
               collection,
-              entry: toStaticallyTypedRecord<EntryObject>(entry as unknown as EntryObject),
+              entry: toEntryObject(entry as unknown as Entry),
               path: file.path,
               field: file.field,
             })(dispatch, getState);
@@ -559,7 +558,7 @@ function addAppendActionsToCursor(cursor: Cursor) {
   return Cursor.create(cursor).updateStore('actions', (actions: Set<string>) => {
     return actions.union(
       appendActions
-        .filter((v: Map<string, string | boolean>) => actions.has(v.get('action') as string))
+        .filter((v: Record<string, string | boolean>) => actions.has(v.action as string))
         .keySeq(),
     );
   });
@@ -567,18 +566,18 @@ function addAppendActionsToCursor(cursor: Cursor) {
 
 export function loadEntries(collection: Collection, page = 0) {
   return async (dispatch: ThunkDispatch<State, {}, AnyAction>, getState: () => State) => {
-    if (collection.get('isFetching')) {
+    if (collection.isFetching) {
       return;
     }
     const state = getState();
-    const sortFields = selectEntriesSortFields(state.entries, collection.get('name'));
+    const sortFields = selectEntriesSortFields(state.entries, collection.name);
     if (sortFields && sortFields.length > 0) {
       const field = sortFields[0];
-      return dispatch(sortByField(collection, field.get('key'), field.get('direction')));
+      return dispatch(sortByField(collection, field.key, field.direction));
     }
 
     const backend = currentBackend(state.config);
-    const integration = selectIntegration(state, collection.get('name'), 'listEntries');
+    const integration = selectIntegration(state, collection.name, 'listEntries');
     const provider = integration
       ? getIntegrationProvider(state.integrations, backend.getToken, integration)
       : backend;
@@ -586,7 +585,7 @@ export function loadEntries(collection: Collection, page = 0) {
     dispatch(entriesLoading(collection));
 
     try {
-      const loadAllEntries = collection.has('nested') || hasI18n(collection);
+      const loadAllEntries = collection.nested || hasI18n(collection);
 
       let response: {
         cursor: Cursor;
@@ -616,7 +615,7 @@ export function loadEntries(collection: Collection, page = 0) {
       dispatch(
         entriesLoaded(
           collection,
-          response.cursor.meta!.get('usingOldPaginationAPI')
+          response.cursor.meta!.usingOldPaginationAPI
             ? response.entries.reverse()
             : response.entries,
           response.pagination,
@@ -635,7 +634,7 @@ export function loadEntries(collection: Collection, page = 0) {
 }
 
 function traverseCursor(backend: Backend, cursor: Cursor, action: string) {
-  if (!cursor.actions!.has(action)) {
+  if (!cursor.actions!.[action]) {
     throw new Error(`The current cursor does not support the pagination action "${action}".`);
   }
   return backend.traverseCursor(cursor, action);
@@ -644,28 +643,28 @@ function traverseCursor(backend: Backend, cursor: Cursor, action: string) {
 export function traverseCollectionCursor(collection: Collection, action: string) {
   return async (dispatch: ThunkDispatch<State, {}, AnyAction>, getState: () => State) => {
     const state = getState();
-    const collectionName = collection.get('name');
+    const collectionName = collection.name;
     if (state.entries.getIn(['pages', `${collectionName}`, 'isFetching'])) {
       return;
     }
     const backend = currentBackend(state.config);
 
-    const { action: realAction, append } = appendActions.has(action)
-      ? appendActions.get(action).toJS()
+    const { action: realAction, append } = appendActions[action]
+      ? appendActions[action]
       : { action, append: false };
-    const cursor = selectCollectionEntriesCursor(state.cursors, collection.get('name'));
+    const cursor = selectCollectionEntriesCursor(state.cursors, collection.name);
 
     // Handle cursors representing pages in the old, integer-based
     // pagination API
     if (cursor.meta!.get('usingOldPaginationAPI', false)) {
-      return dispatch(loadEntries(collection, cursor.data!.get('nextPage') as number));
+      return dispatch(loadEntries(collection, cursor.data!.nextPage as number));
     }
 
     try {
       dispatch(entriesLoading(collection));
       const { entries, cursor: newCursor } = await traverseCursor(backend, cursor, realAction);
 
-      const pagination = newCursor.meta?.get('page');
+      const pagination = newCursor.meta?.page;
       return dispatch(
         entriesLoaded(collection, entries, pagination, addAppendActionsToCursor(newCursor), append),
       );
@@ -701,11 +700,11 @@ function processValue(unsafe: string) {
 }
 
 function getDataFields(fields: EntryFields) {
-  return fields.filter(f => !f!.get('meta')).toList();
+  return fields.filter(f => !f!.meta).toList();
 }
 
 function getMetaFields(fields: EntryFields) {
-  return fields.filter(f => f!.get('meta') === true).toList();
+  return fields.filter(f => f!.meta === true).toList();
 }
 
 export function createEmptyDraft(collection: Collection, search: string) {
@@ -728,13 +727,13 @@ export function createEmptyDraft(collection: Collection, search: string) {
     const state = getState();
     const backend = currentBackend(state.config);
 
-    if (!collection.has('media_folder')) {
+    if (!collection.media_folder) {
       await waitForMediaLibraryToLoad(dispatch, getState());
     }
 
     const i18nFields = createEmptyDraftI18nData(collection, dataFields);
 
-    let newEntry = createEntry(collection.get('name'), '', '', {
+    let newEntry = createEntry(collection.name, '', '', {
       data,
       i18n: i18nFields,
       mediaFiles: [],
@@ -751,10 +750,10 @@ interface DraftEntryData {
     | string
     | null
     | boolean
-    | List<unknown>
+    | unknown[]
     | DraftEntryData
     | DraftEntryData[]
-    | (string | DraftEntryData | boolean | List<unknown>)[];
+    | (string | DraftEntryData | boolean | unknown[])[];
 }
 
 export function createEmptyDraftData(
@@ -763,7 +762,7 @@ export function createEmptyDraftData(
 ) {
   return fields.reduce(
     (
-      reduction: DraftEntryData | string | undefined | boolean | List<unknown>,
+      reduction: DraftEntryData | string | undefined | boolean | unknown[],
       value: EntryField | undefined | boolean,
     ) => {
       const acc = reduction as DraftEntryData;
@@ -773,9 +772,9 @@ export function createEmptyDraftData(
         return acc;
       }
 
-      const subfields = item.get('field') || item.get('fields');
-      const list = item.get('widget') == 'list';
-      const name = item.get('name');
+      const subfields = item.field || item.fields;
+      const list = item.widget == 'list';
+      const name = item.name;
       const defaultValue = item.get('default', null);
 
       function isEmptyDefaultValue(val: unknown) {
@@ -818,23 +817,23 @@ function createEmptyDraftI18nData(collection: Collection, dataFields: EntryField
   }
 
   function skipField(field: EntryField) {
-    return field.get(I18N) !== I18N_FIELD.DUPLICATE && field.get(I18N) !== I18N_FIELD.TRANSLATE;
+    return field[I18N] !== I18N_FIELD.DUPLICATE && field[I18N] !== I18N_FIELD.TRANSLATE;
   }
 
   const i18nData = createEmptyDraftData(dataFields, skipField);
   return duplicateDefaultI18nFields(collection, i18nData);
 }
 
-export function getMediaAssets({ entry }: { entry: EntryMap }) {
-  const filesArray = entry.get('mediaFiles').toArray();
+export function getMediaAssets({ entry }: { entry: Entry }) {
+  const filesArray = entry.mediaFiles;
   const assets = filesArray
-    .filter(file => file.get('draft'))
+    .filter(file => file.draft)
     .map(file =>
       createAssetProxy({
-        path: file.get('path'),
-        file: file.get('file'),
-        url: file.get('url'),
-        field: file.get('field'),
+        path: file.path,
+        file: file.file,
+        url: file.url,
+        field: file.field,
       }),
     );
 
@@ -846,14 +845,14 @@ export function getSerializedEntry(collection: Collection, entry: Entry) {
    * Serialize the values of any fields with registered serializers, and
    * update the entry and entryDraft with the serialized values.
    */
-  const fields = selectFields(collection, entry.get('slug'));
+  const fields = selectFields(collection, entry.slug);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function serializeData(data: any) {
     return serializeValues(data, fields);
   }
 
-  const serializedData = serializeData(entry.get('data'));
+  const serializedData = serializeData(entry.data);
   let serializedEntry = entry.set('data', serializedData);
   if (hasI18n(collection)) {
     serializedEntry = serializeI18n(collection, serializedEntry, serializeData);
@@ -865,8 +864,8 @@ export function persistEntry(collection: Collection) {
   return async (dispatch: ThunkDispatch<State, {}, AnyAction>, getState: () => State) => {
     const state = getState();
     const entryDraft = state.entryDraft;
-    const fieldsErrors = entryDraft.get('fieldsErrors');
-    const usedSlugs = selectPublishedSlugs(state, collection.get('name'));
+    const fieldsErrors = entryDraft.fieldsErrors;
+    const usedSlugs = selectPublishedSlugs(state, collection.name);
 
     // Early return if draft contains validation errors
     if (!fieldsErrors.isEmpty()) {
@@ -885,7 +884,7 @@ export function persistEntry(collection: Collection) {
     }
 
     const backend = currentBackend(state.config);
-    const entry = entryDraft.get('entry');
+    const entry = entryDraft['entry'];
     const assetProxies = getMediaAssets({
       entry,
     });
@@ -912,12 +911,12 @@ export function persistEntry(collection: Collection) {
           await dispatch(loadMedia());
         }
         dispatch(entryPersisted(collection, serializedEntry, newSlug));
-        if (collection.has('nested')) {
+        if (collection.nested) {
           await dispatch(loadEntries(collection));
         }
-        if (entry.get('slug') !== newSlug) {
+        if (entry.slug !== newSlug) {
           await dispatch(loadEntry(collection, newSlug));
-          navigateToEntry(collection.get('name'), newSlug);
+          navigateToEntry(collection.name, newSlug);
         }
       })
       .catch((error: Error) => {
@@ -975,7 +974,7 @@ export function validateMetaField(
   value: string | undefined,
   t: (key: string, args: Record<string, unknown>) => string,
 ) {
-  if (field.get('meta') && field.get('name') === 'path') {
+  if (field.meta && field.name === 'path') {
     if (!value) {
       return getPathError(value, 'invalidPath', t);
     }
@@ -990,10 +989,10 @@ export function validateMetaField(
 
     const customPath = selectCustomPath(collection, toMap({ entry: { meta: { path: value } } }));
     const existingEntry = customPath
-      ? selectEntryByPath(state.entries, collection.get('name'), customPath)
+      ? selectEntryByPath(state.entries, collection.name, customPath)
       : undefined;
 
-    const existingEntryPath = existingEntry?.get('path');
+    const existingEntryPath = existingEntry?.path;
     const draftPath = state.entryDraft?.getIn(['entry', 'path']);
 
     if (existingEntryPath && existingEntryPath !== draftPath) {

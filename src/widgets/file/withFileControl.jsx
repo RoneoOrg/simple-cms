@@ -159,13 +159,13 @@ function sizeOfValue(value) {
 }
 
 function valueListToArray(value) {
-  return List.isList(value) ? value.toArray() : value;
+  return List.isList(value) ? value : value;
 }
 
 const warnDeprecatedOptions = once(field =>
   console.warn(oneLine`
-  Netlify CMS config: ${field.get('name')} field: property "options" has been deprecated for the
-  ${field.get('widget')} widget and will be removed in the next major release. Rather than
+  Netlify CMS config: ${field.name} field: property "options" has been deprecated for the
+  ${field.widget} widget and will be removed in the next major release. Rather than
   \`field.options.media_library\`, apply media library options for this widget under
   \`field.media_library\`.
 `),
@@ -243,10 +243,10 @@ export default function withFileControl({ forImage } = {}) {
       return onOpenMediaLibrary({
         controlID: this.controlID,
         forImage,
-        privateUpload: field.get('private'),
+        privateUpload: field.private,
         value: valueListToArray(value),
         allowMultiple: !!mediaLibraryFieldOptions.get('allow_multiple', true),
-        config: mediaLibraryFieldOptions.get('config'),
+        config: mediaLibraryFieldOptions.config,
         field,
       });
     };
@@ -278,11 +278,11 @@ export default function withFileControl({ forImage } = {}) {
       return onOpenMediaLibrary({
         controlID: this.controlID,
         forImage,
-        privateUpload: field.get('private'),
+        privateUpload: field.private,
         value: valueListToArray(value),
         replaceIndex: index,
         allowMultiple: false,
-        config: mediaLibraryFieldOptions.get('config'),
+        config: mediaLibraryFieldOptions.config,
         field,
       });
     };
@@ -292,17 +292,17 @@ export default function withFileControl({ forImage } = {}) {
 
       if (field.hasIn(['options', 'media_library'])) {
         warnDeprecatedOptions(field);
-        return field.getIn(['options', 'media_library'], Map());
+        return field.getIn(['options', 'media_library'], {});
       }
 
-      return field.get('media_library', Map());
+      return field.get('media_library', {});
     };
 
     allowsMultiple = () => {
       const mediaLibraryFieldOptions = this.getMediaLibraryFieldOptions();
       return (
         mediaLibraryFieldOptions.get('config', false) &&
-        mediaLibraryFieldOptions.get('config').get('multiple', false)
+        mediaLibraryFieldOptions.config.get('multiple', false)
       );
     };
 

@@ -44,7 +44,7 @@ function fromURL(wholeURL) {
 
 function fromFetchArguments(wholeURL, options) {
   return fromURL(wholeURL).merge(
-    (options ? fromJS(options) : Map()).remove('url').remove('params'),
+    (options ? fromJS(options) : {}).remove('url').remove('params'),
   );
 }
 
@@ -56,11 +56,11 @@ function encodeParams(params) {
 }
 
 function toURL(req) {
-  return `${req.get('url')}${req.get('params') ? `?${encodeParams(req.get('params'))}` : ''}`;
+  return `${req.url}${req.params ? `?${encodeParams(req.params)}` : ''}`;
 }
 
 function toFetchArguments(req) {
-  return [toURL(req), req.remove('url').remove('params').toJS()];
+  return [toURL(req), req.remove('url').remove('params')];
 }
 
 function maybeRequestArg(req) {
@@ -70,7 +70,7 @@ function maybeRequestArg(req) {
   if (req) {
     return fromJS(req);
   }
-  return Map();
+  return {};
 }
 
 function ensureRequestArg(func) {
@@ -96,7 +96,7 @@ function getPropSetFunction(path) {
 }
 
 function getPropMergeFunction(path) {
-  return getCurriedRequestProcessor((obj, req) => req.updateIn(path, (p = Map()) => p.merge(obj)));
+  return getCurriedRequestProcessor((obj, req) => req.updateIn(path, (p = {}) => p.merge(obj)));
 }
 
 const withMethod = getPropSetFunction(['method']);

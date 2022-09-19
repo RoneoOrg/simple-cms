@@ -78,7 +78,7 @@ function getNodeTitle(node) {
 
 function TreeNode(props) {
   const { collection, treeData, depth = 0, onToggle } = props;
-  const collectionName = collection.get('name');
+  const collectionName = collection.name;
 
   const sortedData = sortBy(treeData, getNodeTitle);
   return sortedData.map(node => {
@@ -142,10 +142,10 @@ export function walk(treeData, callback) {
 }
 
 export function getTreeData(collection, entries) {
-  const collectionFolder = collection.get('folder');
+  const collectionFolder = collection.folder;
   const rootFolder = '/';
   const entriesObj = entries
-    .toJS()
+    
     .map(e => ({ ...e, path: e.path.slice(collectionFolder.length) }));
 
   const dirs = entriesObj.reduce((acc, entry) => {
@@ -166,7 +166,7 @@ export function getTreeData(collection, entries) {
 
   const flatData = [
     {
-      title: collection.get('label'),
+      title: collection.label,
       path: rootFolder,
       isDir: true,
       isRoot: true,
@@ -178,10 +178,10 @@ export function getTreeData(collection, entries) {
       isRoot: false,
     })),
     ...entriesObj.map((e, index) => {
-      let entryMap = entries.get(index);
+      let entryMap = entries[index];
       entryMap = entryMap.set(
         'data',
-        addFileTemplateFields(entryMap.get('path'), entryMap.get('data')),
+        addFileTemplateFields(entryMap.path, entryMap.data),
       );
       const title = selectEntryCollectionTitle(collection, entryMap);
       return {

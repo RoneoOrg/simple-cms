@@ -7,7 +7,7 @@ import { ControlButton } from './ControlButton';
 function GroupControl({ viewGroups, t, onGroupClick, group }) {
   const hasActiveGroup = group
     ?.valueSeq()
-    .toJS()
+    
     .some(f => f.active === true);
 
   return (

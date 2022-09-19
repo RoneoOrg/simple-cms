@@ -96,7 +96,7 @@ export class Collection extends React.Component {
       viewStyle,
     } = this.props;
 
-    let newEntryUrl = collection.get('create') ? getNewEntryUrl(collectionName) : '';
+    let newEntryUrl = collection.create ? getNewEntryUrl(collectionName) : '';
     if (newEntryUrl && filterTerm) {
       newEntryUrl = getNewEntryUrl(collectionName);
       if (filterTerm) {
@@ -120,7 +120,7 @@ export class Collection extends React.Component {
           {isSearchResults ? (
             <SearchResultContainer>
               <SearchResultHeading>
-                {t(searchResultKey, { searchTerm, collection: collection.get('label') })}
+                {t(searchResultKey, { searchTerm, collection: collection.label })}
               </SearchResultHeading>
             </SearchResultContainer>
           ) : (
@@ -153,13 +153,13 @@ function mapStateToProps(state, ownProps) {
   const { collections } = state;
   const isSearchEnabled = state.config && state.config.search != false;
   const { isSearchResults, match, t, name, searchTerm = '', filterTerm = '' } = ownProps;
-  const collection = name ? collections.get(name) : collections.first();
-  const sort = selectEntriesSort(state.entries, collection.get('name'));
+  const collection = name ? collections[name] : collections.first();
+  const sort = selectEntriesSort(state.entries, collection.name);
   const sortableFields = selectSortableFields(collection, t);
   const viewFilters = selectViewFilters(collection);
   const viewGroups = selectViewGroups(collection);
-  const filter = selectEntriesFilter(state.entries, collection.get('name'));
-  const group = selectEntriesGroup(state.entries, collection.get('name'));
+  const filter = selectEntriesFilter(state.entries, collection.name);
+  const group = selectEntriesGroup(state.entries, collection.name);
   const viewStyle = selectViewStyle(state.entries);
 
   return {

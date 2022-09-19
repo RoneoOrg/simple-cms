@@ -17,7 +17,7 @@ export function validateMinMax(
   value: string | number,
   min: number | false,
   max: number | false,
-  field: Map<string, any>,
+  field: Record<string, any>,
   t: t,
 ) {
   let error;
@@ -27,7 +27,7 @@ export function validateMinMax(
       error = {
         type: ValidationErrorTypes.RANGE,
         message: t('editor.editorControlPane.widget.range', {
-          fieldLabel: field.get('label', field.get('name')),
+          fieldLabel: field.get('label', field.name),
           minValue: min,
           maxValue: max,
         }),
@@ -37,7 +37,7 @@ export function validateMinMax(
       error = {
         type: ValidationErrorTypes.RANGE,
         message: t('editor.editorControlPane.widget.min', {
-          fieldLabel: field.get('label', field.get('name')),
+          fieldLabel: field.get('label', field.name),
           minValue: min,
         }),
       };
@@ -46,7 +46,7 @@ export function validateMinMax(
       error = {
         type: ValidationErrorTypes.RANGE,
         message: t('editor.editorControlPane.widget.max', {
-          fieldLabel: field.get('label', field.get('name')),
+          fieldLabel: field.get('label', field.name),
           maxValue: max,
         }),
       };
@@ -65,7 +65,7 @@ export default class NumberControl extends React.Component<CmsWidgetControlProps
   };
 
   handleChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = e => {
-    const valueType = this.props.field.get('value_type');
+    const valueType = this.props.field.value_type;
     const { onChange } = this.props;
     const value = valueType === 'float' ? parseFloat(e.target.value) : parseInt(e.target.value, 10);
 
@@ -95,7 +95,7 @@ export default class NumberControl extends React.Component<CmsWidgetControlProps
     const { field, value = '', forID, setActiveStyle, setInactiveStyle } = this.props;
     const min: string | number = field.get('min', '');
     const max: string | number = field.get('max', '');
-    const step: string | number = field.get('step', field.get('value_type') === 'int' ? 1 : '');
+    const step: string | number = field.get('step', field.value_type === 'int' ? 1 : '');
     return (
       <TextField
         id={forID}

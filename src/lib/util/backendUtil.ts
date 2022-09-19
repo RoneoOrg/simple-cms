@@ -51,7 +51,7 @@ export async function parseResponse(
     }
   };
   try {
-    const formatter = responseFormatters.get(format) ?? false;
+    const formatter = responseFormatters[format] ?? false;
     if (!formatter) {
       throw new Error(`${format} is not a supported response format.`);
     }
@@ -114,7 +114,7 @@ export async function getAllResponses(
 
   while (req && responseCount < maxResponses) {
     const pageResponse = await unsentRequest.performRequest(req);
-    const linkHeader = pageResponse.headers.get('Link');
+    const linkHeader = pageResponse.headers.Link;
     const nextURL = linkHeader && parseLinkHeader(linkHeader)[linkHeaderRelName];
 
     const { headers = {} } = options;

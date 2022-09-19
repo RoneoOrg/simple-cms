@@ -386,7 +386,7 @@ export interface CmsRegistryBackend {
 
 export interface CmsWidgetControlProps<T = any> {
   value: T;
-  field: Map<string, any>;
+  field: Record<string, any>;
   onChange: (value: T) => void;
   forID: string;
   classNameWrapper: string;
@@ -398,11 +398,11 @@ export interface CmsWidgetControlProps<T = any> {
 
 export interface CmsWidgetPreviewProps<T = any> {
   value: T;
-  field: Map<string, any>;
-  metadata: Map<string, any>;
+  field: Record<string, any>;
+  metadata: Record<string, any>;
   getAsset: GetAssetFunction;
-  entry: Map<string, any>;
-  fieldsMetaData: Map<string, any>;
+  entry: Record<string, any>;
+  fieldsMetaData: Record<string, any>;
 }
 
 export interface Schema {
@@ -440,7 +440,7 @@ export interface CmsEventListener {
     entry,
     author,
   }: {
-    entry: Map<string, any>;
+    entry: Record<string, any>;
     author: { login: string; name: string };
   }) => any;
 }
@@ -460,7 +460,7 @@ export interface CmsRegistry {
   widgets: {
     [name: string]: CmsWidget;
   };
-  editorComponents: Map<string, ComponentType<any>>;
+  editorComponents: Record<string, ComponentType<any>>;
   widgetValueSerializers: {
     [name: string]: CmsWidgetValueSerializer;
   };
@@ -478,15 +478,15 @@ type GetAssetFunction = (asset: string) => {
 };
 
 export type PreviewTemplateComponentProps = {
-  entry: Map<string, any>;
-  collection: Map<string, any>;
+  entry: Record<string, any>;
+  collection: Record<string, any>;
   widgetFor: (name: any, fields?: any, values?: any, fieldsMetaData?: any) => JSX.Element | null;
   widgetsFor: (name: any) => any;
   getAsset: GetAssetFunction;
   boundGetAsset: (collection: any, path: any) => GetAssetFunction;
-  fieldsMetaData: Map<string, any>;
-  config: Map<string, any>;
-  fields: List<Map<string, any>>;
+  fieldsMetaData: Record<string, any>;
+  config: Record<string, any>;
+  fields: Record<string, any[]>;
   isLoadingAsset: boolean;
   window: Window;
   document: Document;

@@ -87,8 +87,8 @@ class ObjectWidgetTopBar extends React.Component {
         {types.map((type, idx) => (
           <DropdownItem
             key={idx}
-            label={type.get('label', type.get('name'))}
-            onClick={() => this.props.onAddType(type.get('name'))}
+            label={type.get('label', type.name)}
+            onClick={() => this.props.onAddType(type.name)}
           />
         ))}
       </Dropdown>

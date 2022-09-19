@@ -80,8 +80,8 @@ export class Sidebar extends React.Component {
   };
 
   renderLink = (collection, filterTerm) => {
-    const collectionName = collection.get('name');
-    if (collection.has('nested')) {
+    const collectionName = collection.name;
+    if (collection.nested) {
       return (
         <li key={collectionName}>
           <NestedCollection
@@ -100,7 +100,7 @@ export class Sidebar extends React.Component {
           data-testid={collectionName}
         >
           <CreateIcon />
-          {collection.get('label')}
+          {collection.label}
         </SidebarNavLink>
       </li>
     );
@@ -122,7 +122,7 @@ export class Sidebar extends React.Component {
         <SidebarNavList>
           {collections
             .toList()
-            .filter(collection => collection.get('hide') !== true)
+            .filter(collection => collection.hide !== true)
             .map(collection => this.renderLink(collection, filterTerm))}
         </SidebarNavList>
       </SidebarContainer>

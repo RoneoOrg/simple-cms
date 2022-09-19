@@ -4,8 +4,8 @@ import { toStaticallyTypedRecord, toMap } from '../../util/ImmutableUtil';
 
 type CursorStoreObject = {
   actions: Set<string>;
-  data: Map<string, unknown>;
-  meta: Map<string, unknown>;
+  data: Record<string, unknown>;
+  meta: Record<string, unknown>;
 };
 
 export type CursorStore = {
@@ -31,7 +31,7 @@ type ActionHandler = (action: string) => unknown;
 
 function jsToMap(obj: {}) {
   if (obj === undefined) {
-    return Map();
+    return {};
   }
   const immutableObj = toMap(obj);
   if (!Map.isMap(immutableObj)) {
@@ -52,7 +52,7 @@ const knownMetaKeys = Set([
   'depth',
 ]);
 
-function filterUnknownMetaKeys(meta: Map<string, string>) {
+function filterUnknownMetaKeys(meta: Record<string, string>) {
   return meta.filter((_v, k) => knownMetaKeys.has(k as string));
 }
 
@@ -95,9 +95,9 @@ export default class Cursor {
   store?: CursorStore;
   actions?: Set<string>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data?: Map<string, any>;
+  data?: Record<string, any>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  meta?: Map<string, any>;
+  meta?: Record<string, any>;
 
   static create(...args: {}[]) {
     return new Cursor(...args);
@@ -109,9 +109,9 @@ export default class Cursor {
     }
 
     this.store = createCursorStore(...args);
-    this.actions = this.store.get('actions');
-    this.data = this.store.get('data');
-    this.meta = this.store.get('meta');
+    this.actions = this.store.actions;
+    this.data = this.store.data;
+    this.meta = this.store.meta;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -149,18 +149,18 @@ export default class Cursor {
     return new Cursor(this.store!.mergeIn(['data'], jsToMap(data)));
   }
   wrapData(data: {}) {
-    return this.updateStore('data', (oldData: Map<string, unknown>) =>
+    return this.updateStore('data', (oldData: Record<string, unknown>) =>
       jsToMap(data).set('wrapped_cursor_data', oldData),
     );
   }
   unwrapData() {
     return [
-      this.store!.get('data').delete('wrapped_cursor_data'),
-      this.updateStore('data', (data: Map<string, unknown>) => data.get('wrapped_cursor_data')),
-    ] as [Map<string, unknown>, Cursor];
+      this.store!.data.delete('wrapped_cursor_data'),
+      this.updateStore('data', (data: Record<string, unknown>) => data.wrapped_cursor_data),
+    ] as [Record<string, unknown>, Cursor];
   }
   clearData() {
-    return this.updateStore('data', () => Map());
+    return this.updateStore('data', () => {});
   }
 
   setMeta(meta: {}) {
@@ -168,7 +168,7 @@ export default class Cursor {
   }
   mergeMeta(meta: {}) {
     return this.updateStore((store: CursorStore) =>
-      store.update('meta', (oldMeta: Map<string, unknown>) => oldMeta.merge(jsToMap(meta))),
+      store.update('meta', (oldMeta: Record<string, unknown>) => oldMeta.merge(jsToMap(meta))),
     );
   }
 }

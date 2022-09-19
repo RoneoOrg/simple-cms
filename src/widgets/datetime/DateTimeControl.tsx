@@ -41,13 +41,13 @@ function NowButton({ t, handleChange }: TranslatedProps<NowButtonProps>) {
 export default class DateTimeControl extends React.Component<CmsWidgetControlProps<string | null>> {
   getFormats() {
     const { field } = this.props;
-    const format: string = field.get('format');
+    const format: string = field.format;
 
     // dateFormat and timeFormat are strictly for modifying
     // input field with the date/time pickers
-    const dateFormat: string | boolean = field.get('date_format');
+    const dateFormat: string | boolean = field.date_format;
     // show time-picker? false hides it, true shows it using default format
-    let timeFormat: string | boolean = field.get('time_format');
+    let timeFormat: string | boolean = field.time_format;
     if (typeof timeFormat === 'undefined') {
       timeFormat = true;
     }
@@ -61,13 +61,13 @@ export default class DateTimeControl extends React.Component<CmsWidgetControlPro
 
   getDefaultValue() {
     const { field } = this.props;
-    const defaultValue = field.get('default');
+    const defaultValue = field.default;
     return defaultValue;
   }
 
   getPickerUtc() {
     const { field } = this.props;
-    const pickerUtc = field.get('picker_utc');
+    const pickerUtc = field.picker_utc;
     return pickerUtc;
   }
 

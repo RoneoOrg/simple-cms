@@ -16,7 +16,7 @@ import SettingsDropdown from '../UI/SettingsDropdown';
 
 interface HeaderProps {
   user: any;
-  collections: List<any>;
+  collections: any[];
   onCreateEntryClick: (collectionName: string) => {};
   onLogoutClick: () => {};
   openMediaLibrary: () => {};
@@ -55,7 +55,7 @@ const Header = ({
   }, []);
 
   const createableCollections = useMemo(
-    () => collections.filter((collection: any) => collection.get('create')).toList(),
+    () => collections.filter((collection: any) => collection.create).toList(),
     [],
   );
 

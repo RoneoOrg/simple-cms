@@ -7,7 +7,7 @@ import { ControlButton } from './ControlButton';
 function FilterControl({ viewFilters, t, onFilterClick, filter }) {
   const hasActiveFilter = filter
     ?.valueSeq()
-    .toJS()
+    
     .some(f => f.active === true);
 
   return (

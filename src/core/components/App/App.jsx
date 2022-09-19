@@ -64,9 +64,9 @@ const ErrorCodeBlock = styled.pre`
 `;
 
 function getDefaultPath(collections) {
-  const first = collections.filter(collection => collection.get('hide') !== true).first();
+  const first = collections.filter(collection => collection.hide !== true).first();
   if (first) {
-    return `/collections/${first.get('name')}`;
+    return `/collections/${first.name}`;
   } else {
     throw new Error('Could not find a non hidden collection');
   }
@@ -265,8 +265,8 @@ function mapStateToProps(state) {
   const { auth, config, collections, globalUI, mediaLibrary } = state;
   const user = auth.user;
   const isFetching = globalUI.isFetching;
-  const useMediaLibrary = !mediaLibrary.get('externalLibrary');
-  const showMediaButton = mediaLibrary.get('showMediaButton');
+  const useMediaLibrary = !mediaLibrary.externalLibrary;
+  const showMediaButton = mediaLibrary.showMediaButton;
   return {
     auth,
     config,

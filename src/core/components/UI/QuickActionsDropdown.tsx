@@ -9,7 +9,7 @@ import { TranslatedProps } from '../../../interface';
 import { Collection } from '../../types/redux';
 
 interface QuickActionsDropdownProps {
-  createableCollections: List<Collection>;
+  createableCollections: Collection[];
   handleCreatePostClick: (name: string) => void;
 }
 
@@ -32,7 +32,7 @@ const QuickActionsDropdown = ({
   const handleMenuItemClick = useCallback(
     (collection: Collection) => () => {
       handleClose();
-      handleCreatePostClick(collection.get('name'));
+      handleCreatePostClick(collection.name);
     },
     [handleClose],
   );
@@ -60,8 +60,8 @@ const QuickActionsDropdown = ({
         }}
       >
         {createableCollections.map(collection => (
-          <MenuItem key={collection.get('name')} onClick={handleMenuItemClick(collection)}>
-            {collection.get('label_singular') || collection.get('label')}
+          <MenuItem key={collection.name} onClick={handleMenuItemClick(collection)}>
+            {collection.label_singular || collection.label}
           </MenuItem>
         ))}
         <MenuItem onClick={handleClose}>My account</MenuItem>

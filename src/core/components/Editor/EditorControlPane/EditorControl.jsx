@@ -100,7 +100,7 @@ export const ControlHint = styled.p`
 `;
 
 function LabelComponent({ field, isActive, hasErrors, uniqueFieldId, isFieldOptional, t }) {
-  const label = `${field.get('label', field.get('name'))}`;
+  const label = `${field.get('label', field.name)}`;
   const labelComponent = (
     <FieldLabel isActive={isActive} hasErrors={hasErrors} htmlFor={uniqueFieldId}>
       {label} {`${isFieldOptional ? ` (${t('editor.editorControl.field.optional')})` : ''}`}
@@ -158,13 +158,13 @@ class EditorControl extends React.Component {
     activeLabel: false,
   };
 
-  uniqueFieldId = uniqueId(`${this.props.field.get('name')}-field-`);
+  uniqueFieldId = uniqueId(`${this.props.field.name}-field-`);
 
   isAncestorOfFieldError = () => {
     const { fieldsErrors } = this.props;
 
     if (fieldsErrors && fieldsErrors.size > 0) {
-      return Object.values(fieldsErrors.toJS()).some(arr =>
+      return Object.values(fieldsErrors).some(arr =>
         arr.some(err => err.parentIds && err.parentIds.includes(this.uniqueFieldId)),
       );
     }
@@ -212,13 +212,13 @@ class EditorControl extends React.Component {
       locale,
     } = this.props;
 
-    const widgetName = field.get('widget');
-    const widget = resolveWidget(widgetName);
-    const fieldName = field.get('name');
-    const fieldHint = field.get('hint');
-    const isFieldOptional = field.get('required') === false;
+    const widgetName = field.widget;
+    const widget = resolveWi[widgetName];
+    const fieldName = field.name;
+    const fieldHint = field.hint;
+    const isFieldOptional = field.required === false;
     const onValidateObject = onValidate;
-    const metadata = fieldsMetaData && fieldsMetaData.get(fieldName);
+    const metadata = fieldsMetaData && fieldsMetaData[fieldName];
     const errors = fieldsErrors && fieldsErrors.get(this.uniqueFieldId);
     const childErrors = this.isAncestorOfFieldError();
     const hasErrors = !!errors || childErrors;
@@ -362,12 +362,12 @@ class EditorControl extends React.Component {
 
 function mapStateToProps(state) {
   const { collections, entryDraft } = state;
-  const entry = entryDraft.get('entry');
+  const entry = entryDraft['entry'];
   const collection = collections.get(entryDraft.getIn(['entry', 'collection']));
   const isLoadingAsset = selectIsLoadingAsset(state.medias);
 
   async function loadEntry(collectionName, slug) {
-    const targetCollection = collections.get(collectionName);
+    const targetCollection = collections[collectionName];
     if (targetCollection) {
       const loadedEntry = await tryLoadEntry(state, targetCollection, slug);
       return loadedEntry;
@@ -377,7 +377,7 @@ function mapStateToProps(state) {
   }
 
   return {
-    mediaPaths: state.mediaLibrary.get('controlMedia'),
+    mediaPaths: state.mediaLibrary.controlMedia,
     isFetching: state.search.isFetching,
     queryHits: state.search.queryHits,
     config: state.config,

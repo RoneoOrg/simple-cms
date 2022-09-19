@@ -5,7 +5,7 @@ import { WidgetPreviewContainer } from '../../ui-default';
 function ObjectPreview({ field }) {
   return (
     <WidgetPreviewContainer>
-      {(field && field.get('fields')) || field.get('field') || null}
+      {(field && field.fields) || field.field || null}
     </WidgetPreviewContainer>
   );
 }

@@ -32,7 +32,7 @@ const sortIconDirections = {
 function SortControl({ t, fields, onSortClick, sort }) {
   const hasActiveSort = sort
     ?.valueSeq()
-    .toJS()
+    
     .some(s => s.direction !== SortDirection.None);
 
   return (

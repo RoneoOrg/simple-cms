@@ -55,7 +55,7 @@ function CardWrapper(props) {
         height={cardHeight}
         margin={'0px'}
         isPrivate={isPrivate}
-        displayURL={displayURLs.get(file.id, file.url ? Map({ url: file.url }) : Map())}
+        displayURL={displayURLs.get(file.id, file.url ? Map({ url: file.url }) : {})}
         loadDisplayURL={() => loadDisplayURL(file)}
         type={file.type}
         isViewableImage={file.isViewableImage}
@@ -129,7 +129,7 @@ function PaginatedGrid({
             height={cardHeight}
             margin={cardMargin}
             isPrivate={isPrivate}
-            displayURL={displayURLs.get(file.id, file.url ? Map({ url: file.url }) : Map())}
+            displayURL={displayURLs.get(file.id, file.url ? Map({ url: file.url }) : {})}
             loadDisplayURL={() => loadDisplayURL(file)}
             type={file.type}
             isViewableImage={file.isViewableImage}

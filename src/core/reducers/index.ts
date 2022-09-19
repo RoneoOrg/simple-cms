@@ -1,4 +1,3 @@
-import { List } from 'immutable';
 import type { Collection, State } from '../types/redux';
 import * as fromEntries from './entries';
 import * as fromIntegrations from './integrations';
@@ -20,7 +19,7 @@ export function selectPublishedSlugs(state: State, collection: string) {
 
 export function selectSearchedEntries(state: State, availableCollections: string[]) {
   // only return search results for actually available collections
-  return List(state.search.entryIds)
+  return state.search.entryIds
     .filter(entryId => availableCollections.indexOf(entryId!.collection) !== -1)
     .map(entryId => fromEntries.selectEntry(state.entries, entryId!.collection, entryId!.slug));
 }

@@ -3,28 +3,28 @@ import { List, Map, fromJS as immutableFromJS } from "immutable";
 
 import type { StaticallyTypedRecord } from "../core/types/immutable";
 
-export function isList<T = any>(input: any): input is List<T> {
+export function isT = any[](input: any): input is T[] {
   return List.isList(input);
 }
 
-export function isMap<T = any>(input: any): input is Map<string, T> {
+export function isMap<T = any>(input: any): input is Record<string, T> {
   return Map.isMap(input);
 }
 
-export function toJS<T = any>(input: List<T>): T[];
-export function toJS<T = any>(input: Map<string, any>): T;
-export function toJS<T>(input: List<T> | Map<string, T>): any {
-  return input.toJS();
+export function toJS<T = any>(input: T[]): T[];
+export function toJS<T = any>(input: Record<string, any>): T;
+export function toJS<T>(input: T[] | Record<string, T>): any {
+  return input;
 }
 
-export function toList<T = any>(input: T[]): List<T> {
+export function toT = any[](input: T[]): T[] {
   return immutableFromJS(input) as any;
 }
 
-export function toMap(input: any): Map<string, any> {
+export function toMap(input: any): Record<string, any> {
   return immutableFromJS(input) as any;
 }
 
-export function toStaticallyTypedRecord<T>(input: T): StaticallyTypedRecord<T> {
+export function toT(input: T): T {
   return immutableFromJS(input) as any;
 }

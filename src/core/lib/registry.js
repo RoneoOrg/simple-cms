@@ -25,7 +25,7 @@ const registry = {
   templates: {},
   previewStyles: [],
   widgets: {},
-  editorComponents: Map(),
+  editorComponents: {},
   remarkPlugins: [],
   widgetValueSerializers: {},
   mediaLibraries: [],
@@ -88,7 +88,7 @@ export function registerWidget(name, control, preview, schema = {}) {
       if (typeof widget !== 'object') {
         console.error(`Cannot register widget: ${widget}`);
       } else {
-        registerWidget(widget);
+        registerWi[widget];
       }
     });
   } else if (typeof name === 'string') {
@@ -127,7 +127,7 @@ export function registerWidget(name, control, preview, schema = {}) {
     console.error('`registerWidget` failed, called with incorrect arguments.');
   }
 }
-export function getWidget(name) {
+export function getWi[name] {
   return registry.widgets[name];
 }
 export function getWidgets() {
@@ -135,8 +135,8 @@ export function getWidgets() {
     return draft.map(([key, value]) => ({ name: key, ...value }));
   });
 }
-export function resolveWidget(name) {
-  return getWidget(name || 'string') || getWidget('unknown');
+export function resolveWi[name] {
+  return getWidget(name || 'string') || getWi.unknown;
 }
 
 /**
@@ -216,7 +216,7 @@ export async function invokeEvent({ name, data }) {
       _data = { ...data, entry };
     }
   }
-  return _data.entry.get('data');
+  return _data.entry.data;
 }
 
 export function removeEventListener({ name, handler }) {

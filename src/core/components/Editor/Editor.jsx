@@ -86,7 +86,7 @@ export class Editor extends React.Component {
     const leaveMessage = t('editor.editor.onLeavePage');
 
     this.exitBlocker = event => {
-      if (this.props.entryDraft.get('hasChanged')) {
+      if (this.props.entryDraft.hasChanged) {
         // This message is ignored in most browsers, but its presence
         // triggers the confirmation dialog
         event.returnValue = leaveMessage;
@@ -101,7 +101,7 @@ export class Editor extends React.Component {
        */
       const isPersisting = this.props.entryDraft.getIn(['entry', 'isPersisting']);
       const newRecord = this.props.entryDraft.getIn(['entry', 'newRecord']);
-      const newEntryPath = `/collections/${collection.get('name')}/new`;
+      const newEntryPath = `/collections/${collection.name}/new`;
       if (
         isPersisting &&
         newRecord &&
@@ -123,8 +123,8 @@ export class Editor extends React.Component {
      * a new post. The confirmation above will run first.
      */
     this.unlisten = history.listen((location, action) => {
-      const newEntryPath = `/collections/${collection.get('name')}/new`;
-      const entriesPath = `/collections/${collection.get('name')}/entries/`;
+      const newEntryPath = `/collections/${collection.name}/new`;
+      const entriesPath = `/collections/${collection.name}/entries/`;
       const { pathname } = location;
       if (
         pathname.startsWith(newEntryPath) ||
@@ -155,7 +155,7 @@ export class Editor extends React.Component {
     }
 
     if (this.props.hasChanged) {
-      this.createBackup(this.props.entryDraft.get('entry'), this.props.collection);
+      this.createBackup(this.props.entryDraft['entry'], this.props.collection);
     }
 
     if (prevProps.entry === this.props.entry) return;
@@ -198,15 +198,15 @@ export class Editor extends React.Component {
     this.deleteBackup();
 
     if (createNew) {
-      navigateToNewEntry(collection.get('name'));
-      duplicate && createDraftDuplicateFromEntry(entryDraft.get('entry'));
+      navigateToNewEntry(collection.name);
+      duplicate && createDraftDuplicateFromEntry(entryDraft['entry']);
     }
   };
 
   handlePublishEntry = async (opts = {}) => {
     const { createNew = false, duplicate = false } = opts;
     const { createDraftDuplicateFromEntry, entryDraft, collection, slug, t } = this.props;
-    if (entryDraft.get('hasChanged')) {
+    if (entryDraft.hasChanged) {
       window.alert(t('editor.editor.onPublishingWithUnsavedChanges'));
       return;
     } else if (!window.confirm(t('editor.editor.onPublishing'))) {
@@ -216,22 +216,22 @@ export class Editor extends React.Component {
     this.deleteBackup();
 
     if (createNew) {
-      navigateToNewEntry(collection.get('name'));
+      navigateToNewEntry(collection.name);
     }
 
-    duplicate && createDraftDuplicateFromEntry(entryDraft.get('entry'));
+    duplicate && createDraftDuplicateFromEntry(entryDraft['entry']);
   };
 
   handleDuplicateEntry = () => {
     const { createDraftDuplicateFromEntry, collection, entryDraft } = this.props;
 
-    navigateToNewEntry(collection.get('name'));
-    createDraftDuplicateFromEntry(entryDraft.get('entry'));
+    navigateToNewEntry(collection.name);
+    createDraftDuplicateFromEntry(entryDraft['entry']);
   };
 
   handleDeleteEntry = () => {
     const { entryDraft, newEntry, collection, deleteEntry, slug, t } = this.props;
-    if (entryDraft.get('hasChanged')) {
+    if (entryDraft.hasChanged) {
       if (!window.confirm(t('editor.editor.onDeleteWithUnsavedChanges'))) {
         return;
       }
@@ -239,13 +239,13 @@ export class Editor extends React.Component {
       return;
     }
     if (newEntry) {
-      return navigateToCollection(collection.get('name'));
+      return navigateToCollection(collection.name);
     }
 
     setTimeout(async () => {
       await deleteEntry(collection, slug);
       this.deleteBackup();
-      return navigateToCollection(collection.get('name'));
+      return navigateToCollection(collection.name);
     }, 0);
   };
 
@@ -270,16 +270,16 @@ export class Editor extends React.Component {
 
     const isPublished = !newEntry;
 
-    if (entry && entry.get('error')) {
+    if (entry && entry.error) {
       return (
         <div>
-          <h3>{entry.get('error')}</h3>
+          <h3>{entry.error}</h3>
         </div>
       );
     } else if (
       entryDraft == null ||
-      entryDraft.get('entry') === undefined ||
-      (entry && entry.get('isFetching'))
+      entryDraft['entry'] === undefined ||
+      (entry && entry.isFetching)
     ) {
       return <Loader active>{t('editor.editor.loadingEntry')}</Loader>;
     }
@@ -287,11 +287,11 @@ export class Editor extends React.Component {
     return (
       <EditorInterface
         draftKey={draftKey}
-        entry={entryDraft.get('entry')}
+        entry={entryDraft['entry']}
         collection={collection}
         fields={fields}
-        fieldsMetaData={entryDraft.get('fieldsMetaData')}
-        fieldsErrors={entryDraft.get('fieldsErrors')}
+        fieldsMetaData={entryDraft.fieldsMetaData}
+        fieldsErrors={entryDraft.fieldsErrors}
         onChange={this.handleChangeDraftField}
         onValidate={changeDraftFieldValidation}
         onPersist={this.handlePersistEntry}
@@ -316,20 +316,20 @@ function mapStateToProps(state, ownProps) {
   const { collections, entryDraft, auth, config, entries, globalUI } = state;
   const slug = ownProps.slug;
   const collection = collections.get(ownProps.name);
-  const collectionName = collection.get('name');
+  const collectionName = collection.name;
   const newEntry = ownProps.newRecord === true;
   const fields = selectFields(collection, slug);
   const entry = newEntry ? null : selectEntry(state, collectionName, slug);
   const user = auth.user;
-  const hasChanged = entryDraft.get('hasChanged');
+  const hasChanged = entryDraft.hasChanged;
   const displayUrl = config.display_url;
   const isModification = entryDraft.getIn(['entry', 'isModification']);
   const collectionEntriesLoaded = !!entries.getIn(['pages', collectionName]);
   const publishedEntry = selectEntry(state, collectionName, slug);
-  const localBackup = entryDraft.get('localBackup');
-  const draftKey = entryDraft.get('key');
+  const localBackup = entryDraft.localBackup;
+  const draftKey = entryDraft.key;
   let editorBackLink = `/collections/${collectionName}`;
-  if (collection.has('nested') && slug) {
+  if (collection.nested && slug) {
     const pathParts = slug.split('/');
     if (pathParts.length > 2) {
       editorBackLink = `${editorBackLink}/filter/${pathParts.slice(0, -2).join('/')}`;

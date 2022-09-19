@@ -140,8 +140,8 @@ function EditorContent({
 }
 
 function isPreviewEnabled(collection, entry) {
-  if (collection.get('type') === FILES) {
-    const file = getFileFromSlug(collection, entry.get('slug'));
+  if (collection.type === FILES) {
+    const file = getFileFromSlug(collection, entry.slug);
     const previewEnabled = file?.getIn(['editor', 'preview']);
     if (previewEnabled != null) return previewEnabled;
   }
@@ -313,9 +313,9 @@ class EditorInterface extends Component {
     return (
       <EditorContainer>
         <EditorToolbar
-          isPersisting={entry.get('isPersisting')}
-          isPublishing={entry.get('isPublishing')}
-          isDeleting={entry.get('isDeleting')}
+          isPersisting={entry.isPersisting}
+          isPublishing={entry.isPublishing}
+          isDeleting={entry.isDeleting}
           onPersist={this.handleOnPersist}
           onPersistAndNew={() => this.handleOnPersist({ createNew: true })}
           onPersistAndDuplicate={() => this.handleOnPersist({ createNew: true, duplicate: true })}

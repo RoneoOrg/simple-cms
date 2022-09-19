@@ -1,5 +1,3 @@
-import { fromJS } from 'immutable';
-
 import { Cursor } from '../../lib/util';
 import {
   ENTRIES_SUCCESS,
@@ -15,7 +13,7 @@ export function selectCollectionEntriesCursor(state, collectionName) {
   return new Cursor(state.getIn(['cursorsByType', 'collectionEntries', collectionName]));
 }
 
-function cursors(state = fromJS({ cursorsByType: { collectionEntries: {} } }), action) {
+function cursors(state = { cursorsByType: { collectionEntries: {} } }, action) {
   switch (action.type) {
     case ENTRIES_SUCCESS: {
       return state.setIn(

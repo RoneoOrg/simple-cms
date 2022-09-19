@@ -6,7 +6,7 @@ export function validateMinMax(
   t: (key: string, options: unknown) => string,
   fieldLabel: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value?: List<any>,
+  value?: any[],
   min?: number,
   max?: number,
 ) {

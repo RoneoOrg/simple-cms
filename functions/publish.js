@@ -50,12 +50,12 @@ exports.handler = async function(event) {
     verifySignature(event);
 
     const params = new URLSearchParams(event.body);
-    const command = params.get('command');
-    const userId = params.get('user_id');
+    const command = params.command;
+    const userId = params.user_id;
 
     const allowedUsers = (process.env.ALLOWED_USERS || '').split(',');
     if (!allowedUsers.includes(userId)) {
-      throw new Error(`User '${params.get('user_name')}' is not allowed to run command`);
+      throw new Error(`User '${params.user_name}' is not allowed to run command`);
     }
 
     const expectedCommand = process.env.PUBLISH_COMMAND;

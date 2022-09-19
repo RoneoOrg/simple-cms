@@ -14,7 +14,7 @@ interface Option {
   value: string;
 }
 
-function convertToOption(raw: string | Map<string, string> | undefined): Option | undefined {
+function convertToOption(raw: string | Record<string, string> | undefined): Option | undefined {
   if (typeof raw === 'string') {
     return { label: raw, value: raw };
   }
@@ -23,21 +23,21 @@ function convertToOption(raw: string | Map<string, string> | undefined): Option 
 }
 
 export default class SelectControl extends React.Component<
-  CmsWidgetControlProps<string | List<string> | null>
+  CmsWidgetControlProps<string | string[] | null>
 > {
   isValid = () => {
     const { field, value = '', t } = this.props;
-    const min = field.get('min');
-    const max = field.get('max');
+    const min = field.min;
+    const max = field.max;
 
-    if (!field.get('multiple')) {
+    if (!field.multiple) {
       return { error: false };
     }
 
     const error = validations.validateMinMax(
       t,
-      field.get('label', field.get('name')),
-      value as List<string>,
+      field.get('label', field.name),
+      value as string[],
       min,
       max,
     );
@@ -51,8 +51,8 @@ export default class SelectControl extends React.Component<
     const isMultiple: boolean = field.get('multiple', false);
     const isEmpty = isMultiple ? !selectedOption?.length : !selectedOption;
 
-    if (field.get('required') && isEmpty && isMultiple) {
-      onChange(List<string>());
+    if (field.required && isEmpty && isMultiple) {
+      onChange(string[]());
     } else if (isEmpty) {
       onChange(null);
     } else if (typeof selectedOption === 'string') {
@@ -64,7 +64,7 @@ export default class SelectControl extends React.Component<
 
   componentDidMount() {
     const { field, onChange, value } = this.props;
-    if (field.get('required') && field.get('multiple')) {
+    if (field.required && field.multiple) {
       if (value && !List.isList(value)) {
         onChange(toList([value]));
       } else if (!value) {
@@ -75,10 +75,10 @@ export default class SelectControl extends React.Component<
 
   render() {
     const { field, value, forID, setActiveStyle, setInactiveStyle } = this.props;
-    const fieldOptions: List<string | Map<string, string>> = field.get('options');
+    const fieldOptions: string | Record<string, string[]> = field.options;
     const isMultiple = field.get('multiple', false);
 
-    const options = [...(fieldOptions.map(convertToOption).toJS() as Option[])].filter(Boolean);
+    const options = [...(fieldOptions.map(convertToOption) as Option[])].filter(Boolean);
 
     return (
       <FormControl

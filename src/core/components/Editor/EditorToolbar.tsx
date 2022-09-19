@@ -64,7 +64,7 @@ const EditorToolbar = ({
   };
 
   const renderSimpleControls = () => {
-    const canCreate = collection.get('create') ?? false;
+    const canCreate = collection.create ?? false;
 
     return (
       <>
@@ -97,7 +97,7 @@ const EditorToolbar = ({
           <Box sx={{ textAlign: 'left' }}>
             <Typography variant="body1" sx={{ color: '#333' }}>
               {t('editor.editorToolbar.backCollection', {
-                collectionLabel: collection.get('label'),
+                collectionLabel: collection.label,
               })}
             </Typography>
             {hasChanged ? (

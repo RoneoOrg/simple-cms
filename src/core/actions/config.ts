@@ -1,7 +1,6 @@
 import deepmerge from 'deepmerge';
 import { produce } from 'immer';
 import { trim, trimStart } from 'lodash';
-import { toStaticallyTypedRecord } from '../../util/ImmutableUtil';
 import { resolveBackend } from '../backend';
 import { FILES, FOLDER } from '../constants/collectionTypes';
 import { I18N, I18N_FIELD, I18N_STRUCTURE } from '../lib/i18n';
@@ -18,7 +17,6 @@ import type {
   CmsFieldObject,
   CmsI18nConfig,
   CmsLocalBackend,
-  CollectionObject,
   State,
 } from '../types/redux';
 
@@ -314,8 +312,7 @@ export function applyDefaults(originalConfig: CmsConfig) {
 
       if (!collection.sortable_fields) {
         collection.sortable_fields = selectDefaultSortableFields(
-          // TODO remove fromJS when Immutable is removed from the collections state slice
-          toStaticallyTypedRecord<CollectionObject>(collection as any),
+          collection,
           backend,
           hasIntegration(config, collection),
         );

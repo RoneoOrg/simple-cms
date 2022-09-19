@@ -5,7 +5,7 @@ import jsonFormatter from './json';
 import { FrontmatterInfer, frontmatterJSON } from './frontmatter';
 
 import type { Delimiter } from './frontmatter';
-import type { Collection, EntryObject, Format } from '../types/redux';
+import type { Collection, Entry, Format } from '../types/redux';
 import type { EntryValue } from '../valueObjects/Entry';
 
 export const frontmatterFormats = ['yaml-frontmatter', 'toml-frontmatter', 'json-frontmatter'];
@@ -32,20 +32,20 @@ function formatByName(name: Format, customDelimiter?: Delimiter) {
 }
 
 function frontmatterDelimiterIsList(
-  frontmatterDelimiter?: Delimiter | List<string>,
-): frontmatterDelimiter is List<string> {
+  frontmatterDelimiter?: Delimiter | string[],
+): frontmatterDelimiter is string[] {
   return List.isList(frontmatterDelimiter);
 }
 
-export function resolveFormat(collection: Collection, entry: EntryObject | EntryValue) {
+export function resolveFormat(collection: Collection, entry: Entry | EntryValue) {
   // Check for custom delimiter
-  const frontmatter_delimiter = collection.get('frontmatter_delimiter');
+  const frontmatter_delimiter = collection.frontmatter_delimiter;
   const customDelimiter = frontmatterDelimiterIsList(frontmatter_delimiter)
-    ? (frontmatter_delimiter.toArray() as [string, string])
+    ? (frontmatter_delimiter as [string, string])
     : frontmatter_delimiter;
 
   // If the format is specified in the collection, use that format.
-  const formatSpecification = collection.get('format');
+  const formatSpecification = collection.format;
   if (formatSpecification) {
     return formatByName(formatSpecification, customDelimiter);
   }
@@ -61,7 +61,7 @@ export function resolveFormat(collection: Collection, entry: EntryObject | Entry
 
   // If creating a new file, and an `extension` is specified in the
   //   collection config, infer the format from that extension.
-  const extension = collection.get('extension');
+  const extension = collection.extension;
   if (extension) {
     return get(extensionFormatters, extension);
   }

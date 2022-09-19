@@ -113,7 +113,7 @@ class CollectionSearch extends React.Component {
 
   getSelectedSelectionBasedOnProps() {
     const { collection, collections } = this.props;
-    return collection ? collections.keySeq().indexOf(collection.get('name')) : -1;
+    return collection ? collections.keySeq().indexOf(collection.name) : -1;
   }
 
   toggleSuggestions(visible) {
@@ -226,7 +226,7 @@ class CollectionSearch extends React.Component {
                   onClick={e => this.handleSuggestionClick(e, idx)}
                   onMouseDown={e => e.preventDefault()}
                 >
-                  {collection.get('label')}
+                  {collection.label}
                 </SuggestionItem>
               ))}
             </Suggestions>
