@@ -5,10 +5,7 @@ import { Dropdown, DropdownItem } from '../../../ui-default';
 import { ControlButton } from './ControlButton';
 
 function GroupControl({ viewGroups, t, onGroupClick, group }) {
-  const hasActiveGroup = group
-    ?.valueSeq()
-
-    .some(f => f.active === true);
+  const hasActiveGroup = Boolean(group && Object.values(group).find(f => f?.active === true));
 
   return (
     <Dropdown
@@ -28,7 +25,7 @@ function GroupControl({ viewGroups, t, onGroupClick, group }) {
             key={viewGroup.id}
             label={viewGroup.label}
             onClick={() => onGroupClick(viewGroup)}
-            isActive={group[viewGroup.id].active ?? false}
+            isActive={group[viewGroup.id]?.active ?? false}
           />
         );
       })}

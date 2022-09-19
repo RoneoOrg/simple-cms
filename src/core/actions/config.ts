@@ -9,7 +9,6 @@ import { getIntegrations, selectIntegration } from '../reducers/integrations';
 import type { AnyAction } from 'redux';
 import type { ThunkDispatch } from 'redux-thunk';
 import type {
-  Collection,
   CmsConfig,
   CmsField,
   CmsFieldBase,
@@ -19,6 +18,7 @@ import type {
   CmsLocalBackend,
   State,
 } from '../types/redux';
+import { Collection } from '..';
 
 export const CONFIG_REQUEST = 'CONFIG_REQUEST';
 export const CONFIG_SUCCESS = 'CONFIG_SUCCESS';

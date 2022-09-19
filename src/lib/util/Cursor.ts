@@ -1,10 +1,10 @@
 type CursorStore = {
-  actions: Set<string>;
+  actions: string[];
   data: Record<string, Record<string, any>>;
   meta: Record<string, Record<string, any>>;
 };
 
-type ActionHandler = (action: string) => unknown;
+type ActionHandler = (action: string) => any;
 
 const knownMetaKeys = new Set([
   'index',
@@ -18,7 +18,7 @@ const knownMetaKeys = new Set([
   'depth',
 ]);
 
-function filterUnknownMetaKeys(meta?: Record<string, unknown>) {
+function filterUnknownMetaKeys(meta?: Record<string, any>) {
   if (!meta) {
     return {};
   }
@@ -28,7 +28,7 @@ function filterUnknownMetaKeys(meta?: Record<string, unknown>) {
       acc[key] = meta[key];
     }
     return acc;
-  }, {} as Record<string, unknown>);
+  }, {} as Record<string, any>);
 }
 
 /*
@@ -40,13 +40,21 @@ function filterUnknownMetaKeys(meta?: Record<string, unknown>) {
 function createCursorStore(
   args:
     | [CursorStore]
-    | [Set<string>, Record<string, unknown>, Record<string, unknown>]
+    | [string[], Record<string, any>, Record<string, any>]
     | {
-        actions?: Set<string>;
-        data?: Record<string, unknown>;
-        meta?: Record<string, unknown>;
+        actions?: string[];
+        data?: Record<string, any>;
+        meta?: Record<string, any>;
       },
-) {
+): CursorStore {
+  if (!args) {
+    return {
+      actions: [],
+      data: {},
+      meta: {},
+    };
+  }
+
   const { actions, data, meta } = Array.isArray(args)
     ? args.length === 1
       ? args[0]
@@ -54,14 +62,14 @@ function createCursorStore(
     : args;
 
   return {
-    actions: new Set(actions),
+    actions: [...new Set(actions ?? [])],
     data,
     meta: filterUnknownMetaKeys(meta),
   } as CursorStore;
 }
 
 function hasAction(store: CursorStore, action: string) {
-  return store.actions.has(action);
+  return store.actions.includes(action);
 }
 
 function getActionHandlers(store: CursorStore, handler: ActionHandler) {
@@ -77,22 +85,26 @@ function getActionHandlers(store: CursorStore, handler: ActionHandler) {
 // The cursor logic is entirely functional, so this class simply
 // provides a chainable interface
 export default class Cursor {
-  store?: CursorStore;
-  actions?: Set<string>;
-  data?: Record<string, unknown>;
-  meta?: Record<string, unknown>;
+  store: CursorStore;
+  actions: string[];
+  data: Record<string, any>;
+  meta: Record<string, any>;
 
   static create(
     args:
       | Cursor
       | [CursorStore]
-      | [Set<string>, Record<string, unknown>, Record<string, unknown>]
+      | [string[], Record<string, any>, Record<string, any>]
       | {
-          actions?: Set<string>;
-          data?: Record<string, unknown>;
-          meta?: Record<string, unknown>;
+          actions?: string[];
+          data?: Record<string, any>;
+          meta?: Record<string, any>;
         },
   ) {
+    console.log(args, (args as any)?.actions.length >= 4);
+    if ((args as any)?.actions.length >= 4) {
+      throw Error();
+    }
     return new Cursor(args);
   }
 
@@ -100,19 +112,23 @@ export default class Cursor {
     args:
       | Cursor
       | [CursorStore]
-      | [Set<string>, Record<string, unknown>, Record<string, unknown>]
+      | [string[], Record<string, any>, Record<string, any>]
       | {
-          actions?: Set<string>;
-          data?: Record<string, unknown>;
-          meta?: Record<string, unknown>;
+          actions?: string[];
+          data?: Record<string, any>;
+          meta?: Record<string, any>;
         },
   ) {
     if (args instanceof Cursor) {
-      return args as Cursor;
+      this.store = args.store;
+      this.actions = [...new Set(args.actions)];
+      this.data = args.data;
+      this.meta = args.meta;
+      return;
     }
 
     this.store = createCursorStore(args);
-    this.actions = this.store.actions;
+    this.actions = [...new Set(this.store.actions)];
     this.data = this.store.data;
     this.meta = this.store.meta;
   }
@@ -122,7 +138,12 @@ export default class Cursor {
     updater: (current: CursorStore[K]) => CursorStore[K],
   ) {
     const store = this.store!;
-    const value = { ...store[section] };
+    let value: CursorStore[K];
+    if (section === 'actions') {
+      value = [...(store[section] as string[])] as CursorStore[K];
+    } else {
+      value = { ...store[section] };
+    }
 
     return new Cursor([
       {
@@ -137,22 +158,21 @@ export default class Cursor {
   }
 
   addAction(action: string) {
-    return this.updateStore('actions', actions => actions.add(action));
+    return this.updateStore('actions', actions => [...new Set<string>(...actions, action)]);
   }
 
   removeAction(action: string) {
     return this.updateStore('actions', actions => {
-      actions.delete(action);
-      return actions;
+      return [...new Set<string>(...actions.filter(a => a !== action))];
     });
   }
 
   setActions(actions: Iterable<string>) {
-    return this.updateStore('actions', () => new Set(actions));
+    return this.updateStore('actions', () => [...new Set<string>(actions)]);
   }
 
   mergeActions(actions: Set<string>) {
-    return this.updateStore('actions', oldActions => new Set(...oldActions, ...actions));
+    return this.updateStore('actions', oldActions => [...new Set<string>(...oldActions, ...actions)]);
   }
 
   getActionHandlers(handler: ActionHandler) {
@@ -176,7 +196,7 @@ export default class Cursor {
   }
 
   wrapData(data: Record<string, any>) {
-    return this.updateStore('data', (oldData: Record<string, unknown>) => {
+    return this.updateStore('data', (oldData: Record<string, any>) => {
       const newData = { ...data };
       newData['wrapped_cursor_data'] = oldData;
       return newData;
@@ -190,7 +210,7 @@ export default class Cursor {
     return [
       state,
       this.updateStore('data', (data: Record<string, any>) => data.wrapped_cursor_data),
-    ] as [Record<string, unknown>, Cursor];
+    ] as [Record<string, any>, Cursor];
   }
 
   clearData() {

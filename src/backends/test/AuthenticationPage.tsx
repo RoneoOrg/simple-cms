@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import React, { MouseEvent, useCallback } from 'react';
+import React, { MouseEvent, useEffect } from 'react';
 import { TranslatedProps } from '../../interface';
 import { AuthenticationPageProps } from '../../lib/util/implementation';
 import { buttons, GoBackButton, Icon, shadows } from '../../ui-default';
@@ -40,10 +40,20 @@ const AuthenticationPage = ({
   config,
   t,
 }: TranslatedProps<AuthenticationPageProps>) => {
-  const handleLogin = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+  useEffect(() => {
+    /**
+     * Allow login screen to be skipped for demo purposes.
+     */
+    const skipLogin = config.backend.login === false;
+    if (skipLogin) {
+      onLogin({});
+    }
+  }, []);
+
+  const handleLogin = (e: MouseEvent) => {
     e.preventDefault();
     onLogin({});
-  }, []);
+  };
 
   return (
     <StyledAuthenticationPage>

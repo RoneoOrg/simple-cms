@@ -62,8 +62,10 @@ function getCursor(
   const pageCount = Math.floor(count / pageSize);
   return Cursor.create({
     actions: [
-      ...(index < pageCount ? ['next', 'last'] : []),
-      ...(index > 0 ? ['prev', 'first'] : []),
+      ...new Set<string>([
+        ...(index < pageCount ? ['next', 'last'] : []),
+        ...(index > 0 ? ['prev', 'first'] : []),
+      ]),
     ],
     meta: { index, count, pageSize, pageCount },
     data: { folder, extension, index, pageCount, depth },
@@ -133,7 +135,7 @@ export default class TestBackend implements Implementation {
   }
 
   traverseCursor(cursor: Cursor, action: string) {
-    const { folder, extension, index, pageCount, depth } = cursor.data!.toObject() as {
+    const { folder, extension, index, pageCount, depth } = cursor.data as {
       folder: string;
       extension: string;
       index: number;

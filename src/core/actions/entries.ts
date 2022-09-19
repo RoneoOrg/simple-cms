@@ -1,6 +1,7 @@
 import { isEqual } from 'lodash';
 import type { AnyAction } from 'redux';
 import type { ThunkDispatch } from 'redux-thunk';
+import { Collection } from '..';
 import type { ImplementationMediaFile } from '../../lib/util';
 import { Cursor } from '../../lib/util';
 import type { Backend, MediaFile } from '../backend';
@@ -17,15 +18,7 @@ import { selectEntriesSortFields, selectEntryByPath, selectIsFetching } from '..
 import { selectCustomPath } from '../reducers/entryDraft';
 import { navigateToEntry } from '../routing/history';
 import { addSnackbar } from '../store/slices/snackbars';
-import type {
-  Collection,
-  Entry,
-  EntryField,
-  EntryFields,
-  State,
-  ViewFilter,
-  ViewGroup,
-} from '../types/redux';
+import type { Entry, EntryField, EntryFields, State, ViewFilter, ViewGroup } from '../types/redux';
 import { SortDirection } from '../types/redux';
 import type AssetProxy from '../valueObjects/AssetProxy';
 import { createAssetProxy } from '../valueObjects/AssetProxy';
@@ -144,6 +137,7 @@ export function entriesLoaded(
 }
 
 export function entriesFailed(collection: Collection, error: Error) {
+  throw error;
   return {
     type: ENTRIES_FAILURE,
     error: 'Failed to load entries',
@@ -550,12 +544,12 @@ const appendActions: Record<string, { action: string; append: boolean }> = {
 };
 
 function addAppendActionsToCursor(cursor: Cursor) {
-  return Cursor.create(cursor).updateStore('actions', (actions: Set<string>) => {
+  return Cursor.create(cursor).updateStore('actions', (actions: string[]) => {
     const newActions = Object.keys(appendActions).filter(key => {
-      actions.has(appendActions[key].action);
+      actions.includes(appendActions[key].action);
     });
 
-    return new Set(...actions, ...newActions);
+    return [...new Set<string>([...actions, ...newActions])];
   });
 }
 
@@ -600,13 +594,16 @@ export function loadEntries(collection: Collection, page = 0) {
         // cursor, which behaves identically to no cursor at all.
         cursor: integration
           ? Cursor.create({
-              actions: new Set(['next']),
+              actions: [...new Set<string>(['next'])],
               meta: { usingOldPaginationAPI: true },
               data: { nextPage: page + 1 },
             })
           : Cursor.create(response.cursor),
       };
 
+      console.log('1', response.cursor.meta!.usingOldPaginationAPI
+      ? response.entries.reverse()
+      : response.entries);
       dispatch(
         entriesLoaded(
           collection,
@@ -631,7 +628,7 @@ export function loadEntries(collection: Collection, page = 0) {
 }
 
 function traverseCursor(backend: Backend, cursor: Cursor, action: string) {
-  if (!cursor.actions!.has(action)) {
+  if (!cursor.actions!.includes(action)) {
     throw new Error(`The current cursor does not support the pagination action "${action}".`);
   }
   return backend.traverseCursor(cursor, action);
@@ -662,6 +659,7 @@ export function traverseCollectionCursor(collection: Collection, action: string)
       const { entries, cursor: newCursor } = await traverseCursor(backend, cursor, realAction);
 
       const pagination = (newCursor.meta?.page ?? null) as number | null;
+      console.log(entries);
       return dispatch(
         entriesLoaded(collection, entries, pagination, addAppendActionsToCursor(newCursor), append),
       );
@@ -714,7 +712,7 @@ export function createEmptyDraft(collection: Collection, search: string) {
         const newField = { ...field };
         newField.default = processValue(value);
         return newField;
-      });
+      }) as Collection;
     });
 
     const fields = collection.fields;
@@ -871,9 +869,10 @@ export function persistEntry(collection: Collection) {
 
     // Early return if draft contains validation errors
     if (Object.keys(fieldsErrors).length > 0) {
-      const hasPresenceErrors = Object.values(fieldsErrors).filter(error =>
-        error.find(({ type }) => type === ValidationErrorTypes.PRESENCE),
-      ).length > 0;
+      const hasPresenceErrors =
+        Object.values(fieldsErrors).filter(error =>
+          error.find(({ type }) => type === ValidationErrorTypes.PRESENCE),
+        ).length > 0;
 
       if (hasPresenceErrors) {
         dispatch(

@@ -1,5 +1,4 @@
 import format from 'date-fns/format';
-import isValid from 'date-fns/isValid';
 import parseISO from 'date-fns/parseISO';
 import { get, trimEnd, truncate } from 'lodash';
 import { basename, dirname, extname } from 'path-browserify';
@@ -56,16 +55,16 @@ export const dateParsers: Record<string, (date: Date) => string> = {
   second: (date: Date) => formatDate(date.getUTCSeconds()),
 };
 
-export function parseDateFromEntry(entry: Record<string, any>, dateFieldName?: string | null) {
+export function parseDateFromEntry(
+  entry: Record<string, any>,
+  dateFieldName?: string | null,
+): string | null {
   if (!dateFieldName) {
-    return;
+    return null;
   }
 
-  const dateValue = entry.data[dateFieldName] as string | Date;
-  const dateMoment = dateValue instanceof Date ? dateValue : parseISO(dateValue);
-  if (dateMoment && isValid(dateMoment)) {
-    return dateMoment;
-  }
+  const dateValue = entry.data[dateFieldName] as string;
+  return dateValue;
 }
 
 export const SLUG_MISSING_REQUIRED_DATE = 'SLUG_MISSING_REQUIRED_DATE';
@@ -162,7 +161,7 @@ function getFilterFunction(filterStr: string) {
 
 export function compileStringTemplate(
   template: string,
-  date: Date | undefined | null,
+  date: string | undefined | null,
   identifier = '',
   data: Record<string, unknown> = {},
   processor?: (value: string) => string,
@@ -181,11 +180,12 @@ export function compileStringTemplate(
 
       if (explicitFieldReplacement) {
         replacement = explicitFieldReplacement;
-      } else if (dateParsers[key] && !date) {
-        missingRequiredDate = true;
-        return '';
       } else if (dateParsers[key]) {
-        replacement = dateParsers[key](date as Date);
+        if (!date) {
+          missingRequiredDate = true;
+          return '';
+        }
+        replacement = dateParsers[key](parseISO(date));
       } else if (key === 'slug') {
         replacement = identifier;
       } else {

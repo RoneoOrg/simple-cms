@@ -90,13 +90,13 @@ class CollectionSearch extends React.Component {
   static propTypes = {
     collections: PropTypes.object.isRequired,
     collection: PropTypes.object,
-    searchTerm: PropTypes.string.isRequired,
+    searchTerm: PropTypes.string,
     onSubmit: PropTypes.func.isRequired,
     t: PropTypes.func.isRequired,
   };
 
   state = {
-    query: this.props.searchTerm,
+    query: this.props.searchTerm ?? '',
     suggestionsVisible: false,
     // default to the currently selected
     selectedCollectionIdx: this.getSelectedSelectionBasedOnProps(),
@@ -111,7 +111,7 @@ class CollectionSearch extends React.Component {
 
   getSelectedSelectionBasedOnProps() {
     const { collection, collections } = this.props;
-    return collection ? collections.keySeq().indexOf(collection.name) : -1;
+    return collection ? Object.keys(collections).indexOf(collection.name) : -1;
   }
 
   toggleSuggestions(visible) {
@@ -141,7 +141,7 @@ class CollectionSearch extends React.Component {
 
   submitSearch = () => {
     const { onSubmit, collections } = this.props;
-    const { selectedCollectionIdx, query } = this.state;
+    const { selectedCollectionIdx, query = '' } = this.state;
 
     this.toggleSuggestions(false);
     if (selectedCollectionIdx !== -1) {
@@ -189,7 +189,7 @@ class CollectionSearch extends React.Component {
 
   render() {
     const { collections, t } = this.props;
-    const { suggestionsVisible, selectedCollectionIdx, query } = this.state;
+    const { suggestionsVisible, selectedCollectionIdx, query = '' } = this.state;
     return (
       <SearchContainer
         onBlur={() => this.toggleSuggestions(false)}
@@ -217,7 +217,7 @@ class CollectionSearch extends React.Component {
                 {t('collection.sidebar.allCollections')}
               </SuggestionItem>
               <SuggestionDivider />
-              {collections.toIndexedSeq().map((collection, idx) => (
+              {Object.entries(collections).map((collection, idx) => (
                 <SuggestionItem
                   key={idx}
                   isActive={idx === selectedCollectionIdx}

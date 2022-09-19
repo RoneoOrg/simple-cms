@@ -1,4 +1,5 @@
-import type { Collection, State } from '../types/redux';
+import type { Collection } from '..';
+import type { State } from '../types/redux';
 import * as fromEntries from './entries';
 import * as fromIntegrations from './integrations';
 

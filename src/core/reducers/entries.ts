@@ -225,21 +225,21 @@ function entries(
       const loadedEntries = payload.entries;
       const page = payload.page;
 
+      console.log('hello from entries reducer!');
+
       const entities = {
         ...state.entities,
       };
 
-      if (payload.collection in entities) {
-        const newCollection = {
-          ...((entities as any)[payload.collection] ?? {}),
-        };
+      const newCollection = {
+        ...((entities as any)[payload.collection] ?? {}),
+      };
 
-        loadedEntries.forEach((entry: any) => {
-          newCollection[entry.slug] = { ...entry, isFetching: false };
-        });
+      loadedEntries.forEach((entry: any) => {
+        newCollection[entry.slug] = { ...entry, isFetching: false };
+      });
 
-        (entities as any)[payload.collection] = newCollection;
-      }
+      (entities as any)[payload.collection] = newCollection;
 
       const pages = {
         ...state.pages,
@@ -250,7 +250,7 @@ function entries(
         ids: loadedEntries.map(entry => entry.slug),
       };
 
-      return { ...state, entities };
+      return { ...state, entities, pages };
     }
     case ENTRIES_FAILURE:
       const pages = {
@@ -653,7 +653,7 @@ export function selectEntry(state: Entries, collection: string, slug: string) {
 }
 
 export function selectPublishedSlugs(state: Entries, collection: string) {
-  return state.pages[collection].ids ?? [];
+  return state.pages[collection]?.ids ?? [];
 }
 
 function getPublishedEntries(state: Entries, collectionName: string) {
@@ -772,7 +772,7 @@ export function selectEntriesLoaded(state: Entries, collection: string) {
 }
 
 export function selectIsFetching(state: Entries, collection: string) {
-  return state.pages[collection].isFetching ?? false;
+  return state.pages[collection]?.isFetching ?? false;
 }
 
 const DRAFT_MEDIA_FILES = 'DRAFT_MEDIA_FILES';

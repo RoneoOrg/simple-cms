@@ -350,7 +350,7 @@ export default class ListControl extends React.Component {
     const collectionName = field.name;
     const isSingleField = this.getValueType() === valueTypes.SINGLE;
 
-    const metadataRemovePath = isSingleField ? value[index] : value[index].valueSeq();
+    const metadataRemovePath = isSingleField ? value[index] : Object.values(value[index]);
     const parsedMetadata =
       metadata && !metadata.isEmpty()
         ? { [collectionName]: metadata.removeIn(metadataRemovePath) }

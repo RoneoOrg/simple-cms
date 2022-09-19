@@ -28,7 +28,7 @@ const GroupHeading = styled.h2`
 const GroupContainer = styled.div``;
 
 function getGroupEntries(entries, paths) {
-  return entries.filter(entry => paths.has(entry.path));
+  return entries.filter(entry => paths.includes(entry.path));
 }
 
 function getGroupTitle(group, t) {

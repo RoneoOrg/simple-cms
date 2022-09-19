@@ -1,4 +1,5 @@
 import { stripIndent } from 'common-tags';
+import formatISO from 'date-fns/formatISO';
 import { flow, partialRight, trimEnd, trimStart } from 'lodash';
 import { Collection } from '..';
 import { getIn } from '../../lib/util/objectUtil';
@@ -124,7 +125,7 @@ export function slugFormatter(
   }
 
   const processSegment = getProcessSegment(slugConfig);
-  const date = new Date();
+  const date = formatISO(new Date());
   const slug = compileStringTemplate(slugTemplate, date, identifier, entryData, processSegment);
 
   if (!collection.path) {
@@ -246,7 +247,7 @@ export function folderFormatter(
   fields[folderKey] = defaultFolder;
   fields = addFileTemplateFields(entry.path, fields, collection.folder);
 
-  const date =
+  const date: string | null =
     parseDateFromEntry(
       entry as unknown as Record<string, unknown>,
       selectInferedField(collection, 'date'),

@@ -17,10 +17,9 @@ import {
   ENTRY_PERSIST_FAILURE,
   ENTRY_PERSIST_REQUEST,
   ENTRY_PERSIST_SUCCESS,
-  REMOVE_DRAFT_ENTRY_MEDIA_FILE,
+  REMOVE_DRAFT_ENTRY_MEDIA_FILE
 } from '../actions/entries';
 import { duplicateI18nFields, getDataPath } from '../lib/i18n';
-import { EntryDraft } from '../types/redux';
 import { selectFolderEntryExtension, selectHasMetaPath } from './collections';
 
 const initialState = {
@@ -144,8 +143,8 @@ function entryDraftReducer(state: EntryDraftState = initialState, action: any) {
         ...state,
         fieldsMetaData,
         hasChanged:
-          !entries.find((e: any) => newData.equals(getIn(e, dataPath))) ||
-          !entries.find((e: any) => newMeta.equals(e.meta)),
+          !entries.find((e: any) => newData === getIn(e, dataPath)) ||
+          !entries.find((e: any) => newMeta === e.meta),
       };
     }
     case DRAFT_VALIDATION_ERRORS:
@@ -246,7 +245,7 @@ function entryDraftReducer(state: EntryDraftState = initialState, action: any) {
 
 export function selectCustomPath(
   collection: Collection,
-  entryDraft: { entry: { meta?: { path: string } } },
+  entryDraft: { entry: { meta?: { path?: string } } },
 ) {
   if (!selectHasMetaPath(collection)) {
     return;

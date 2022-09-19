@@ -1,8 +1,10 @@
-import PropTypes from 'prop-types';
-import React from 'react';
 import styled from '@emotion/styled';
+import React from 'react';
 import { translate } from 'react-polyglot';
-import { Loader, lengths } from '../../../../ui-default';
+import { TranslatedProps } from '../../../../interface';
+import { Cursor } from '../../../../lib/util';
+import { lengths, Loader } from '../../../../ui-default';
+import { Collections, Entry } from '../../../types/redux';
 import EntryListing from './EntryListing';
 
 const PaginationMessage = styled.div`
@@ -15,7 +17,17 @@ const NoEntriesMessage = styled(PaginationMessage)`
   margin-top: 16px;
 `;
 
-function Entries({
+interface EntriesProps {
+  collections: Collections;
+  entries: Entry[];
+  page: number;
+  isFetching: boolean;
+  viewStyle: string;
+  cursor: Cursor;
+  handleCursorActions: () => void;
+}
+
+const Entries = ({
   collections,
   entries,
   isFetching,
@@ -24,7 +36,7 @@ function Entries({
   handleCursorActions,
   t,
   page,
-}) {
+}: TranslatedProps<EntriesProps>) => {
   const loadingMessages = [
     t('collection.entries.loadingEntries'),
     t('collection.entries.cachingEntries'),
@@ -32,10 +44,10 @@ function Entries({
   ];
 
   if (isFetching && page === undefined) {
-    return <Loader active>{loadingMessages}</Loader>;
+    return <Loader $active>{loadingMessages}</Loader>;
   }
 
-  const hasEntries = (entries && entries.size > 0) || cursor?.actions?.append_next;
+  const hasEntries = (entries && entries.length > 0) || cursor?.actions?.includes('append_next');
   if (hasEntries) {
     return (
       <>
@@ -47,7 +59,7 @@ function Entries({
           handleCursorActions={handleCursorActions}
           page={page}
         />
-        {isFetching && page !== undefined && entries.size > 0 ? (
+        {isFetching && page !== undefined && entries.length > 0 ? (
           <PaginationMessage>{t('collection.entries.loadingEntries')}</PaginationMessage>
         ) : null}
       </>
@@ -55,17 +67,6 @@ function Entries({
   }
 
   return <NoEntriesMessage>{t('collection.entries.noEntries')}</NoEntriesMessage>;
-}
-
-Entries.propTypes = {
-  collections: PropTypes.object.isRequired,
-  entries: PropTypes.array,
-  page: PropTypes.number,
-  isFetching: PropTypes.bool,
-  viewStyle: PropTypes.string,
-  cursor: PropTypes.any.isRequired,
-  handleCursorActions: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired,
 };
 
 export default translate()(Entries);

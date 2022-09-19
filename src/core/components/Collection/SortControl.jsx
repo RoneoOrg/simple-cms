@@ -30,10 +30,7 @@ const sortIconDirections = {
 };
 
 function SortControl({ t, fields, onSortClick, sort }) {
-  const hasActiveSort = sort
-    ?.valueSeq()
-    
-    .some(s => s.direction !== SortDirection.None);
+  const hasActiveSort = Boolean(sort && Object.values(sort).find(s => s.direction !== SortDirection.None));
 
   return (
     <Dropdown

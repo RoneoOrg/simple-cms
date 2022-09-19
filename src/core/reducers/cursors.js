@@ -1,9 +1,10 @@
 import { Cursor } from '../../lib/util';
+import { getIn, setIn } from '../../lib/util/objectUtil';
 import {
   ENTRIES_SUCCESS,
-  SORT_ENTRIES_SUCCESS,
   FILTER_ENTRIES_SUCCESS,
   GROUP_ENTRIES_SUCCESS,
+  SORT_ENTRIES_SUCCESS,
 } from '../actions/entries';
 
 // Since pagination can be used for a variety of views (collections
@@ -16,7 +17,8 @@ export function selectCollectionEntriesCursor(state, collectionName) {
 function cursors(state = { cursorsByType: { collectionEntries: {} } }, action) {
   switch (action.type) {
     case ENTRIES_SUCCESS: {
-      return state.setIn(
+      return setIn(
+        state,
         ['cursorsByType', 'collectionEntries', action.payload.collection],
         Cursor.create(action.payload.cursor).store,
       );
