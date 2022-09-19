@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { List, Map, fromJS as immutableFromJS } from "immutable";
 
-import type { StaticallyTypedRecord } from "../netlify-cms-core/types/immutable";
+import type { StaticallyTypedRecord } from "../core/types/immutable";
 
 export function isList<T = any>(input: any): input is List<T> {
   return List.isList(input);

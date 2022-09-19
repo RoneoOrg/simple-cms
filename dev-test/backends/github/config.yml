@@ -3,7 +3,6 @@ backend:
   branch: master
   repo: owner/repo
 
-publish_mode: editorial_workflow
 media_folder: static/media
 public_folder: /media
 collections:

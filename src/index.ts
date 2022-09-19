@@ -1,7 +1,7 @@
 import createReactClass from 'create-react-class';
 import React from 'react';
 
-import { NetlifyCmsApp as CMS } from './netlify-cms-app';
+import { NetlifyCmsApp as CMS } from './app';
 
 if (typeof (window as any).global === 'undefined') {
   (window as any).global = window;

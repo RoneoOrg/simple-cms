@@ -1,6 +1,6 @@
 import React from 'react';
 import CMS from '..';
-import { CmsWidgetPreviewProps, PreviewTemplateComponentProps } from '../netlify-cms-core';
+import { CmsWidgetPreviewProps, PreviewTemplateComponentProps } from '../core';
 
 CMS.init({
   config: {
@@ -8,7 +8,6 @@ CMS.init({
       name: 'test-repo',
     },
     site_url: 'https://example.com',
-    publish_mode: 'editorial_workflow',
     media_folder: 'assets/uploads',
     collections: [
       {
@@ -797,22 +796,3 @@ CMS.registerPreviewTemplate('authors', AuthorsPreview);
 CMS.registerPreviewStyle(previewStyles, { raw: true });
 // Pass the name of a registered control to reuse with a new widget preview.
 CMS.registerWidget('relationKitchenSinkPost', 'relation', RelationKitchenSinkPostPreview);
-CMS.registerEditorComponent({
-  id: 'youtube',
-  label: 'Youtube',
-  fields: [{ name: 'id', label: 'Youtube Video ID' }],
-  pattern: /^{{<\s?youtube (\S+)\s?>}}/,
-  fromBlock: function (match) {
-    return {
-      id: match[1],
-    };
-  },
-  toBlock: function (obj) {
-    return '{{< youtube ' + obj.id + ' >}}';
-  },
-  toPreview: function (obj) {
-    return (
-      '<img src="http://img.youtube.com/vi/' + obj.id + '/maxresdefault.jpg" alt="Youtube Video"/>'
-    );
-  },
-});
