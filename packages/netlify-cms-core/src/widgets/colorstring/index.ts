@@ -1,7 +1,9 @@
 import controlComponent from './ColorControl';
 import previewComponent from './ColorPreview';
 
-function Widget(opts = {}) {
+import type { CmsWidgetParam } from '../../interface';
+
+function Widget(opts = {}): CmsWidgetParam<string> {
   return {
     name: 'color',
     controlComponent,

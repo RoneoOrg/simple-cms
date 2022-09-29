@@ -1,11 +1,10 @@
 import { currentBackend } from '../backend';
 import { addSnackbar } from '../store/slices/snackbars';
 
-import type { Credentials, User } from '../lib/util';
-import type { ThunkDispatch } from 'redux-thunk';
 import type { AnyAction } from 'redux';
+import type { ThunkDispatch } from 'redux-thunk';
+import type { Credentials, User } from '../lib/util';
 import type { State } from '../types/redux';
-import type { t } from 'react-polyglot';
 
 export const AUTH_REQUEST = 'AUTH_REQUEST';
 export const AUTH_SUCCESS = 'AUTH_SUCCESS';

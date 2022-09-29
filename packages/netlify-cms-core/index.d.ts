@@ -76,16 +76,6 @@ declare module 'netlify-cms-core' {
     default?: boolean;
   }
 
-  export interface CmsFieldCode {
-    widget: 'code';
-    default?: any;
-
-    default_language?: string;
-    allow_language_selection?: boolean;
-    keys?: { code: string; lang: string };
-    output_code_only?: boolean;
-  }
-
   export interface CmsFieldColor {
     widget: 'color';
     default?: string;
@@ -254,7 +244,6 @@ declare module 'netlify-cms-core' {
   export type CmsField = CmsFieldBase &
     (
       | CmsFieldBoolean
-      | CmsFieldCode
       | CmsFieldColor
       | CmsFieldDateTime
       | CmsFieldFileOrImage

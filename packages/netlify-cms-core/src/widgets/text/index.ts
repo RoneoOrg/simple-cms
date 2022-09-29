@@ -1,7 +1,9 @@
 import controlComponent from './TextControl';
 import previewComponent from './TextPreview';
 
-function Widget(opts = {}) {
+import type { CmsWidgetParam } from '../../interface';
+
+function Widget(opts = {}): CmsWidgetParam<string> {
   return {
     name: 'text',
     controlComponent,

@@ -1,5 +1,4 @@
 import BooleanWidget from './boolean';
-import CodeWidget from './code';
 import ColorStringWidget from './colorstring';
 import DateTimeWidget from './datetime';
 import FileWidget from './file';
@@ -16,7 +15,6 @@ import TextWidget from './text';
 
 export {
   BooleanWidget,
-  CodeWidget,
   ColorStringWidget,
   DateTimeWidget,
   FileWidget,

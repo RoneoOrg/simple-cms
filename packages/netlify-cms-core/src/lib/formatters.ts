@@ -13,8 +13,8 @@ import {
 import { sanitizeSlug } from './urlHelper';
 
 import type { Map } from 'immutable';
-import { CmsConfig } from '../interface';
-import type { CmsSlug, Collection, EntryMap } from '../types/redux';
+import type { CmsSlug, CmsConfig } from '../interface';
+import type { Collection, EntryMap } from '../types/redux';
 
 const {
   compileStringTemplate,

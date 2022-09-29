@@ -4,9 +4,9 @@ import { CONFIG_FAILURE, CONFIG_REQUEST, CONFIG_SUCCESS } from '../actions/confi
 import { EDITORIAL_WORKFLOW } from '../constants/publishModes';
 
 import type { ConfigAction } from '../actions/config';
-import { CmsConfig } from '../interface';
+import type { CmsConfig } from '../interface';
 
-interface ConfigState extends Partial<CmsConfig> {
+export interface ConfigState extends Partial<CmsConfig> {
   isFetching: boolean;
   error?: string;
 }

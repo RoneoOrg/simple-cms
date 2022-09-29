@@ -15,7 +15,7 @@ import { FILES, FOLDER } from '../constants/collectionTypes';
 import type { ThunkDispatch } from 'redux-thunk';
 import type { AnyAction } from 'redux';
 import type { State } from '../types/redux';
-import {
+import type {
   CmsConfig,
   CmsField,
   CmsFieldBase,

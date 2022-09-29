@@ -1,3 +1,7 @@
+/// <reference types="@emotion/react/types/css-prop" />
+
+export {};
+
 declare global {
   import type { CmsConfig } from './interface';
 

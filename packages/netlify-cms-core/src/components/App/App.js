@@ -1,4 +1,6 @@
 import styled from '@emotion/styled';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { hot } from 'react-hot-loader';
@@ -238,87 +240,89 @@ class App extends React.Component {
     const hasWorkflow = publishMode === EDITORIAL_WORKFLOW;
 
     return (
-      <ScrollSync enabled={scrollSyncEnabled}>
-        <AppRoot id="cms-root">
-          <AppWrapper className="cms-wrapper">
-            <Snackbars />
-            <Header
-              user={user}
-              collections={collections}
-              onCreateEntryClick={createNewEntry}
-              onLogoutClick={logoutUser}
-              openMediaLibrary={openMediaLibrary}
-              hasWorkflow={hasWorkflow}
-              displayUrl={config.display_url}
-              isTestRepo={config.backend.name === 'test-repo'}
-              showMediaButton={showMediaButton}
-            />
-            <AppMainContainer>
-              {isFetching && <TopBarProgress />}
-              <Switch>
-                <Redirect exact from="/" to={defaultPath} />
-                <Redirect exact from="/search/" to={defaultPath} />
-                <RouteInCollection
-                  exact
-                  collections={collections}
-                  path="/collections/:name/search/"
-                  render={({ match }) => <Redirect to={`/collections/${match.params.name}`} />}
-                />
-                <Redirect
-                  // This happens on Identity + Invite Only + External Provider email not matching
-                  // the registered user
-                  from="/error=access_denied&error_description=Signups+not+allowed+for+this+instance"
-                  to={defaultPath}
-                />
-                {hasWorkflow ? <Route path="/workflow" component={Workflow} /> : null}
-                <RouteInCollectionDefault
-                  exact
-                  collections={collections}
-                  path="/collections/:name"
-                  render={props => <Collection {...props} />}
-                />
-                <RouteInCollection
-                  path="/collections/:name/new"
-                  collections={collections}
-                  render={props => <Editor {...props} newRecord />}
-                />
-                <RouteInCollection
-                  path="/collections/:name/entries/*"
-                  collections={collections}
-                  render={props => <Editor {...props} />}
-                />
-                <RouteInCollection
-                  path="/collections/:name/search/:searchTerm"
-                  collections={collections}
-                  render={props => <Collection {...props} isSearchResults isSingleSearchResult />}
-                />
-                <RouteInCollection
-                  collections={collections}
-                  path="/collections/:name/filter/:filterTerm*"
-                  render={props => <Collection {...props} />}
-                />
-                <Route
-                  path="/search/:searchTerm"
-                  render={props => <Collection {...props} isSearchResults />}
-                />
-                <RouteInCollection
-                  path="/edit/:name/:entryName"
-                  collections={collections}
-                  render={({ match }) => {
-                    const { name, entryName } = match.params;
-                    return <Redirect to={`/collections/${name}/entries/${entryName}`} />;
-                  }}
-                />
-                <Route path="/page/:id" render={props => <Page {...props} />} />
-                <Route component={NotFoundPage} />
-              </Switch>
-              {useMediaLibrary ? <MediaLibrary /> : null}
-              <Alert />
-              <Confirm />
-            </AppMainContainer>
-          </AppWrapper>
-        </AppRoot>
-      </ScrollSync>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <ScrollSync enabled={scrollSyncEnabled}>
+          <AppRoot id="cms-root">
+            <AppWrapper className="cms-wrapper">
+              <Snackbars />
+              <Header
+                user={user}
+                collections={collections}
+                onCreateEntryClick={createNewEntry}
+                onLogoutClick={logoutUser}
+                openMediaLibrary={openMediaLibrary}
+                hasWorkflow={hasWorkflow}
+                displayUrl={config.display_url}
+                isTestRepo={config.backend.name === 'test-repo'}
+                showMediaButton={showMediaButton}
+              />
+              <AppMainContainer>
+                {isFetching && <TopBarProgress />}
+                <Switch>
+                  <Redirect exact from="/" to={defaultPath} />
+                  <Redirect exact from="/search/" to={defaultPath} />
+                  <RouteInCollection
+                    exact
+                    collections={collections}
+                    path="/collections/:name/search/"
+                    render={({ match }) => <Redirect to={`/collections/${match.params.name}`} />}
+                  />
+                  <Redirect
+                    // This happens on Identity + Invite Only + External Provider email not matching
+                    // the registered user
+                    from="/error=access_denied&error_description=Signups+not+allowed+for+this+instance"
+                    to={defaultPath}
+                  />
+                  {hasWorkflow ? <Route path="/workflow" component={Workflow} /> : null}
+                  <RouteInCollectionDefault
+                    exact
+                    collections={collections}
+                    path="/collections/:name"
+                    render={props => <Collection {...props} />}
+                  />
+                  <RouteInCollection
+                    path="/collections/:name/new"
+                    collections={collections}
+                    render={props => <Editor {...props} newRecord />}
+                  />
+                  <RouteInCollection
+                    path="/collections/:name/entries/*"
+                    collections={collections}
+                    render={props => <Editor {...props} />}
+                  />
+                  <RouteInCollection
+                    path="/collections/:name/search/:searchTerm"
+                    collections={collections}
+                    render={props => <Collection {...props} isSearchResults isSingleSearchResult />}
+                  />
+                  <RouteInCollection
+                    collections={collections}
+                    path="/collections/:name/filter/:filterTerm*"
+                    render={props => <Collection {...props} />}
+                  />
+                  <Route
+                    path="/search/:searchTerm"
+                    render={props => <Collection {...props} isSearchResults />}
+                  />
+                  <RouteInCollection
+                    path="/edit/:name/:entryName"
+                    collections={collections}
+                    render={({ match }) => {
+                      const { name, entryName } = match.params;
+                      return <Redirect to={`/collections/${name}/entries/${entryName}`} />;
+                    }}
+                  />
+                  <Route path="/page/:id" render={props => <Page {...props} />} />
+                  <Route component={NotFoundPage} />
+                </Switch>
+                {useMediaLibrary ? <MediaLibrary /> : null}
+                <Alert />
+                <Confirm />
+              </AppMainContainer>
+            </AppWrapper>
+          </AppRoot>
+        </ScrollSync>
+      </LocalizationProvider>
     );
   }
 }

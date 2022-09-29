@@ -28,7 +28,7 @@ function rules() {
     css: () => [
       {
         test: /\.css$/,
-        include: ['ol', 'react-datetime', 'codemirror'].map(moduleNameToPath),
+        include: ['ol'].map(moduleNameToPath),
         use: ['to-string-loader', 'css-loader'],
       },
     ],

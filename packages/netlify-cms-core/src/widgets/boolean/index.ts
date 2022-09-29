@@ -1,6 +1,8 @@
 import controlComponent from './BooleanControl';
 
-function Widget(opts = {}) {
+import type { CmsWidgetParam } from '../../interface';
+
+function Widget(opts = {}): CmsWidgetParam<boolean> {
   return {
     name: 'boolean',
     controlComponent,

@@ -17,7 +17,8 @@
     "baseUrl": "./",
     "paths": {
       "netlify-cms-core": ["./packages/netlify-cms-core/src"]
-    }
+    },
+    "types": ["node", "@emotion/react"],
   },
   "include": ["**/src/**/*", "dev-test/index.js"],
   "exclude": ["node_modules", "**/*.spec.ts"]

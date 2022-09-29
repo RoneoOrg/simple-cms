@@ -1,14 +1,11 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import { WidgetPreviewContainer } from '../../ui';
 
-function ColorPreview({ value }) {
+import type { CmsWidgetPreviewProps } from '../../interface';
+
+function ColorPreview({ value }: CmsWidgetPreviewProps<string>) {
   return <WidgetPreviewContainer>{value}</WidgetPreviewContainer>;
 }
-
-ColorPreview.propTypes = {
-  value: PropTypes.node,
-};
 
 export default ColorPreview;

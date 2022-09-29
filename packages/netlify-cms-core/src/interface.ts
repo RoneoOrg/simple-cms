@@ -1,5 +1,5 @@
 import type { List, Map } from 'immutable';
-import type { ComponentType, FocusEventHandler, ReactNode, RefObject } from 'react';
+import type { ComponentType, FocusEvent, ReactNode, RefObject } from 'react';
 import type {
   t,
   TranslateProps as ReactPolyglotTranslateProps,
@@ -48,9 +48,10 @@ export interface CmsWidgetControlProps<T = any> extends TranslateProps {
   locale: string;
   editorControl: ConnectedComponent<any, any>;
   mediaPaths: Map<string, any>;
+  isDisabled: boolean;
   getAsset: GetAssetFunction;
-  setActiveStyle: FocusEventHandler;
-  setInactiveStyle: FocusEventHandler;
+  setActiveStyle: (event?: FocusEvent) => void;
+  setInactiveStyle: (event?: FocusEvent) => void;
   onChange: (value: T) => void;
   onChangeObject: (field: Map<string, any>, newValue: T, newMetadata: Map<string, any>) => void;
   onValidateObject: () => void;
@@ -81,7 +82,7 @@ export interface CmsWidgetParam<T = any> {
     value: T | undefined | null;
     t: t;
   }) => boolean | { error: any } | Promise<boolean | { error: any }>;
-  schema: any;
+  schema?: any;
   globalStyles?: any;
 }
 
@@ -378,16 +379,6 @@ export interface CmsFieldBoolean {
   default?: boolean;
 }
 
-export interface CmsFieldCode {
-  widget: 'code';
-  default?: any;
-
-  default_language?: string;
-  allow_language_selection?: boolean;
-  keys?: { code: string; lang: string };
-  output_code_only?: boolean;
-}
-
 export interface CmsFieldColor {
   widget: 'color';
   default?: string;
@@ -556,7 +547,6 @@ export interface CmsFieldMeta {
 export type CmsField = CmsFieldBase &
   (
     | CmsFieldBoolean
-    | CmsFieldCode
     | CmsFieldColor
     | CmsFieldDateTime
     | CmsFieldFileOrImage
