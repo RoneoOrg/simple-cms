@@ -18,7 +18,7 @@ function isEmpty(value) {
 
 export default class Widget extends Component {
   static propTypes = {
-    controlComponent: PropTypes.oneOfType([PropTypes.func, PropTypes.object]).isRequired,
+    controlComponent: PropTypes.func.isRequired,
     validator: PropTypes.func,
     field: ImmutablePropTypes.map.isRequired,
     hasActiveStyle: PropTypes.bool,
@@ -296,6 +296,7 @@ export default class Widget extends Component {
       onRemoveInsertedMedia,
       getAsset,
       forID: uniqueFieldId,
+      ref: this.processInnerControlRef,
       validate: this.validate,
       classNameWrapper,
       classNameWidget,
