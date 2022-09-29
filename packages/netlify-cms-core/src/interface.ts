@@ -1,28 +1,66 @@
 import type { List, Map } from 'immutable';
-import type { ComponentType, FocusEventHandler, ReactNode } from 'react';
-import type { t, TranslateProps as ReactPolyglotTranslateProps } from 'react-polyglot';
+import type { ComponentType, FocusEventHandler, ReactNode, RefObject } from 'react';
+import type {
+  t,
+  TranslateProps as ReactPolyglotTranslateProps,
+  TranslateProps,
+} from 'react-polyglot';
 import type { Pluggable } from 'unified';
 import type Cursor from './lib/util/Cursor';
 import type { CollectionType } from './constants/collectionTypes';
+import type { ConnectedComponent } from 'react-redux';
 
 export type TranslatedProps<T> = T & ReactPolyglotTranslateProps;
 
-export type GetAssetFunction = (asset: string) => {
+export type GetAssetFunction = (
+  asset: string,
+  field?: Map<string, any>,
+) => {
   url: string;
   path: string;
   field?: any;
   fileObj: File;
 };
 
-export interface CmsWidgetControlProps<T = any> {
+export interface OpenMediaLibraryProps {
+  controlID: string;
+  forImage: boolean;
+  privateUpload: boolean;
+  value: string | string[];
+  replaceIndex?: number;
+  allowMultiple: boolean;
+  config: any;
+  field: Map<string, any>;
+}
+
+export interface CmsWidgetControlProps<T = any> extends TranslateProps {
   value: T;
   field: Map<string, any>;
-  onChange: (value: T) => void;
+  metadata: Map<string, any>;
+  fieldsErrors: Map<string, any>;
   forID: string;
   classNameWrapper: string;
+  forList: boolean;
+  hasError: boolean;
+  collapsed: boolean;
+  controlRef: RefObject<any>;
+  parentIds: string[];
+  locale: string;
+  editorControl: ConnectedComponent<any, any>;
+  mediaPaths: Map<string, any>;
+  getAsset: GetAssetFunction;
   setActiveStyle: FocusEventHandler;
   setInactiveStyle: FocusEventHandler;
-  t: t;
+  onChange: (value: T) => void;
+  onChangeObject: (field: Map<string, any>, newValue: T, newMetadata: Map<string, any>) => void;
+  onValidateObject: () => void;
+  clearFieldErrors: () => void;
+  isFieldDuplicate: (field: Map<string, any>) => boolean;
+  isFieldHidden: (field: Map<string, any>) => boolean;
+  onOpenMediaLibrary: (options: OpenMediaLibraryProps) => void;
+  onClearMediaControl: (controlID: string) => void;
+  onRemoveMediaControl: (controlID: string) => void;
+  onRemoveInsertedMedia: (controlID: string) => void;
 }
 
 export interface CmsWidgetPreviewProps<T = any> {
@@ -43,6 +81,7 @@ export interface CmsWidgetParam<T = any> {
     value: T | undefined | null;
     t: t;
   }) => boolean | { error: any } | Promise<boolean | { error: any }>;
+  schema: any;
   globalStyles?: any;
 }
 

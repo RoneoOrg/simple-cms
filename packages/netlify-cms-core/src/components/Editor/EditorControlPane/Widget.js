@@ -2,14 +2,9 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import { Map, List } from 'immutable';
-import { oneLine } from 'common-tags';
 
 import { getRemarkPlugins } from '../../../lib/registry';
 import ValidationErrorTypes from '../../../constants/validationErrorTypes';
-
-function truthy() {
-  return { error: false };
-}
 
 function isEmpty(value) {
   return (
@@ -75,18 +70,8 @@ export default class Widget extends Component {
     locale: PropTypes.string,
   };
 
-  shouldComponentUpdate(nextProps) {
-    /**
-     * Allow widgets to provide their own `shouldComponentUpdate` method.
-     */
-    if (this.wrappedControlShouldComponentUpdate) {
-      return this.wrappedControlShouldComponentUpdate(nextProps);
-    }
-    return (
-      this.props.value !== nextProps.value ||
-      this.props.classNameWrapper !== nextProps.classNameWrapper ||
-      this.props.hasActiveStyle !== nextProps.hasActiveStyle
-    );
+  shouldComponentUpdate() {
+    return true;
   }
 
   processInnerControlRef = ref => {
@@ -105,11 +90,14 @@ export default class Widget extends Component {
      * provide the control instance is the `this` binding.
      */
     const { shouldComponentUpdate: scu } = this.innerWrappedControl;
-    this.wrappedControlShouldComponentUpdate = scu && scu.bind(this.innerWrappedControl);
+    this.wrappedControlShouldComponentUpdate = scu
+      ? scu.bind(this.innerWrappedControl)
+      : () => true;
   };
 
   getValidateValue = () => {
-    let value = this.innerWrappedControl?.getValidateValue?.() || this.props.value;
+    // TODO Fix let value = this.innerWrappedControl?.getValidateValue?.() || this.props.value;
+    let value = this.props.value;
     // Convert list input widget value to string for validation test
     List.isList(value) && (value = value.join(','));
     return value;
