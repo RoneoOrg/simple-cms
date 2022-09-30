@@ -1,5 +1,5 @@
 {
     "componentChunkName": "component---src-templates-blog-post-js",
     "path": "/blog/2022/10/welcome-to-simple-cms",
-    "result": {"data":{"site":{"siteMetadata":{"siteUrl":"https://www.netlifycms.org"}},"markdownRemark":{"frontmatter":{"title":"Welcome to Simple CMS","description":"Announcing the release of Simple CMS v1.0.","date":"October 30, 2022","author":"Daniel Lautzenheiser","twitter_image":"/img/simple-cms.png"},"html":"<p>Today we’re releasing Simple CMS 1.0!</p>"}},"pageContext":{"slug":"/blog/2022/10/welcome-to-simple-cms"}},
+    "result": {"data":{"site":{"siteMetadata":{"siteUrl":"https://www.simplecms.github.io/simple-cms"}},"markdownRemark":{"frontmatter":{"title":"Welcome to Simple CMS","description":"Announcing the release of Simple CMS v1.0.","date":"October 30, 2022","author":"Daniel Lautzenheiser","twitter_image":"/img/simple-cms.png"},"html":"<p>Today we’re releasing Simple CMS 1.0!</p>"}},"pageContext":{"slug":"/blog/2022/10/welcome-to-simple-cms"}},
     "staticQueryHashes": ["3481581448","703069602"]}
