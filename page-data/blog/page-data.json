@@ -1,5 +1,5 @@
 {
     "componentChunkName": "component---src-pages-blog-js",
     "path": "/blog/",
-    "result": {"data":{"allMarkdownRemark":{"edges":[{"node":{"id":"210a56e6-edfe-570b-8015-8794866b0bac","frontmatter":{"title":"Welcome to Simple CMS","description":"Announcing the release of Simple CMS v1.0.","author":"Daniel Lautzenheiser","date":"October 30, 2022"},"fields":{"slug":"/blog/2022/10/welcome-to-simple-cms"}}}]}},"pageContext":{}},
+    "result": {"data":{"allMarkdownRemark":{"edges":[{"node":{"id":"0b5fa8c3-3cf9-5512-814f-ed62dcf37273","frontmatter":{"title":"Welcome to Simple CMS","description":"Announcing the release of Simple CMS v1.0.","author":"Daniel Lautzenheiser","date":"October 30, 2022"},"fields":{"slug":"/blog/2022/10/welcome-to-simple-cms"}}}]}},"pageContext":{}},
     "staticQueryHashes": ["3481581448","703069602"]}
