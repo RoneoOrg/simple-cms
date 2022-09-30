@@ -1,9 +1,3 @@
-/*!
- * github-buttons v2.21.1
- * (c) 2021 なつき
- * @license BSD-2-Clause
- */
-
 /** @license React v16.13.1
  * react-is.production.min.js
  *
